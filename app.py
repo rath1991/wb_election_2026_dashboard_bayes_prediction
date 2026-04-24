@@ -143,7 +143,7 @@ with st.sidebar:
     st.markdown("---")
     page = st.radio(
         "Navigate",
-        ["Headline Forecast", "Regional Tracker", "BJP Pathway", "Scenario Analysis", "News Feed", "Methodology"],
+        ["Headline Forecast", "Regional Tracker", "BJP Pathway", "Scenario Analysis", "News Feed", "Manual Input", "Methodology"],
         label_visibility="collapsed",
     )
     st.markdown("---")
@@ -998,3 +998,158 @@ elections** — not that BJP winning is impossible. Treat ranges as plausible sc
 *Data sources: ECI historical results, 2024 Lok Sabha regional data, SIR deletion estimates
 from ECI/The Wire reporting, daily news via GDELT + NewsAPI + YouTube.*
 """)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PAGE 6: MANUAL INPUT
+# ─────────────────────────────────────────────────────────────────────────────
+elif page == "Manual Input":
+    st.title("Manual Signal Input")
+    st.caption(
+        "Override or supplement automated news signals with your own ground-level assessment. "
+        "Adjust regional signals and BJP conditions, then run the model to see the updated forecast."
+    )
+    st.markdown(f'<div class="sir-banner">{SIR_BANNER}</div>', unsafe_allow_html=True)
+
+    REGIONS = ["north_bengal", "jangalmahal", "medinipur", "urban_kolkata", "south_bengal_rural"]
+    REGION_LABELS = {
+        "north_bengal":       "North Bengal (54 seats)",
+        "jangalmahal":        "Jangalmahal (25 seats)",
+        "medinipur":          "Medinipur (27 seats)",
+        "urban_kolkata":      "Urban Kolkata (68 seats)",
+        "south_bengal_rural": "South Bengal Rural (120 seats)",
+    }
+    BJP_CONDITIONS = {
+        "north_bengal_sweep_35plus":    "North Bengal sweep (35+ seats)",
+        "jangalmahal_hold_18plus":      "Jangalmahal hold (18+ of 25)",
+        "medinipur_majority":           "Medinipur majority",
+        "urban_kolkata_gain_10plus":    "Urban Kolkata gain (10+ seats)",
+        "minority_fragmentation":       "Minority vote fragmentation",
+        "sir_voter_suppression":        "SIR suppression effective",
+        "anti_incumbency_national":     "National anti-incumbency wave",
+    }
+
+    st.header("Regional Signal Strengths")
+    st.markdown(
+        "Set each region's signal: **+1.0** = strong TMC momentum, **−1.0** = strong BJP momentum, "
+        "**0.0** = neutral (no news edge). These feed directly into the Bayesian update."
+    )
+
+    # Load current automated signals as defaults
+    auto_signals_df = _regional_signals()
+    def _get_auto_signal(region):
+        if auto_signals_df.empty:
+            return 0.0
+        row = auto_signals_df[auto_signals_df["region"] == region]
+        if row.empty:
+            return 0.0
+        return float(row.sort_values("date").iloc[-1]["signal_strength"])
+
+    manual_signals = {}
+    cols_r = st.columns(2)
+    for i, region in enumerate(REGIONS):
+        auto_val = _get_auto_signal(region)
+        with cols_r[i % 2]:
+            val = st.slider(
+                REGION_LABELS[region],
+                min_value=-1.0, max_value=1.0,
+                value=float(round(auto_val, 2)),
+                step=0.05,
+                key=f"sig_{region}",
+                help=f"Automated signal today: {auto_val:+.2f}",
+            )
+            manual_signals[region] = {"signal_strength": val, "article_count": 1}
+            color = "#22c55e" if val > 0.1 else "#ef4444" if val < -0.1 else "#94a3b8"
+            st.markdown(
+                f'<div style="font-size:0.8rem;color:{color};margin-top:-12px;margin-bottom:8px">'
+                f'{"TMC ▲" if val > 0.1 else "BJP ▲" if val < -0.1 else "Neutral"} {val:+.2f}'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
+    st.divider()
+    st.header("BJP Pathway Conditions")
+    st.markdown("Set your assessment of each BJP condition. This updates the BJP Pathway scorecard.")
+
+    bjp_manual = {}
+    cols_b = st.columns(3)
+    auto_conditions = _bjp_conditions()
+    auto_cond_map = {c["condition_key"]: c for c in auto_conditions} if auto_conditions else {}
+
+    for i, (ckey, clabel) in enumerate(BJP_CONDITIONS.items()):
+        auto = auto_cond_map.get(ckey, {})
+        auto_status = auto.get("status", "red")
+        auto_conf   = float(auto.get("confidence", 0.1))
+        with cols_b[i % 3]:
+            st.markdown(f"**{clabel}**")
+            status = st.selectbox(
+                "Status", ["green", "yellow", "red"],
+                index=["green", "yellow", "red"].index(auto_status),
+                key=f"bjp_status_{ckey}",
+                label_visibility="collapsed",
+            )
+            conf = st.slider(
+                "Confidence", 0.0, 1.0, auto_conf, 0.05,
+                key=f"bjp_conf_{ckey}",
+                label_visibility="collapsed",
+            )
+            bjp_manual[ckey] = {"status": status, "confidence": conf, "evidence_json": "[]"}
+            icon = "🟢" if status == "green" else "🟡" if status == "yellow" else "🔴"
+            st.caption(f"{icon} {int(conf*100)}% confidence")
+
+    st.divider()
+
+    col_run1, col_run2, _ = st.columns([1, 1, 2])
+    with col_run1:
+        run_btn = st.button("▶ Run Forecast with Manual Signals", type="primary", use_container_width=True)
+    with col_run2:
+        save_btn = st.button("💾 Save & Update Dashboard", use_container_width=True,
+                             help="Saves manual signals to DB and updates all pages")
+
+    if run_btn or save_btn:
+        from pipeline.bayesian import run_full_pipeline
+        from pipeline.db import get_latest_forecast, upsert_forecast, upsert_regional_signals, upsert_bjp_conditions
+
+        with st.spinner("Running Bayesian model with manual signals..."):
+            prev = _forecast_latest()
+            prev_tmc_p50 = prev["tmc_p50"] if prev else None
+
+            forecast_m, _ = run_full_pipeline(manual_signals)
+            forecast_m["prev_tmc_p50"] = prev_tmc_p50
+
+        st.success("Forecast computed.")
+
+        # Show results
+        st.subheader("Forecast with Manual Signals")
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("TMC median", forecast_m["tmc_p50"],
+                  delta=int(forecast_m["tmc_p50"] - prev_tmc_p50) if prev_tmc_p50 else None)
+        m2.metric("TMC likely range", f"{forecast_m['tmc_p25']}–{forecast_m['tmc_p75']}")
+        m3.metric("BJP median", forecast_m["bjp_p50"])
+        m4.metric("P(TMC majority)", f"{forecast_m['p_tmc_win']:.1%}")
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("P(TMC majority)", f"{forecast_m['p_tmc_win']:.1%}")
+        c2.metric("P(Hung)",         f"{forecast_m['p_hung']:.1%}")
+        c3.metric("P(BJP majority)", f"{forecast_m['p_bjp_win']:.1%}")
+
+        # Compare auto vs manual
+        if prev:
+            st.markdown("**Auto forecast vs manual override:**")
+            comp_df = pd.DataFrame([
+                {"Source": "Automated (last pipeline run)", "TMC p50": prev["tmc_p50"],
+                 "TMC range": f"{prev['tmc_p25']}–{prev['tmc_p75']}", "P(TMC win)": f"{prev['p_tmc_win']:.1%}"},
+                {"Source": "Manual override (just computed)", "TMC p50": forecast_m["tmc_p50"],
+                 "TMC range": f"{forecast_m['tmc_p25']}–{forecast_m['tmc_p75']}", "P(TMC win)": f"{forecast_m['p_tmc_win']:.1%}"},
+            ])
+            st.dataframe(comp_df, use_container_width=True, hide_index=True)
+
+        if save_btn:
+            with st.spinner("Saving to database..."):
+                conn = _db()
+                upsert_forecast(conn, date.today(), forecast_m)
+                upsert_regional_signals(conn, date.today(), manual_signals)
+                upsert_bjp_conditions(conn, date.today(), bjp_manual)
+                st.cache_data.clear()
+            st.success("Saved. All dashboard pages now reflect your manual input.")
+            st.rerun()
