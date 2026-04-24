@@ -876,14 +876,14 @@ Urban Kolkata with a mild positive signal of +0.35:
         st.markdown("""
 **Prior** (from Steps 1 & 2):
 ```
-μ_prior = +1.90   (logit of ~87% TMC win rate after SIR adjustment)
+μ_prior = +1.97   (logit of ~88% TMC win rate after SIR adjustment)
 σ_prior =  1.20   (our uncertainty — same as observation noise by design)
 ```
 
 **Convert news signal to observation:**
 ```
 obs = μ_prior + signal × 0.30   (0.30 = signal scaling constant)
-obs = 1.90 + 0.35 × 0.30 = +1.995
+obs = 1.97 + 0.35 × 0.30 = +2.061
 τ   = 1.20                       (observation noise — news is genuinely noisy)
 ```
 
@@ -892,13 +892,13 @@ obs = 1.90 + 0.35 × 0.30 = +1.995
 precision_prior = 1 / σ²  = 1 / 1.44 = 0.694
 precision_news  = 1 / τ²  = 1 / 1.44 = 0.694
 
-posterior_μ = (0.694 × 1.90 + 0.694 × 1.995) ÷ (0.694 + 0.694)
-            = +1.947   ← barely moved from 1.90
+posterior_μ = (0.694 × 1.97 + 0.694 × 2.061) ÷ (0.694 + 0.694)
+            = +2.016   ← barely moved from 1.97
 
 posterior_σ = sqrt(1 / (0.694 + 0.694)) = 0.849
 ```
 
-**Result:** Urban Kolkata logit moves from 1.90 → 1.947, i.e. 87.1% → 87.5% win probability.
+**Result:** Urban Kolkata logit moves from 1.97 → 2.016, i.e. 87.8% → 88.2% win probability.
 A small nudge — exactly the right behaviour for one day of news.
 """)
 
@@ -943,7 +943,7 @@ for each simulation k in 10,000:
 
 The **global shock is the key driver of wide confidence intervals.** A −1.5 global shock
 shifts all constituencies simultaneously, collapsing TMC seats. A +1.5 shock does the opposite.
-This is why the 90% CI spans 90–270 seats even though the median is stable at ~192.
+This is why the 90% CI spans 93–272 seats even though the median is stable at ~197.
 
 **Output metrics:**
 
@@ -966,9 +966,6 @@ This is why the 90% CI spans 90–270 seats even though the median is stable at 
     st.markdown("""
 #### Key assumptions
 """)
-    assumptions_df = pd.DataFrame([
-        {"Assumption", "Value", "If wrong…"},
-    ])
     st.markdown("""
 | Assumption | Value | If wrong… |
 |-----------|-------|-----------|
@@ -991,7 +988,7 @@ This is why the 90% CI spans 90–270 seats even though the median is stable at 
 
 #### Disclaimer
 This is a probabilistic forecast tool for analytical purposes only. Election outcomes are
-inherently uncertain. A **73.7% TMC win probability means BJP wins in roughly 1 in 4 simulated
+inherently uncertain. A **76% TMC win probability means BJP wins in roughly 1 in 4 simulated
 elections** — not that BJP winning is impossible. Treat ranges as plausible scenarios, not predictions.
 
 *Data sources: ECI historical results, 2024 Lok Sabha regional data, SIR deletion estimates
