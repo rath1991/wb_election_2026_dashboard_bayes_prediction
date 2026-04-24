@@ -34,12 +34,19 @@ SIGMA_LOGIT_GLOBAL = 0.65
 SIGMA_LOGIT_CONSTITUENCY = 0.80
 # SIR global model uncertainty (logit space)
 GLOBAL_SIR_SIGMA_LOGIT = 0.16
-# TMC lean factor for deleted voters
-TMC_LEAN_FACTOR = 0.80
-# SIR lean uncertainty
+
+# SIR lean factors — grounded in actual WB voter deletion composition:
+# 91 lakh total deleted: ~63 lakh Hindu (69%), ~28 lakh Muslim/minority (31%)
+# Muslim deleted voters: ~85% TMC lean (historical Muslim-TMC alignment)
+# Hindu deleted voters: ~45% TMC lean (split electorate; BJP has Hindu vote share)
+# Baseline assumption: if voters weren't deleted, 50% would have voted TMC on average.
+# Only the EXCESS over 50% creates an asymmetric impact on TMC.
+TMC_LEAN_MINORITY = 0.85   # Muslim/minority deleted voters → TMC lean
+TMC_LEAN_MAJORITY = 0.45   # Hindu deleted voters → slight BJP lean
+
+# SIR uncertainty: we don't know exact lean factors; model as ±15% of deletion_rate
 SIR_LEAN_SIGMA_FACTOR = 0.15
-# logit scaling constant at p~0.5: d(logit(p))/dp ≈ 4
-LOGIT_SCALE = 4.0
+
 # Fixed Left/Others seats
 LEFT_OTHERS_FIXED = 15
 MAJORITY = 148
@@ -117,27 +124,58 @@ def build_priors(data_dir: Path = DATA_DIR) -> pd.DataFrame:
 
 def apply_sir_adjustment(priors: pd.DataFrame, data_dir: Path = DATA_DIR) -> pd.DataFrame:
     """
-    SIR creates systematic downward adjustment to TMC win probability.
-    Modeled in logit space:
-      delta_logit = -deletion_rate × minority_share × TMC_LEAN_FACTOR × LOGIT_SCALE
-      sigma_sir   = deletion_rate × SIR_LEAN_SIGMA_FACTOR × LOGIT_SCALE
+    SIR creates a systematic reduction in TMC's win probability.
 
-    μ_adj = μ_logit + delta_logit
-    σ_adj = sqrt(σ_prior² + σ_sir² + GLOBAL_SIR_SIGMA²)
+    Factual basis: 91 lakh voters deleted statewide — 63 lakh Hindu (~69%), 28 lakh Muslim (~31%).
+    Both communities are affected, but with different TMC lean:
+      - Muslim deleted voters: ~85% TMC lean  (TMC_LEAN_MINORITY)
+      - Hindu deleted voters:  ~45% TMC lean  (TMC_LEAN_MAJORITY, slight BJP lean)
 
-    Effect in probability space:
-    - Samserganj (95% minority, 25% deletion): logit shifts by -0.76 → P(TMC win) drops ~18pp
-    - Average constituency: ~-0.07 logit → ~-1.7pp
+    Per constituency, minority_share = fraction of deleted voters who are Muslim/minority.
+    (Proxied by the local Muslim population share — higher in Murshidabad/Malda, lower elsewhere.)
+
+    Blended TMC lean among all deleted voters:
+      tmc_lean = minority_share × 0.85 + (1 - minority_share) × 0.45
+               = 0.45 + minority_share × 0.40
+
+    Excess lean over the 50% neutral baseline:
+      excess_lean = tmc_lean - 0.50
+                  = minority_share × 0.40 - 0.05
+
+    TMC win probability reduction (in probability space):
+      delta_p = -deletion_rate × excess_lean
+
+    We then convert EXACTLY to logit space (no linear approximation):
+      win_adj = win_prior - delta_p
+      mu_adj  = logit(win_adj)
+
+    This avoids the LOGIT_SCALE≈4 linearization which only holds near p=0.5.
+
+    Uncertainty (in logit space via delta method):
+      sigma_sir ≈ deletion_rate × SIR_LEAN_SIGMA_FACTOR / (win_adj × (1 - win_adj))
     """
     sir = pd.read_csv(data_dir / "sir_deletions.csv")[["constituency_id", "deletion_rate", "minority_share"]]
     df = priors.merge(sir, on="constituency_id", how="left")
     df["deletion_rate"] = df["deletion_rate"].fillna(0.04)
     df["minority_share"] = df["minority_share"].fillna(0.12)
 
-    df["delta_logit"] = -df["deletion_rate"] * df["minority_share"] * TMC_LEAN_FACTOR * LOGIT_SCALE
-    df["sigma_sir_logit"] = df["deletion_rate"] * SIR_LEAN_SIGMA_FACTOR * LOGIT_SCALE
+    # Blended TMC lean across Hindu + Muslim deleted voters
+    tmc_lean = TMC_LEAN_MAJORITY + df["minority_share"] * (TMC_LEAN_MINORITY - TMC_LEAN_MAJORITY)
+    excess_lean = tmc_lean - 0.50  # impact relative to neutral 50% baseline
 
-    df["mu_adj"] = df["mu_logit"] + df["delta_logit"]
+    # Adjust in probability space (exact), then convert to logit
+    win_p = expit(df["mu_logit"])
+    delta_p = df["deletion_rate"] * excess_lean
+    win_adj_p = (win_p - delta_p).clip(0.02, 0.98)
+    df["delta_p"] = delta_p
+    df["mu_adj"] = _safe_logit(win_adj_p)
+    df["delta_logit"] = df["mu_adj"] - df["mu_logit"]
+
+    # SIR uncertainty in logit space via delta method: σ_logit ≈ σ_p / (p(1-p))
+    sigma_sir_p = df["deletion_rate"] * SIR_LEAN_SIGMA_FACTOR
+    sigma_sir_logit = sigma_sir_p / (win_adj_p * (1 - win_adj_p))
+    df["sigma_sir_logit"] = sigma_sir_logit
+
     df["sigma_adj"] = np.sqrt(
         df["sigma_logit"] ** 2 +
         df["sigma_sir_logit"] ** 2 +

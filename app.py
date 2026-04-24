@@ -787,11 +787,20 @@ Our calibrated regional baselines:
     st.dataframe(prior_df, use_container_width=True, hide_index=True)
 
     st.markdown("""
-The 2024 Lok Sabha result (TMC 45.8%, BJP 38.7%, TMC won 29/42 seats) is applied as a
-**40% weight recency signal** on top of older assembly history (2021 → 50%, 2016 → 30%, 2011 → 20%).
+**How the weights work (they do sum to 1):**
+
+The historical win rate is a weighted blend of past elections:
+```
+win_hist = 0.50 × (won in 2021) + 0.30 × (won in 2016) + 0.20 × (won in 2011)
+```
+These three weights sum to 1.0. `win_hist` is a number between 0 and 1 per constituency.
+
+The 2024 Lok Sabha result then adjusts the *regional baseline* — not added on top as a separate weight.
+The REGIONAL_WIN_PRIOR values shown above already incorporate both historical assembly trends and
+2024 LS outcomes as a calibration exercise, not a mechanical formula. This avoids the confusion of
+having weights from two separate steps that appear to sum to more than 1.
 
 Prior uncertainty: **σ = 1.20 logit units** — reflecting genuine election-to-election swing variance.
-In probability terms, this says "TMC probably wins Urban Kolkata ~88% of the time, but the range is wide."
 """)
 
     st.divider()
@@ -799,29 +808,54 @@ In probability terms, this says "TMC probably wins Urban Kolkata ~88% of the tim
     # ── Step 2: SIR ──
     st.header("Step 2 — SIR Adjustment")
     st.markdown("""
-**Accounting for the systematic effect of voter deletions.**
+**Accounting for the systematic effect of voter deletions — both Hindu and Muslim.**
 
-For each constituency we apply a deterministic downward logit shift:
+The previous version of this model incorrectly assumed only Muslim voters were deleted.
+The actual composition of 91 lakh deletions statewide: **63 lakh Hindu (~69%), 28 lakh Muslim (~31%)**.
+Both matter for the forecast, with different TMC lean:
 
+| Deleted voter group | Count | TMC lean | Reasoning |
+|---------------------|-------|----------|-----------|
+| Muslim / minority | ~28L (31%) | **85%** | Historical Muslim-TMC alignment in WB |
+| Hindu | ~63L (69%) | **45%** | Split electorate; BJP has significant Hindu vote share |
+
+**Blended TMC lean** per constituency (using local minority share among deleted voters):
 ```
-logit_shift = −deletion_rate × minority_share × 0.80 × 4
+tmc_lean = minority_share × 0.85 + (1 − minority_share) × 0.45
+         = 0.45 + minority_share × 0.40
 ```
 
-Where:
-- `deletion_rate` = fraction of voters deleted in that constituency
-- `minority_share` = fraction of electorate that is Muslim/minority (proxies who was deleted)
-- `0.80` = TMC lean factor — our estimate that 80% of deleted minority voters would have voted TMC
-- `4` = logit scaling constant (converts vote-share shift to the right magnitude in log-odds)
+At WB average (30% minority among deleted):
+```
+tmc_lean = 0.45 + 0.30 × 0.40 = 0.57
+```
 
-**Effect:** Shifts the TMC point estimate *down* in minority-heavy seats AND widens the
-uncertainty band (since we don't know exactly how deleted voters would have voted).
-The "SIR band" shown on the dashboard (±27 seats) is this uncertainty made visible.
+**Excess lean** over the neutral 50% baseline (the part that actually harms TMC):
+```
+excess_lean = tmc_lean − 0.50 = minority_share × 0.40 − 0.05
+```
 
-Extreme example — **Samserganj**: 74,000 deletions in a constituency with 95% Muslim electorate,
-~25% of total voters gone. With this adjustment, TMC's win probability in Samserganj falls sharply.
+**TMC win probability reduction** (computed in probability space, then converted exactly to logit):
+```
+win_adj = win_prior − deletion_rate × excess_lean
+mu_adj  = logit(win_adj)           ← exact conversion, no approximation
+```
 
-**Key assumption:** 80% TMC lean among deleted voters. If the true lean is 60%, TMC's median seat
-count shifts up by roughly 10–15 seats from the current baseline.
+**Why exact conversion instead of "× 4"?**
+The × 4 shortcut is the derivative of logit at p = 0.5: `d/dp[log(p/(1−p))] = 1/(p(1−p)) = 4 at p=0.5`.
+It's a linear approximation that breaks down away from 0.5 (e.g. at p=0.88 for Urban Kolkata,
+the true scaling factor is 1/(0.88×0.12) ≈ 9.5, not 4). We use the exact logit conversion instead.
+
+**Effect:** SIR now impacts ALL constituencies proportionally to their deletion rate,
+not just Muslim-heavy ones. The overall TMC impact is smaller than the minority-only model
+(since Hindus at 45% lean barely exceed the 50% neutral baseline), but more accurate.
+
+Extreme example — **Samserganj**: 95% Muslim constituency, 25% deletion rate.
+```
+tmc_lean    = 0.45 + 0.95 × 0.40 = 0.83
+excess_lean = 0.83 − 0.50 = 0.33
+delta_p     = 0.25 × 0.33 = −0.083   → TMC win prob drops ~8pp in this seat
+```
 """)
 
     st.divider()
@@ -938,7 +972,8 @@ This is why the 90% CI spans 90–270 seats even though the median is stable at 
     st.markdown("""
 | Assumption | Value | If wrong… |
 |-----------|-------|-----------|
-| SIR TMC lean factor | 80% | If 60% lean → TMC median ~+10–15 seats |
+| SIR Muslim lean | 85% | If 75% lean → TMC median ~+5–8 seats |
+| SIR Hindu lean | 45% | If 50% lean → TMC median ~+8–12 seats (Hindus become neutral) |
 | Global swing σ | 0.65 logit | If lower → CI narrows; if higher → CI widens |
 | News observation noise τ | 1.20 | If lower → news gets more daily weight |
 | Left + Others fixed seats | ~15 | If Left collapses → BJP gains; if Left surges → TMC loses |
