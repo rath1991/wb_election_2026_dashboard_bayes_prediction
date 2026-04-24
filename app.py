@@ -8,10 +8,40 @@ import pandas as pd
 import numpy as np
 import json
 import os
+import threading
 from datetime import date, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# ─── Background scheduler (runs pipeline daily at 07:00 IST inside web service) ─
+def _start_scheduler():
+    import time
+    import pytz
+    from datetime import datetime
+
+    def _run():
+        from scheduler import run_pipeline
+        tz = pytz.timezone("Asia/Kolkata")
+        last_run_date = None
+        while True:
+            now = datetime.now(tz)
+            today = now.date()
+            if last_run_date != today and now.hour >= 7:
+                try:
+                    run_pipeline()
+                except Exception as e:
+                    print(f"[scheduler] pipeline error: {e}")
+                last_run_date = today
+            time.sleep(300)  # check every 5 min
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+
+# Only start once per process (not on every Streamlit rerun)
+if not st.session_state.get("_scheduler_started"):
+    st.session_state["_scheduler_started"] = True
+    _start_scheduler()
 
 st.set_page_config(
     page_title="WB 2026 Elections Dashboard",
