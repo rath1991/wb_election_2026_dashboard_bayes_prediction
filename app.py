@@ -549,11 +549,15 @@ elif page == "Scenario Analysis":
 
     forecast = _forecast_latest()
 
+    # All scenarios enforce TMC + BJP + Others(15) = 294
+    # bjp_low  = 294 - tmc_high - 15
+    # bjp_high = 294 - tmc_low  - 15
+    # bjp_mid  = 294 - tmc_mid  - 15
     SCENARIOS = {
         "TMC Wave": {
             "color": "#22c55e",
-            "tmc_low": 195, "tmc_high": 220, "tmc_mid": 208,
-            "bjp_low": 58, "bjp_high": 80, "bjp_mid": 70,
+            "tmc_low": 200, "tmc_high": 230, "tmc_mid": 215,
+            "bjp_low":  49, "bjp_high":  79, "bjp_mid":  64,
             "prob": "20–30%",
             "sir": "SIR rolls partially/fully restored by court order",
             "conditions": [
@@ -565,8 +569,8 @@ elif page == "Scenario Analysis":
         },
         "Status Quo": {
             "color": "#f59e0b",
-            "tmc_low": 165, "tmc_high": 195, "tmc_mid": 180,
-            "bjp_low": 82, "bjp_high": 110, "bjp_mid": 96,
+            "tmc_low": 170, "tmc_high": 205, "tmc_mid": 187,
+            "bjp_low":  74, "bjp_high": 109, "bjp_mid": 92,
             "prob": "45–55%",
             "sir": "SIR as-is (12% deletion, concentrated in minority areas)",
             "conditions": [
@@ -578,8 +582,8 @@ elif page == "Scenario Analysis":
         },
         "BJP Surge": {
             "color": "#ef4444",
-            "tmc_low": 128, "tmc_high": 155, "tmc_mid": 142,
-            "bjp_low": 118, "bjp_high": 148, "bjp_mid": 133,
+            "tmc_low": 130, "tmc_high": 158, "tmc_mid": 144,
+            "bjp_low": 121, "bjp_high": 149, "bjp_mid": 135,
             "prob": "15–25%",
             "sir": "Full SIR suppression + minority fragmentation",
             "conditions": [
@@ -601,7 +605,7 @@ elif page == "Scenario Analysis":
 
             fig = go.Figure()
             parties = ["TMC", "BJP", "Left/Others"]
-            mids = [s["tmc_mid"], s["bjp_mid"], 16]
+            mids = [s["tmc_mid"], s["bjp_mid"], 15]
             errs = [
                 (s["tmc_high"] - s["tmc_low"]) // 2,
                 (s["bjp_high"] - s["bjp_low"]) // 2,
