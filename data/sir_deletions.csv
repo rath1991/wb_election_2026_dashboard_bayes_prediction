@@ -1,0 +1,295 @@
+constituency_id,name,district,deletion_count,deletion_rate,minority_share,sir_severity
+1,Darjeeling,Darjeeling,800,0.02,0.08,low
+2,Kurseong,Darjeeling,600,0.02,0.08,low
+3,Kalimpong,Darjeeling,700,0.02,0.06,low
+4,Matigara-Naxalbari,Darjeeling,2000,0.04,0.12,low
+5,Siliguri,Darjeeling,8000,0.05,0.15,medium
+6,Phansidewa,Darjeeling,1500,0.03,0.20,low
+7,Chopra,North Dinajpur,3000,0.06,0.45,medium
+8,Islampur,North Dinajpur,6000,0.08,0.60,medium
+9,Goalpokhar-I,North Dinajpur,4000,0.07,0.55,medium
+10,Goalpokhar-II,North Dinajpur,3500,0.06,0.50,medium
+11,Hemtabad,North Dinajpur,2000,0.05,0.30,low
+12,Kaliaganj,North Dinajpur,3000,0.06,0.40,medium
+13,Raiganj,North Dinajpur,4000,0.05,0.25,medium
+14,Itahar,North Dinajpur,3500,0.06,0.45,medium
+15,Karandighi,North Dinajpur,5000,0.08,0.55,medium
+16,Balurghat,South Dinajpur,3000,0.05,0.20,low
+17,Tapan,South Dinajpur,1500,0.04,0.15,low
+18,Gangarampur,South Dinajpur,2000,0.04,0.18,low
+19,Kushmandi,South Dinajpur,1500,0.04,0.15,low
+20,Kumarganj,South Dinajpur,1800,0.04,0.18,low
+21,Harirampur,South Dinajpur,2000,0.05,0.22,low
+22,Alipurduar,Alipurduar,1500,0.03,0.10,low
+23,Falakata,Alipurduar,1200,0.03,0.12,low
+24,Madarihat,Alipurduar,1000,0.03,0.08,low
+25,Kumargram,Alipurduar,1200,0.03,0.12,low
+26,Kalchini,Alipurduar,1000,0.03,0.08,low
+27,Jalpaiguri,Jalpaiguri,3000,0.05,0.18,low
+28,Rajganj,Jalpaiguri,2000,0.04,0.20,low
+29,Dabgram-Fulbari,Jalpaiguri,4000,0.06,0.22,medium
+30,Maynaguri,Jalpaiguri,2000,0.04,0.18,low
+31,Mal,Jalpaiguri,1500,0.04,0.12,low
+32,Nagrakata,Jalpaiguri,1200,0.03,0.10,low
+33,Dhupguri,Jalpaiguri,2000,0.04,0.15,low
+34,Cooch Behar North,Cooch Behar,2500,0.05,0.20,low
+35,Cooch Behar South,Cooch Behar,3000,0.06,0.25,medium
+36,Sitai,Cooch Behar,2000,0.05,0.30,medium
+37,Sitalkuchi,Cooch Behar,2500,0.05,0.30,medium
+38,Tufanganj,Cooch Behar,2000,0.04,0.20,low
+39,Natabari,Cooch Behar,1800,0.04,0.18,low
+40,Dinhata,Cooch Behar,4000,0.07,0.35,medium
+41,Nishiganj,Cooch Behar,2000,0.05,0.28,medium
+42,Mekhliganj,Cooch Behar,1500,0.04,0.18,low
+43,Habibpur,Malda,5000,0.09,0.55,high
+44,Gazole,Malda,6000,0.10,0.60,high
+45,Chanchal,Malda,8000,0.12,0.70,high
+46,Harischandrapur-I,Malda,7000,0.11,0.65,high
+47,Harischandrapur-II,Malda,7500,0.11,0.68,high
+48,Ratua-I,Malda,6000,0.10,0.62,high
+49,Ratua-II,Malda,6500,0.10,0.60,high
+50,Manikchak,Malda,5000,0.09,0.55,high
+51,Malda,Malda,8000,0.08,0.45,medium
+52,English Bazar,Malda,10000,0.09,0.48,medium
+53,Mothabari,Malda,8000,0.11,0.65,high
+54,Sujapur,Malda,7000,0.10,0.58,high
+55,Purulia,Purulia,3000,0.05,0.12,low
+56,Jhalda-I,Purulia,2000,0.04,0.10,low
+57,Jhalda-II,Purulia,2000,0.04,0.10,low
+58,Balarampur,Purulia,1800,0.04,0.08,low
+59,Baghmundi,Purulia,1500,0.04,0.06,low
+60,Kashipur,Purulia,2000,0.04,0.10,low
+61,Para,Purulia,1500,0.03,0.08,low
+62,Raghunathpur-I,Purulia,2500,0.05,0.10,low
+63,Raghunathpur-II,Purulia,2500,0.05,0.10,low
+64,Manbazar-I,Purulia,2000,0.04,0.08,low
+65,Manbazar-II,Purulia,2000,0.04,0.08,low
+66,Jhargram,Jhargram,2500,0.05,0.08,low
+67,Binpur-I,Jhargram,1500,0.04,0.06,low
+68,Binpur-II,Jhargram,1500,0.04,0.06,low
+69,Nayagram,Jhargram,1500,0.04,0.06,low
+70,Ranibandh,Bankura,2000,0.05,0.08,low
+71,Raipur-I,Bankura,1500,0.04,0.08,low
+72,Raipur-II,Bankura,1500,0.04,0.08,low
+73,Taldangra,Bankura,2000,0.05,0.10,low
+74,Saltora,Bankura,1800,0.04,0.08,low
+75,Chhatna,Bankura,2000,0.05,0.10,low
+76,Barjora,Bankura,2500,0.05,0.12,low
+77,Salboni,Paschim Medinipur,2000,0.04,0.10,low
+78,Keshpur,Paschim Medinipur,2500,0.05,0.12,low
+79,Garbeta,Paschim Medinipur,2000,0.04,0.10,low
+80,Bankura,Bankura,3000,0.05,0.12,low
+81,Onda,Bankura,2500,0.05,0.10,low
+82,Bishnupur,Bankura,3000,0.05,0.12,low
+83,Kotulpur,Bankura,2000,0.04,0.10,low
+84,Indpur,Bankura,1800,0.04,0.08,low
+85,Sonamukhi,Bankura,2000,0.05,0.10,low
+86,Medinipur,Paschim Medinipur,4000,0.05,0.12,low
+87,Narayangarh,Paschim Medinipur,3000,0.05,0.10,low
+88,Sabang,Paschim Medinipur,3000,0.05,0.12,low
+89,Pingla,Paschim Medinipur,2500,0.04,0.10,low
+90,Kharagpur Sadar,Paschim Medinipur,4000,0.05,0.12,low
+91,Nandakumar,Purba Medinipur,3000,0.05,0.12,low
+92,Mahishadal,Purba Medinipur,2500,0.05,0.10,low
+93,Haldia,Purba Medinipur,4000,0.05,0.12,low
+94,Nandigram,Purba Medinipur,5000,0.07,0.18,medium
+95,Chandipur,Purba Medinipur,2500,0.05,0.10,low
+96,Patashpur,Purba Medinipur,2500,0.05,0.10,low
+97,Contai North,Purba Medinipur,3000,0.05,0.10,low
+98,Contai South,Purba Medinipur,3000,0.05,0.10,low
+99,Ramnagar,Purba Medinipur,2500,0.04,0.10,low
+100,Egra,Purba Medinipur,3000,0.05,0.12,low
+101,Bhagwanpur,Purba Medinipur,2500,0.05,0.10,low
+102,Khejuri,Purba Medinipur,2500,0.05,0.10,low
+103,Tamluk,Purba Medinipur,3500,0.05,0.12,low
+104,Moyna,Purba Medinipur,2500,0.05,0.10,low
+105,Panskura East,Purba Medinipur,3000,0.05,0.12,low
+106,Panskura West,Purba Medinipur,3000,0.05,0.12,low
+107,Kolkata Port,Kolkata,4000,0.06,0.35,medium
+108,Bhabanipur,Kolkata,47000,0.15,0.40,high
+109,Rashbehari,Kolkata,8000,0.07,0.20,medium
+110,Ballygunge,Kolkata,6000,0.06,0.18,medium
+111,Chowringhee,Kolkata,5000,0.06,0.15,medium
+112,Entally,Kolkata,12000,0.10,0.42,high
+113,Beleghata,Kolkata,10000,0.09,0.38,high
+114,Jorasanko,Kolkata,9000,0.08,0.35,medium
+115,Shyampukur,Kolkata,8000,0.07,0.30,medium
+116,Maniktala,Kolkata,6000,0.06,0.22,medium
+117,Kasba,Kolkata,5000,0.06,0.18,medium
+118,Howrah North,Howrah,15000,0.08,0.30,medium
+119,Howrah Central,Howrah,12000,0.07,0.28,medium
+120,Howrah South,Howrah,10000,0.07,0.25,medium
+121,Shibpur,Howrah,8000,0.06,0.22,medium
+122,Bally,Howrah,9000,0.07,0.28,medium
+123,Uluberia North,Howrah,7000,0.07,0.35,medium
+124,Uluberia South,Howrah,6000,0.06,0.32,medium
+125,Shyampur,Howrah,5000,0.06,0.28,medium
+126,Bagnan,Howrah,4000,0.05,0.22,low
+127,Amta,Howrah,4000,0.05,0.20,low
+128,Udaynarayanpur,Howrah,3000,0.05,0.18,low
+129,Jagatballavpur,Howrah,4000,0.05,0.20,low
+130,Domjur,Howrah,8000,0.07,0.30,medium
+131,Panchla,Howrah,5000,0.06,0.25,medium
+132,Sankrail,Howrah,6000,0.06,0.25,medium
+133,Panihati,North 24 Parganas,15000,0.08,0.28,medium
+134,Kamarhati,North 24 Parganas,12000,0.07,0.25,medium
+135,Dum Dum,North 24 Parganas,10000,0.07,0.22,medium
+136,Rajarhat-Newtown,North 24 Parganas,8000,0.05,0.18,low
+137,Bidhannagar,North 24 Parganas,7000,0.05,0.15,low
+138,Baranagar,North 24 Parganas,9000,0.07,0.22,medium
+139,Barrackpur,North 24 Parganas,12000,0.07,0.22,medium
+140,Naihati,North 24 Parganas,8000,0.06,0.28,medium
+141,Bhatpara,North 24 Parganas,10000,0.07,0.30,medium
+142,Jagaddal,North 24 Parganas,8000,0.06,0.28,medium
+143,Noapara,North 24 Parganas,7000,0.06,0.25,medium
+144,Habra,North 24 Parganas,8000,0.07,0.32,medium
+145,Amdanga,North 24 Parganas,6000,0.06,0.35,medium
+146,Rajarhat,North 24 Parganas,7000,0.06,0.25,medium
+147,Deganga,North 24 Parganas,9000,0.08,0.50,high
+148,Haroa,North 24 Parganas,10000,0.10,0.60,high
+149,Minakhan,North 24 Parganas,8000,0.09,0.58,high
+150,Sandeshkhali-I,North 24 Parganas,9000,0.10,0.55,high
+151,Sandeshkhali-II,North 24 Parganas,8000,0.09,0.52,high
+152,Basirhat North,North 24 Parganas,12000,0.10,0.62,high
+153,Basirhat South,North 24 Parganas,11000,0.10,0.60,high
+154,Hingalganj,North 24 Parganas,7000,0.09,0.55,high
+155,Gaighata,North 24 Parganas,5000,0.06,0.30,medium
+156,Swarupnagar,North 24 Parganas,8000,0.08,0.45,high
+157,Baduria,North 24 Parganas,9000,0.09,0.52,high
+158,Bangaon North,North 24 Parganas,5000,0.07,0.20,medium
+159,Bangaon South,North 24 Parganas,5000,0.07,0.22,medium
+160,Gaighata,North 24 Parganas,4000,0.06,0.25,medium
+161,Ranaghat North-I,Nadia,5000,0.07,0.20,medium
+162,Ranaghat North-II,Nadia,4500,0.07,0.20,medium
+163,Ranaghat South,Nadia,4000,0.06,0.18,low
+164,Chakdah,Nadia,5000,0.07,0.22,medium
+165,Kalyani,Nadia,6000,0.06,0.18,low
+166,Haringhata,Nadia,4000,0.06,0.18,low
+167,Krishnaganj,Nadia,6000,0.08,0.45,high
+168,Krishnanagar North,Nadia,7000,0.07,0.38,medium
+169,Krishnanagar South,Nadia,6000,0.07,0.35,medium
+170,Nabadwip,Nadia,5000,0.06,0.20,medium
+171,Chapra,Nadia,7000,0.09,0.50,high
+172,Karimpur,Nadia,8000,0.10,0.55,high
+173,Tehatta,Nadia,7000,0.09,0.52,high
+174,Palashipara,Nadia,8000,0.10,0.58,high
+175,Nakashipara,Nadia,7000,0.09,0.50,high
+176,Hanskhali,Nadia,4000,0.06,0.25,medium
+177,Murshidabad,Murshidabad,15000,0.12,0.72,high
+178,Nabagram,Murshidabad,12000,0.11,0.68,high
+179,Khargram,Murshidabad,10000,0.10,0.60,high
+180,Kandi,Murshidabad,11000,0.10,0.62,high
+181,Bharatpur,Murshidabad,9000,0.09,0.58,high
+182,Rejinagar,Murshidabad,10000,0.10,0.62,high
+183,Beldanga-I,Murshidabad,15000,0.12,0.70,high
+184,Beldanga-II,Murshidabad,14000,0.12,0.68,high
+185,Baharampur,Murshidabad,12000,0.08,0.48,high
+186,Hariharpara,Murshidabad,9000,0.09,0.55,high
+187,Nowda,Murshidabad,8000,0.09,0.58,high
+188,Samserganj,Murshidabad,74000,0.25,0.95,critical
+189,Suti-I,Murshidabad,18000,0.14,0.78,critical
+190,Suti-II,Murshidabad,16000,0.13,0.75,critical
+191,Jangipur,Murshidabad,12000,0.10,0.60,high
+192,Raghunathganj-I,Murshidabad,11000,0.10,0.62,high
+193,Raghunathganj-II,Murshidabad,10000,0.09,0.58,high
+194,Sagardighi,Murshidabad,10000,0.09,0.58,high
+195,Lalgola,Murshidabad,14000,0.12,0.72,high
+196,Bhagwangola-I,Murshidabad,12000,0.11,0.68,high
+197,Bhagwangola-II,Murshidabad,11000,0.10,0.65,high
+198,Domkal,Murshidabad,16000,0.12,0.72,high
+199,Jalangi,Murshidabad,18000,0.14,0.80,critical
+200,Berhampore,Murshidabad,14000,0.10,0.52,high
+201,Birbhum,Birbhum,6000,0.08,0.35,medium
+202,Nalhati,Birbhum,7000,0.09,0.42,medium
+203,Murarai-I,Birbhum,8000,0.10,0.52,high
+204,Murarai-II,Birbhum,7000,0.09,0.48,high
+205,Mayureswar-I,Birbhum,5000,0.07,0.32,medium
+206,Mayureswar-II,Birbhum,5000,0.07,0.30,medium
+207,Rampurhat-I,Birbhum,5000,0.07,0.30,medium
+208,Rampurhat-II,Birbhum,5000,0.07,0.30,medium
+209,Hansan,Birbhum,4000,0.06,0.25,medium
+210,Dubrajpur,Birbhum,4000,0.06,0.22,medium
+211,Suri-I,Birbhum,4000,0.06,0.20,low
+212,Suri-II,Birbhum,4000,0.06,0.20,low
+213,Bolpur,Birbhum,5000,0.06,0.22,medium
+214,Ilambazar,Birbhum,4000,0.06,0.20,low
+215,Burdwan North,Purba Burdwan,5000,0.06,0.18,low
+216,Burdwan South,Purba Burdwan,5000,0.06,0.18,low
+217,Raina,Purba Burdwan,4000,0.05,0.15,low
+218,Jamalpur,Purba Burdwan,4000,0.05,0.15,low
+219,Monteswar,Purba Burdwan,4000,0.05,0.18,low
+220,Kalna,Purba Burdwan,4000,0.05,0.15,low
+221,Memari,Purba Burdwan,4000,0.05,0.15,low
+222,Katwa,Purba Burdwan,5000,0.06,0.18,low
+223,Ketugram,Purba Burdwan,5000,0.07,0.25,medium
+224,Mangalkot,Purba Burdwan,5000,0.07,0.25,medium
+225,Ausgram-I,Purba Burdwan,4000,0.06,0.20,low
+226,Ausgram-II,Purba Burdwan,4000,0.06,0.20,low
+227,Galsi,Purba Burdwan,4000,0.05,0.18,low
+228,Durgapur East,Paschim Burdwan,6000,0.06,0.15,low
+229,Durgapur West,Paschim Burdwan,6000,0.06,0.15,low
+230,Raniganj,Paschim Burdwan,5000,0.06,0.15,low
+231,Jamuria,Paschim Burdwan,5000,0.06,0.15,low
+232,Asansol North,Paschim Burdwan,8000,0.07,0.22,medium
+233,Asansol South,Paschim Burdwan,7000,0.07,0.20,low
+234,Kulti,Paschim Burdwan,5000,0.06,0.15,low
+235,Barabani,Paschim Burdwan,4000,0.05,0.12,low
+236,Pandabeswar,Paschim Burdwan,4000,0.05,0.12,low
+237,Hooghly,Hooghly,6000,0.06,0.20,medium
+238,Singur,Hooghly,5000,0.05,0.15,low
+239,Chanditala,Hooghly,5000,0.05,0.15,low
+240,Jangipara,Hooghly,5000,0.06,0.22,medium
+241,Haripal,Hooghly,5000,0.06,0.20,medium
+242,Dhaniakhali,Hooghly,5000,0.06,0.20,medium
+243,Pursurah,Hooghly,5000,0.06,0.22,medium
+244,Goghat,Hooghly,4000,0.05,0.15,low
+245,Arambag,Hooghly,5000,0.06,0.15,low
+246,Khanakul,Hooghly,5000,0.06,0.18,low
+247,Tarakeswar,Hooghly,4000,0.05,0.15,low
+248,Serampore,Hooghly,8000,0.06,0.25,medium
+249,Champdani,Hooghly,6000,0.06,0.22,medium
+250,Uttarpara,Hooghly,6000,0.05,0.18,low
+251,Srirampore,Hooghly,5000,0.05,0.18,low
+252,Bally-Jagachha,Hooghly,7000,0.06,0.22,medium
+253,Chinsurah,Hooghly,5000,0.05,0.18,low
+254,Chandernagore,Hooghly,5000,0.05,0.15,low
+255,Uttarpara,Hooghly,5000,0.05,0.18,low
+256,Diamond Harbour,South 24 Parganas,8000,0.07,0.30,medium
+257,Falta,South 24 Parganas,6000,0.07,0.28,medium
+258,Satgachhi,South 24 Parganas,5000,0.06,0.22,medium
+259,Bishnupur,South 24 Parganas,6000,0.07,0.28,medium
+260,Magrahat West,South 24 Parganas,7000,0.08,0.38,medium
+261,Magrahat East,South 24 Parganas,6000,0.07,0.35,medium
+262,Mandirbazar,South 24 Parganas,6000,0.07,0.32,medium
+263,Joynagar,South 24 Parganas,8000,0.08,0.38,medium
+264,Kultali,South 24 Parganas,7000,0.08,0.40,medium
+265,Baruipur East,South 24 Parganas,7000,0.07,0.32,medium
+266,Baruipur West,South 24 Parganas,7000,0.07,0.32,medium
+267,Sonarpur North,South 24 Parganas,6000,0.06,0.25,medium
+268,Sonarpur South,South 24 Parganas,6000,0.06,0.25,medium
+269,Canning West,South 24 Parganas,8000,0.09,0.45,high
+270,Canning East,South 24 Parganas,8000,0.09,0.45,high
+271,Basanti,South 24 Parganas,9000,0.10,0.52,high
+272,Gosaba,South 24 Parganas,8000,0.09,0.48,high
+273,Patharpratima,South 24 Parganas,8000,0.09,0.48,high
+274,Kakdwip,South 24 Parganas,6000,0.07,0.30,medium
+275,Sagar,South 24 Parganas,5000,0.06,0.25,medium
+276,Kulpi,South 24 Parganas,6000,0.07,0.30,medium
+277,Mathurapur,South 24 Parganas,7000,0.08,0.35,medium
+278,Budge Budge,South 24 Parganas,9000,0.07,0.30,medium
+279,Metiabruz,South 24 Parganas,18000,0.12,0.72,high
+280,Garden Reach,South 24 Parganas,15000,0.10,0.65,high
+281,Jadavpur,South 24 Parganas,6000,0.05,0.18,low
+282,Tollygunge,Kolkata,6000,0.05,0.15,low
+283,Behala East,Kolkata,7000,0.05,0.15,low
+284,Behala West,Kolkata,7000,0.05,0.15,low
+285,Thakurpukur,Kolkata,6000,0.05,0.15,low
+286,Regent Park,Kolkata,5000,0.05,0.15,low
+287,Kalighat,Kolkata,6000,0.05,0.18,low
+288,Cossipore-Belgachia,Kolkata,10000,0.08,0.35,medium
+289,Belgachia,Kolkata,8000,0.07,0.28,medium
+290,Sinthee,Kolkata,7000,0.06,0.20,medium
+291,Baghajatin,Kolkata,5000,0.05,0.15,low
+292,Phool Bagan,Kolkata,6000,0.06,0.22,medium
+293,Ward 55,Kolkata,5000,0.05,0.18,low
+294,Ward 108,Kolkata,4000,0.05,0.15,low

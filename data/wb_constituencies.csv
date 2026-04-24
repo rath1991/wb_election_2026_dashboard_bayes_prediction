@@ -1,0 +1,295 @@
+constituency_id,name,district,region,ls_seat_2024
+1,Darjeeling,Darjeeling,north_bengal,Darjeeling
+2,Kurseong,Darjeeling,north_bengal,Darjeeling
+3,Kalimpong,Darjeeling,north_bengal,Darjeeling
+4,Matigara-Naxalbari,Darjeeling,north_bengal,Darjeeling
+5,Siliguri,Darjeeling,north_bengal,Darjeeling
+6,Phansidewa,Darjeeling,north_bengal,Darjeeling
+7,Chopra,North Dinajpur,north_bengal,Raiganj
+8,Islampur,North Dinajpur,north_bengal,Raiganj
+9,Goalpokhar-I,North Dinajpur,north_bengal,Raiganj
+10,Goalpokhar-II,North Dinajpur,north_bengal,Raiganj
+11,Hemtabad,North Dinajpur,north_bengal,Raiganj
+12,Kaliaganj,North Dinajpur,north_bengal,Raiganj
+13,Raiganj,North Dinajpur,north_bengal,Raiganj
+14,Itahar,North Dinajpur,north_bengal,Raiganj
+15,Karandighi,North Dinajpur,north_bengal,Raiganj
+16,Balurghat,South Dinajpur,north_bengal,Balurghat
+17,Tapan,South Dinajpur,north_bengal,Balurghat
+18,Gangarampur,South Dinajpur,north_bengal,Balurghat
+19,Kushmandi,South Dinajpur,north_bengal,Balurghat
+20,Kumarganj,South Dinajpur,north_bengal,Balurghat
+21,Harirampur,South Dinajpur,north_bengal,Balurghat
+22,Alipurduar,Alipurduar,north_bengal,Alipurduar
+23,Falakata,Alipurduar,north_bengal,Alipurduar
+24,Madarihat,Alipurduar,north_bengal,Alipurduar
+25,Kumargram,Alipurduar,north_bengal,Alipurduar
+26,Kalchini,Alipurduar,north_bengal,Alipurduar
+27,Jalpaiguri,Jalpaiguri,north_bengal,Jalpaiguri
+28,Rajganj,Jalpaiguri,north_bengal,Jalpaiguri
+29,Dabgram-Fulbari,Jalpaiguri,north_bengal,Jalpaiguri
+30,Maynaguri,Jalpaiguri,north_bengal,Jalpaiguri
+31,Mal,Jalpaiguri,north_bengal,Jalpaiguri
+32,Nagrakata,Jalpaiguri,north_bengal,Jalpaiguri
+33,Dhupguri,Jalpaiguri,north_bengal,Jalpaiguri
+34,Cooch Behar North,Cooch Behar,north_bengal,Cooch Behar
+35,Cooch Behar South,Cooch Behar,north_bengal,Cooch Behar
+36,Sitai,Cooch Behar,north_bengal,Cooch Behar
+37,Sitalkuchi,Cooch Behar,north_bengal,Cooch Behar
+38,Tufanganj,Cooch Behar,north_bengal,Cooch Behar
+39,Natabari,Cooch Behar,north_bengal,Cooch Behar
+40,Dinhata,Cooch Behar,north_bengal,Cooch Behar
+41,Nishiganj,Cooch Behar,north_bengal,Cooch Behar
+42,Mekhliganj,Cooch Behar,north_bengal,Cooch Behar
+43,Habibpur,Malda,north_bengal,Malda North
+44,Gazole,Malda,north_bengal,Malda North
+45,Chanchal,Malda,north_bengal,Malda North
+46,Harischandrapur-I,Malda,north_bengal,Malda North
+47,Harischandrapur-II,Malda,north_bengal,Malda North
+48,Ratua-I,Malda,north_bengal,Malda North
+49,Ratua-II,Malda,north_bengal,Malda South
+50,Manikchak,Malda,north_bengal,Malda South
+51,Malda,Malda,north_bengal,Malda South
+52,English Bazar,Malda,north_bengal,Malda South
+53,Mothabari,Malda,north_bengal,Malda South
+54,Sujapur,Malda,north_bengal,Malda South
+55,Purulia,Purulia,jangalmahal,Purulia
+56,Jhalda-I,Purulia,jangalmahal,Purulia
+57,Jhalda-II,Purulia,jangalmahal,Purulia
+58,Balarampur,Purulia,jangalmahal,Purulia
+59,Baghmundi,Purulia,jangalmahal,Purulia
+60,Kashipur,Purulia,jangalmahal,Purulia
+61,Para,Purulia,jangalmahal,Purulia
+62,Raghunathpur-I,Purulia,jangalmahal,Purulia
+63,Raghunathpur-II,Purulia,jangalmahal,Purulia
+64,Manbazar-I,Purulia,jangalmahal,Purulia
+65,Manbazar-II,Purulia,jangalmahal,Purulia
+66,Jhargram,Jhargram,jangalmahal,Jhargram
+67,Binpur-I,Jhargram,jangalmahal,Jhargram
+68,Binpur-II,Jhargram,jangalmahal,Jhargram
+69,Nayagram,Jhargram,jangalmahal,Jhargram
+70,Ranibandh,Bankura,jangalmahal,Bishnupur
+71,Raipur-I,Bankura,jangalmahal,Bishnupur
+72,Raipur-II,Bankura,jangalmahal,Bishnupur
+73,Taldangra,Bankura,jangalmahal,Bishnupur
+74,Saltora,Bankura,jangalmahal,Bishnupur
+75,Chhatna,Bankura,jangalmahal,Bishnupur
+76,Barjora,Bankura,jangalmahal,Bishnupur
+77,Salboni,Paschim Medinipur,jangalmahal,Medinipur
+78,Keshpur,Paschim Medinipur,jangalmahal,Medinipur
+79,Garbeta,Paschim Medinipur,jangalmahal,Medinipur
+80,Bankura,Bankura,medinipur,Bishnupur
+81,Onda,Bankura,medinipur,Bishnupur
+82,Bishnupur,Bankura,medinipur,Bishnupur
+83,Kotulpur,Bankura,medinipur,Bishnupur
+84,Indpur,Bankura,medinipur,Bishnupur
+85,Sonamukhi,Bankura,medinipur,Bishnupur
+86,Medinipur,Paschim Medinipur,medinipur,Medinipur
+87,Narayangarh,Paschim Medinipur,medinipur,Medinipur
+88,Sabang,Paschim Medinipur,medinipur,Medinipur
+89,Pingla,Paschim Medinipur,medinipur,Medinipur
+90,Kharagpur Sadar,Paschim Medinipur,medinipur,Medinipur
+91,Nandakumar,Purba Medinipur,medinipur,Tamluk
+92,Mahishadal,Purba Medinipur,medinipur,Tamluk
+93,Haldia,Purba Medinipur,medinipur,Tamluk
+94,Nandigram,Purba Medinipur,medinipur,Tamluk
+95,Chandipur,Purba Medinipur,medinipur,Tamluk
+96,Patashpur,Purba Medinipur,medinipur,Tamluk
+97,Contai North,Purba Medinipur,medinipur,Contai
+98,Contai South,Purba Medinipur,medinipur,Contai
+99,Ramnagar,Purba Medinipur,medinipur,Contai
+100,Egra,Purba Medinipur,medinipur,Contai
+101,Bhagwanpur,Purba Medinipur,medinipur,Contai
+102,Khejuri,Purba Medinipur,medinipur,Contai
+103,Tamluk,Purba Medinipur,medinipur,Tamluk
+104,Moyna,Purba Medinipur,medinipur,Tamluk
+105,Panskura East,Purba Medinipur,medinipur,Tamluk
+106,Panskura West,Purba Medinipur,medinipur,Tamluk
+107,Kolkata Port,Kolkata,urban_kolkata,Kolkata Dakshin
+108,Bhabanipur,Kolkata,urban_kolkata,Kolkata Dakshin
+109,Rashbehari,Kolkata,urban_kolkata,Kolkata Dakshin
+110,Ballygunge,Kolkata,urban_kolkata,Kolkata Dakshin
+111,Chowringhee,Kolkata,urban_kolkata,Kolkata Dakshin
+112,Entally,Kolkata,urban_kolkata,Kolkata Uttar
+113,Beleghata,Kolkata,urban_kolkata,Kolkata Uttar
+114,Jorasanko,Kolkata,urban_kolkata,Kolkata Uttar
+115,Shyampukur,Kolkata,urban_kolkata,Kolkata Uttar
+116,Maniktala,Kolkata,urban_kolkata,Kolkata Uttar
+117,Kasba,Kolkata,urban_kolkata,Kolkata Dakshin
+118,Howrah North,Howrah,urban_kolkata,Howrah
+119,Howrah Central,Howrah,urban_kolkata,Howrah
+120,Howrah South,Howrah,urban_kolkata,Howrah
+121,Shibpur,Howrah,urban_kolkata,Howrah
+122,Bally,Howrah,urban_kolkata,Howrah
+123,Uluberia North,Howrah,urban_kolkata,Uluberia
+124,Uluberia South,Howrah,urban_kolkata,Uluberia
+125,Shyampur,Howrah,urban_kolkata,Uluberia
+126,Bagnan,Howrah,urban_kolkata,Uluberia
+127,Amta,Howrah,urban_kolkata,Uluberia
+128,Udaynarayanpur,Howrah,urban_kolkata,Uluberia
+129,Jagatballavpur,Howrah,urban_kolkata,Howrah
+130,Domjur,Howrah,urban_kolkata,Howrah
+131,Panchla,Howrah,urban_kolkata,Howrah
+132,Sankrail,Howrah,urban_kolkata,Howrah
+133,Panihati,North 24 Parganas,urban_kolkata,Barrackpur
+134,Kamarhati,North 24 Parganas,urban_kolkata,Dum Dum
+135,Dum Dum,North 24 Parganas,urban_kolkata,Dum Dum
+136,Rajarhat-Newtown,North 24 Parganas,urban_kolkata,Barasat
+137,Bidhannagar,North 24 Parganas,urban_kolkata,Dum Dum
+138,Baranagar,North 24 Parganas,urban_kolkata,Dum Dum
+139,Barrackpur,North 24 Parganas,urban_kolkata,Barrackpur
+140,Naihati,North 24 Parganas,urban_kolkata,Barrackpur
+141,Bhatpara,North 24 Parganas,urban_kolkata,Barrackpur
+142,Jagaddal,North 24 Parganas,urban_kolkata,Barrackpur
+143,Noapara,North 24 Parganas,urban_kolkata,Barrackpur
+144,Habra,North 24 Parganas,south_bengal_rural,Barasat
+145,Amdanga,North 24 Parganas,south_bengal_rural,Barasat
+146,Rajarhat,North 24 Parganas,urban_kolkata,Barasat
+147,Deganga,North 24 Parganas,south_bengal_rural,Barasat
+148,Haroa,North 24 Parganas,south_bengal_rural,Basirhat
+149,Minakhan,North 24 Parganas,south_bengal_rural,Basirhat
+150,Sandeshkhali-I,North 24 Parganas,south_bengal_rural,Basirhat
+151,Sandeshkhali-II,North 24 Parganas,south_bengal_rural,Basirhat
+152,Basirhat North,North 24 Parganas,south_bengal_rural,Basirhat
+153,Basirhat South,North 24 Parganas,south_bengal_rural,Basirhat
+154,Hingalganj,North 24 Parganas,south_bengal_rural,Basirhat
+155,Gaighata,North 24 Parganas,south_bengal_rural,Barasat
+156,Swarupnagar,North 24 Parganas,south_bengal_rural,Barasat
+157,Baduria,North 24 Parganas,south_bengal_rural,Barasat
+158,Bangaon North,North 24 Parganas,south_bengal_rural,Bangaon
+159,Bangaon South,North 24 Parganas,south_bengal_rural,Bangaon
+160,Gaighata,North 24 Parganas,south_bengal_rural,Bangaon
+161,Ranaghat North-I,Nadia,south_bengal_rural,Ranaghat
+162,Ranaghat North-II,Nadia,south_bengal_rural,Ranaghat
+163,Ranaghat South,Nadia,south_bengal_rural,Ranaghat
+164,Chakdah,Nadia,south_bengal_rural,Ranaghat
+165,Kalyani,Nadia,south_bengal_rural,Ranaghat
+166,Haringhata,Nadia,south_bengal_rural,Ranaghat
+167,Krishnaganj,Nadia,south_bengal_rural,Krishnanagar
+168,Krishnanagar North,Nadia,south_bengal_rural,Krishnanagar
+169,Krishnanagar South,Nadia,south_bengal_rural,Krishnanagar
+170,Nabadwip,Nadia,south_bengal_rural,Krishnanagar
+171,Chapra,Nadia,south_bengal_rural,Krishnanagar
+172,Karimpur,Nadia,south_bengal_rural,Krishnanagar
+173,Tehatta,Nadia,south_bengal_rural,Krishnanagar
+174,Palashipara,Nadia,south_bengal_rural,Krishnanagar
+175,Nakashipara,Nadia,south_bengal_rural,Krishnanagar
+176,Hanskhali,Nadia,south_bengal_rural,Ranaghat
+177,Murshidabad,Murshidabad,south_bengal_rural,Murshidabad
+178,Nabagram,Murshidabad,south_bengal_rural,Murshidabad
+179,Khargram,Murshidabad,south_bengal_rural,Murshidabad
+180,Kandi,Murshidabad,south_bengal_rural,Murshidabad
+181,Bharatpur,Murshidabad,south_bengal_rural,Murshidabad
+182,Rejinagar,Murshidabad,south_bengal_rural,Murshidabad
+183,Beldanga-I,Murshidabad,south_bengal_rural,Murshidabad
+184,Beldanga-II,Murshidabad,south_bengal_rural,Murshidabad
+185,Baharampur,Murshidabad,south_bengal_rural,Baharampur
+186,Hariharpara,Murshidabad,south_bengal_rural,Baharampur
+187,Nowda,Murshidabad,south_bengal_rural,Baharampur
+188,Samserganj,Murshidabad,south_bengal_rural,Jangipur
+189,Suti-I,Murshidabad,south_bengal_rural,Jangipur
+190,Suti-II,Murshidabad,south_bengal_rural,Jangipur
+191,Jangipur,Murshidabad,south_bengal_rural,Jangipur
+192,Raghunathganj-I,Murshidabad,south_bengal_rural,Jangipur
+193,Raghunathganj-II,Murshidabad,south_bengal_rural,Jangipur
+194,Sagardighi,Murshidabad,south_bengal_rural,Jangipur
+195,Lalgola,Murshidabad,south_bengal_rural,Baharampur
+196,Bhagwangola-I,Murshidabad,south_bengal_rural,Baharampur
+197,Bhagwangola-II,Murshidabad,south_bengal_rural,Murshidabad
+198,Domkal,Murshidabad,south_bengal_rural,Murshidabad
+199,Jalangi,Murshidabad,south_bengal_rural,Murshidabad
+200,Berhampore,Murshidabad,south_bengal_rural,Baharampur
+201,Birbhum,Birbhum,south_bengal_rural,Birbhum
+202,Nalhati,Birbhum,south_bengal_rural,Birbhum
+203,Murarai-I,Birbhum,south_bengal_rural,Birbhum
+204,Murarai-II,Birbhum,south_bengal_rural,Birbhum
+205,Mayureswar-I,Birbhum,south_bengal_rural,Birbhum
+206,Mayureswar-II,Birbhum,south_bengal_rural,Birbhum
+207,Rampurhat-I,Birbhum,south_bengal_rural,Birbhum
+208,Rampurhat-II,Birbhum,south_bengal_rural,Birbhum
+209,Hansan,Birbhum,south_bengal_rural,Birbhum
+210,Dubrajpur,Birbhum,south_bengal_rural,Bolpur
+211,Suri-I,Birbhum,south_bengal_rural,Bolpur
+212,Suri-II,Birbhum,south_bengal_rural,Bolpur
+213,Bolpur,Birbhum,south_bengal_rural,Bolpur
+214,Ilambazar,Birbhum,south_bengal_rural,Bolpur
+215,Burdwan North,Purba Burdwan,south_bengal_rural,Burdwan-Durgapur
+216,Burdwan South,Purba Burdwan,south_bengal_rural,Burdwan-Durgapur
+217,Raina,Purba Burdwan,south_bengal_rural,Burdwan-Durgapur
+218,Jamalpur,Purba Burdwan,south_bengal_rural,Burdwan-Durgapur
+219,Monteswar,Purba Burdwan,south_bengal_rural,Burdwan-Durgapur
+220,Kalna,Purba Burdwan,south_bengal_rural,Burdwan-Durgapur
+221,Memari,Purba Burdwan,south_bengal_rural,Burdwan-Durgapur
+222,Katwa,Purba Burdwan,south_bengal_rural,Burdwan-Durgapur
+223,Ketugram,Purba Burdwan,south_bengal_rural,Bardhaman Purba
+224,Mangalkot,Purba Burdwan,south_bengal_rural,Bardhaman Purba
+225,Ausgram-I,Purba Burdwan,south_bengal_rural,Bardhaman Purba
+226,Ausgram-II,Purba Burdwan,south_bengal_rural,Bardhaman Purba
+227,Galsi,Purba Burdwan,south_bengal_rural,Bardhaman Purba
+228,Durgapur East,Paschim Burdwan,south_bengal_rural,Burdwan-Durgapur
+229,Durgapur West,Paschim Burdwan,south_bengal_rural,Burdwan-Durgapur
+230,Raniganj,Paschim Burdwan,south_bengal_rural,Asansol
+231,Jamuria,Paschim Burdwan,south_bengal_rural,Asansol
+232,Asansol North,Paschim Burdwan,south_bengal_rural,Asansol
+233,Asansol South,Paschim Burdwan,south_bengal_rural,Asansol
+234,Kulti,Paschim Burdwan,south_bengal_rural,Asansol
+235,Barabani,Paschim Burdwan,south_bengal_rural,Asansol
+236,Pandabeswar,Paschim Burdwan,south_bengal_rural,Asansol
+237,Hooghly,Hooghly,urban_kolkata,Hooghly
+238,Singur,Hooghly,urban_kolkata,Hooghly
+239,Chanditala,Hooghly,urban_kolkata,Hooghly
+240,Jangipara,Hooghly,south_bengal_rural,Hooghly
+241,Haripal,Hooghly,south_bengal_rural,Hooghly
+242,Dhaniakhali,Hooghly,south_bengal_rural,Hooghly
+243,Pursurah,Hooghly,south_bengal_rural,Hooghly
+244,Goghat,Hooghly,south_bengal_rural,Arambag
+245,Arambag,Hooghly,south_bengal_rural,Arambag
+246,Khanakul,Hooghly,south_bengal_rural,Arambag
+247,Tarakeswar,Hooghly,south_bengal_rural,Hooghly
+248,Serampore,Hooghly,urban_kolkata,Serampore
+249,Champdani,Hooghly,urban_kolkata,Serampore
+250,Uttarpara,Hooghly,urban_kolkata,Serampore
+251,Srirampore,Hooghly,urban_kolkata,Serampore
+252,Bally-Jagachha,Hooghly,urban_kolkata,Serampore
+253,Chinsurah,Hooghly,urban_kolkata,Hooghly
+254,Chandernagore,Hooghly,urban_kolkata,Hooghly
+255,Uttarpara,Hooghly,urban_kolkata,Serampore
+256,Diamond Harbour,South 24 Parganas,south_bengal_rural,Diamond Harbour
+257,Falta,South 24 Parganas,south_bengal_rural,Diamond Harbour
+258,Satgachhi,South 24 Parganas,south_bengal_rural,Diamond Harbour
+259,Bishnupur,South 24 Parganas,south_bengal_rural,Diamond Harbour
+260,Magrahat West,South 24 Parganas,south_bengal_rural,Diamond Harbour
+261,Magrahat East,South 24 Parganas,south_bengal_rural,Diamond Harbour
+262,Mandirbazar,South 24 Parganas,south_bengal_rural,Diamond Harbour
+263,Joynagar,South 24 Parganas,south_bengal_rural,Joynagar
+264,Kultali,South 24 Parganas,south_bengal_rural,Joynagar
+265,Baruipur East,South 24 Parganas,south_bengal_rural,Joynagar
+266,Baruipur West,South 24 Parganas,south_bengal_rural,Joynagar
+267,Sonarpur North,South 24 Parganas,urban_kolkata,Joynagar
+268,Sonarpur South,South 24 Parganas,urban_kolkata,Joynagar
+269,Canning West,South 24 Parganas,south_bengal_rural,Mathurapur
+270,Canning East,South 24 Parganas,south_bengal_rural,Mathurapur
+271,Basanti,South 24 Parganas,south_bengal_rural,Mathurapur
+272,Gosaba,South 24 Parganas,south_bengal_rural,Mathurapur
+273,Patharpratima,South 24 Parganas,south_bengal_rural,Mathurapur
+274,Kakdwip,South 24 Parganas,south_bengal_rural,Mathurapur
+275,Sagar,South 24 Parganas,south_bengal_rural,Mathurapur
+276,Kulpi,South 24 Parganas,south_bengal_rural,Mathurapur
+277,Mathurapur,South 24 Parganas,south_bengal_rural,Mathurapur
+278,Budge Budge,South 24 Parganas,urban_kolkata,Diamond Harbour
+279,Metiabruz,South 24 Parganas,urban_kolkata,Kolkata Dakshin
+280,Garden Reach,South 24 Parganas,urban_kolkata,Kolkata Dakshin
+281,Jadavpur,South 24 Parganas,urban_kolkata,Jadavpur
+282,Tollygunge,Kolkata,urban_kolkata,Jadavpur
+283,Behala East,Kolkata,urban_kolkata,Jadavpur
+284,Behala West,Kolkata,urban_kolkata,Jadavpur
+285,Thakurpukur,Kolkata,urban_kolkata,Jadavpur
+286,Regent Park,Kolkata,urban_kolkata,Jadavpur
+287,Kalighat,Kolkata,urban_kolkata,Kolkata Dakshin
+288,Cossipore-Belgachia,Kolkata,urban_kolkata,Kolkata Uttar
+289,Belgachia,Kolkata,urban_kolkata,Kolkata Uttar
+290,Sinthee,Kolkata,urban_kolkata,Dum Dum
+291,Baghajatin,Kolkata,urban_kolkata,Jadavpur
+292,Phool Bagan,Kolkata,urban_kolkata,Kolkata Uttar
+293,Ward 55,Kolkata,urban_kolkata,Kolkata Uttar
+294,Ward 108,Kolkata,urban_kolkata,Kolkata Dakshin

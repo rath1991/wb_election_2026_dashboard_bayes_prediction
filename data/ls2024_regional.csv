@@ -1,0 +1,43 @@
+region,ls_seat,tmc_voteshare,bjp_voteshare,left_voteshare,others_voteshare,tmc_won
+north_bengal,Darjeeling,0.38,0.50,0.06,0.06,0
+north_bengal,Raiganj,0.45,0.40,0.08,0.07,1
+north_bengal,Balurghat,0.48,0.38,0.08,0.06,1
+north_bengal,Alipurduar,0.36,0.52,0.06,0.06,0
+north_bengal,Jalpaiguri,0.46,0.42,0.06,0.06,1
+north_bengal,Cooch Behar,0.44,0.44,0.06,0.06,1
+north_bengal,Malda North,0.52,0.30,0.10,0.08,1
+north_bengal,Malda South,0.53,0.28,0.10,0.09,1
+jangalmahal,Purulia,0.40,0.52,0.04,0.04,0
+jangalmahal,Jhargram,0.46,0.46,0.04,0.04,1
+jangalmahal,Bishnupur,0.44,0.48,0.04,0.04,0
+jangalmahal,Medinipur,0.48,0.42,0.05,0.05,1
+medinipur,Tamluk,0.52,0.38,0.05,0.05,1
+medinipur,Contai,0.48,0.42,0.05,0.05,1
+medinipur,Bardhaman Purba,0.52,0.36,0.06,0.06,1
+urban_kolkata,Kolkata Uttar,0.52,0.36,0.06,0.06,1
+urban_kolkata,Kolkata Dakshin,0.53,0.35,0.06,0.06,1
+urban_kolkata,Dum Dum,0.54,0.34,0.06,0.06,1
+urban_kolkata,Barrackpur,0.46,0.42,0.06,0.06,1
+urban_kolkata,Howrah,0.50,0.38,0.06,0.06,1
+urban_kolkata,Uluberia,0.52,0.36,0.06,0.06,1
+urban_kolkata,Serampore,0.50,0.38,0.06,0.06,1
+urban_kolkata,Hooghly,0.48,0.40,0.06,0.06,1
+urban_kolkata,Jadavpur,0.55,0.30,0.08,0.07,1
+south_bengal_rural,Barasat,0.52,0.34,0.06,0.08,1
+south_bengal_rural,Basirhat,0.54,0.28,0.06,0.12,1
+south_bengal_rural,Bangaon,0.40,0.52,0.04,0.04,0
+south_bengal_rural,Ranaghat,0.42,0.50,0.04,0.04,0
+south_bengal_rural,Krishnanagar,0.50,0.36,0.08,0.06,1
+south_bengal_rural,Murshidabad,0.60,0.22,0.10,0.08,1
+south_bengal_rural,Jangipur,0.58,0.24,0.10,0.08,1
+south_bengal_rural,Baharampur,0.50,0.28,0.16,0.06,1
+south_bengal_rural,Birbhum,0.52,0.34,0.08,0.06,1
+south_bengal_rural,Bolpur,0.50,0.36,0.08,0.06,1
+south_bengal_rural,Burdwan-Durgapur,0.48,0.40,0.08,0.04,1
+south_bengal_rural,Asansol,0.44,0.42,0.08,0.06,1
+south_bengal_rural,Bardhaman Purba,0.52,0.36,0.06,0.06,1
+south_bengal_rural,Arambag,0.50,0.38,0.06,0.06,1
+south_bengal_rural,Diamond Harbour,0.56,0.30,0.06,0.08,1
+south_bengal_rural,Joynagar,0.58,0.26,0.06,0.10,1
+south_bengal_rural,Mathurapur,0.60,0.24,0.06,0.10,1
+south_bengal_rural,Jadavpur,0.55,0.30,0.08,0.07,1
