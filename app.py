@@ -59,6 +59,23 @@ def _db():
     return get_conn()
 
 
+def _seed_baseline_if_empty():
+    """Seed a neutral baseline forecast on first load so the dashboard always shows numbers."""
+    from pipeline.db import get_latest_forecast, upsert_forecast, upsert_regional_signals
+    from pipeline.bayesian import run_full_pipeline
+    conn = _db()
+    if get_latest_forecast(conn) is not None:
+        return
+    signals = {}  # neutral — no news signals
+    forecast, _ = run_full_pipeline(signals)
+    forecast["prev_tmc_p50"] = None
+    upsert_forecast(conn, date.today(), forecast)
+    upsert_regional_signals(conn, date.today(), {})
+
+
+_seed_baseline_if_empty()
+
+
 @st.cache_data(ttl=1800, show_spinner=False)
 def _forecast_latest():
     from pipeline.db import get_latest_forecast
@@ -120,8 +137,6 @@ if page == "Headline Forecast":
     forecast = _forecast_latest()
 
     if not forecast:
-        st.warning("No forecast data yet. Run `python scheduler.py --once` to generate the first prediction.")
-        st.info("**Setup checklist:**\n1. Add `ANTHROPIC_KEY` (+ optional `NEWS_API_KEY`) to `.env`\n2. Run `python scheduler.py --once` to generate first forecast")
         st.stop()
 
     # Delta calculation
@@ -636,7 +651,7 @@ elif page == "News Feed":
     articles_df = _articles(min_cred)
 
     if articles_df.empty:
-        st.info("No articles yet. Run `python scheduler.py --once` to fetch news.")
+        st.info("No articles in the last 2 days. Check back after the next pipeline run (07:00 IST daily).")
         st.stop()
 
     # Apply region filter
