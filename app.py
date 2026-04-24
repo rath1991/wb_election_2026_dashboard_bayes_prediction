@@ -592,7 +592,7 @@ elif page == "Scenario Analysis":
                 plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
                 font={"color": "#f8fafc"}, margin=dict(t=10, b=10, l=10, r=60),
             )
-            st.plotly_chart(fig, use_container_width=True, key="scenario_bar")
+            st.plotly_chart(fig, use_container_width=True, key=f"scenario_bar_{i}")
 
             st.markdown(f"TMC: **{s['tmc_low']}–{s['tmc_high']}**  \nBJP: **{s['bjp_low']}–{s['bjp_high']}**")
             st.markdown("**Key requirements:**")
