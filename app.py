@@ -314,42 +314,100 @@ if page == "Headline Forecast":
         )
         st.plotly_chart(fig2, use_container_width=True, key="donut_probs")
 
-    # ── 30-day trend ─────────────────────────────────────────────────────────
+    # ── TMC vs BJP trend ──────────────────────────────────────────────────────
     history = _forecast_history()
-    if not history.empty and len(history) > 1:
-        st.subheader("30-Day Forecast Trend")
+    st.subheader("TMC vs BJP — Seat Forecast Over Time")
+    if history.empty or len(history) < 1:
+        st.caption("Run the pipeline at least once to start building the trend chart.")
+    else:
         fig3 = go.Figure()
+
+        # TMC 90% CI band
         fig3.add_trace(go.Scatter(
             x=history["date"], y=history["tmc_p95"],
-            name="TMC p95", line=dict(color="rgba(34,197,94,0.3)", width=1),
-            fill=None,
+            name="TMC 90% CI", line=dict(width=0), showlegend=False,
         ))
         fig3.add_trace(go.Scatter(
             x=history["date"], y=history["tmc_p5"],
-            name="TMC p5", line=dict(color="rgba(34,197,94,0.3)", width=1),
-            fill="tonexty", fillcolor="rgba(34,197,94,0.08)",
+            name="TMC 90% CI", line=dict(width=0),
+            fill="tonexty", fillcolor="rgba(34,197,94,0.12)",
         ))
+        # TMC likely range (p25-p75)
+        fig3.add_trace(go.Scatter(
+            x=history["date"], y=history["tmc_p75"],
+            name="TMC likely", line=dict(width=0), showlegend=False,
+        ))
+        fig3.add_trace(go.Scatter(
+            x=history["date"], y=history["tmc_p25"],
+            name="TMC likely range", line=dict(width=0),
+            fill="tonexty", fillcolor="rgba(34,197,94,0.22)",
+        ))
+        # TMC median
         fig3.add_trace(go.Scatter(
             x=history["date"], y=history["tmc_p50"],
             name="TMC median",
-            line=dict(color="#22c55e", width=2.5),
+            line=dict(color="#22c55e", width=3),
+            mode="lines+markers", marker=dict(size=6),
         ))
+
         if "bjp_p50" in history.columns:
+            # BJP 90% CI band
+            fig3.add_trace(go.Scatter(
+                x=history["date"], y=history["bjp_p95"],
+                name="BJP 90% CI", line=dict(width=0), showlegend=False,
+            ))
+            fig3.add_trace(go.Scatter(
+                x=history["date"], y=history["bjp_p5"],
+                name="BJP 90% CI", line=dict(width=0),
+                fill="tonexty", fillcolor="rgba(239,68,68,0.10)",
+            ))
+            # BJP likely range
+            fig3.add_trace(go.Scatter(
+                x=history["date"], y=history["bjp_p75"],
+                name="BJP likely", line=dict(width=0), showlegend=False,
+            ))
+            fig3.add_trace(go.Scatter(
+                x=history["date"], y=history["bjp_p25"],
+                name="BJP likely range", line=dict(width=0),
+                fill="tonexty", fillcolor="rgba(239,68,68,0.20)",
+            ))
+            # BJP median
             fig3.add_trace(go.Scatter(
                 x=history["date"], y=history["bjp_p50"],
                 name="BJP median",
-                line=dict(color="#ef4444", width=2, dash="dot"),
+                line=dict(color="#ef4444", width=3),
+                mode="lines+markers", marker=dict(size=6),
             ))
+
         fig3.add_hline(y=148, line_dash="dash", line_color="#94a3b8",
-                       annotation_text="Majority (148)", annotation_position="right")
+                       annotation_text="Majority threshold (148)",
+                       annotation_position="top right",
+                       annotation_font_color="#94a3b8")
         fig3.update_layout(
-            height=300, yaxis_range=[80, 240],
-            xaxis_title="Date", yaxis_title="Seats",
+            height=380,
+            yaxis=dict(title="Seats", range=[40, 260], gridcolor="#2d2d4e"),
+            xaxis=dict(title="Date", gridcolor="#2d2d4e"),
             plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
-            font={"color": "#f8fafc"}, legend={"bgcolor": "#1e1e2e"},
-            margin=dict(t=10, b=40, l=40, r=80),
+            font={"color": "#f8fafc"},
+            legend=dict(bgcolor="#1e1e2e", bordercolor="#2d2d4e", borderwidth=1,
+                        orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+            margin=dict(t=40, b=40, l=40, r=40),
+            hovermode="x unified",
         )
         st.plotly_chart(fig3, use_container_width=True, key="history_line")
+
+        # Summary delta table
+        if len(history) >= 2:
+            latest = history.iloc[-1]
+            prev_row = history.iloc[-2]
+            d1, d2 = st.columns(4)
+            d1.metric("TMC median", int(latest["tmc_p50"]),
+                      delta=int(latest["tmc_p50"] - prev_row["tmc_p50"]))
+            d2.metric("BJP median", int(latest["bjp_p50"]),
+                      delta=int(latest["bjp_p50"] - prev_row["bjp_p50"]),
+                      delta_color="inverse")
+            d3, d4 = st.columns(4), st.columns(4)
+            st.caption(f"vs {prev_row['date'].strftime('%d %b') if hasattr(prev_row['date'], 'strftime') else prev_row['date']}")
 
         # P(TMC win) trend
         if "p_tmc_win" in history.columns:
