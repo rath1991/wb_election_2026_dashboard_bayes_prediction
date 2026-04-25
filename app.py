@@ -155,7 +155,55 @@ with st.sidebar:
     if st.button("🔄 Refresh data"):
         st.cache_data.clear()
         st.rerun()
+    st.markdown("---")
+    if st.button("🚀 Run Pipeline Now", use_container_width=True, type="primary",
+                 help="Fetch today's news, run Claude filter, update forecast"):
+        st.session_state["run_pipeline_triggered"] = True
+        st.rerun()
 
+
+# ─── Pipeline trigger ────────────────────────────────────────────────────────
+if st.session_state.get("run_pipeline_triggered"):
+    st.session_state["run_pipeline_triggered"] = False
+    with st.status("Running pipeline — this takes 1–2 minutes...", expanded=True) as status:
+        try:
+            st.write("Fetching news from GDELT, NewsAPI.ai, YouTube...")
+            from pipeline.fetchers import fetch_all
+            articles = fetch_all(days_back=1)
+            st.write(f"Fetched {len(articles)} articles.")
+
+            st.write("Running Claude noise filter + signal extraction...")
+            from pipeline.filter_extract import filter_and_extract, aggregate_regional_signals, extract_bjp_conditions
+            enriched = filter_and_extract(articles)
+            signal_count = sum(1 for a in enriched if not a.get("is_noise"))
+            st.write(f"{signal_count} signal articles, {len(enriched)-signal_count} filtered as noise.")
+
+            st.write("Storing articles...")
+            from pipeline.db import (get_conn, insert_articles, upsert_forecast,
+                                      upsert_regional_signals, upsert_bjp_conditions, get_latest_forecast)
+            conn = get_conn()
+            insert_articles(conn, enriched)
+
+            st.write("Aggregating regional signals...")
+            signals = aggregate_regional_signals(enriched)
+            upsert_regional_signals(conn, date.today(), signals)
+
+            conditions = extract_bjp_conditions(enriched)
+            upsert_bjp_conditions(conn, date.today(), conditions)
+
+            st.write("Running Bayesian model...")
+            from pipeline.bayesian import run_full_pipeline
+            prev = get_latest_forecast(conn)
+            forecast_new, _ = run_full_pipeline(signals)
+            forecast_new["prev_tmc_p50"] = prev["tmc_p50"] if prev else None
+            upsert_forecast(conn, date.today(), forecast_new)
+
+            status.update(label=f"Pipeline complete — TMC median: {forecast_new['tmc_p50']} seats", state="complete")
+            st.cache_data.clear()
+            st.rerun()
+        except Exception as e:
+            status.update(label=f"Pipeline failed: {e}", state="error")
+            st.exception(e)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PAGE 1: HEADLINE FORECAST
