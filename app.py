@@ -156,14 +156,43 @@ with st.sidebar:
         st.cache_data.clear()
         st.rerun()
     st.markdown("---")
-    if st.button("🚀 Run Pipeline Now", use_container_width=True, type="primary",
-                 help="Fetch today's news, run Claude filter, update forecast"):
-        st.session_state["run_pipeline_triggered"] = True
-        st.rerun()
+    if st.session_state.get("admin_authenticated"):
+        st.caption("Admin access active")
+        if st.button("📰 Run News Pipeline", use_container_width=True, type="primary"):
+            st.session_state["run_pipeline_triggered"] = True
+            st.rerun()
+        if st.button("🔓 Sign out", use_container_width=True):
+            st.session_state["admin_authenticated"] = False
+            st.rerun()
+    else:
+        if st.button("🔐 Admin Login", use_container_width=True):
+            st.session_state["show_admin_login"] = True
 
+
+# ─── Admin login dialog ──────────────────────────────────────────────────────
+if st.session_state.get("show_admin_login") and not st.session_state.get("admin_authenticated"):
+    with st.container(border=True):
+        st.subheader("Admin Login")
+        username = st.text_input("Username", key="admin_user_input")
+        password = st.text_input("Password", type="password", key="admin_pass_input")
+        col_login, col_cancel = st.columns(2)
+        with col_login:
+            if st.button("Login", type="primary", use_container_width=True):
+                valid_user = os.environ.get("ADMIN_USERNAME", "admin")
+                valid_pass = os.environ.get("ADMIN_PASSWORD", "wb2026")
+                if username == valid_user and password == valid_pass:
+                    st.session_state["admin_authenticated"] = True
+                    st.session_state["show_admin_login"] = False
+                    st.rerun()
+                else:
+                    st.error("Invalid credentials.")
+        with col_cancel:
+            if st.button("Cancel", use_container_width=True):
+                st.session_state["show_admin_login"] = False
+                st.rerun()
 
 # ─── Pipeline trigger ────────────────────────────────────────────────────────
-if st.session_state.get("run_pipeline_triggered"):
+if st.session_state.get("run_pipeline_triggered") and st.session_state.get("admin_authenticated"):
     st.session_state["run_pipeline_triggered"] = False
     with st.status("Running pipeline — this takes 1–2 minutes...", expanded=True) as status:
         try:
@@ -860,6 +889,90 @@ Three compounding sources of uncertainty make this harder than a typical electio
 | **SIR voter deletions** | ~91 lakh (9.1M) voters deleted from rolls during the Summary Revision. Deletions concentrate in Muslim-majority TMC strongholds — a systematic bias, not random noise. |
 | **Media spin** | BJP's media ecosystem systematically overstates momentum. Raw headlines, taken at face value, would make BJP look far stronger than structural data supports. |
 """)
+
+    st.divider()
+
+    # ── Pipeline Flowchart ──
+    st.header("Pipeline Flowchart")
+    st.caption("How a single day's run flows from raw data to the seat forecast you see on the dashboard.")
+    st.graphviz_chart("""
+digraph pipeline {
+    rankdir=TB
+    node [fontname="Arial" fontsize=13 margin="0.3,0.2" style=filled]
+    edge [fontname="Arial" fontsize=11 color="#94a3b8"]
+
+    subgraph cluster_data {
+        label="INPUTS (fixed, historical)"
+        style=filled color="#1e1e2e" fontcolor="#94a3b8" fontsize=12
+        ECI  [label="ECI Results\\n2011 / 2016 / 2021" shape=cylinder fillcolor="#2d2d4e" fontcolor="#f8fafc"]
+        LS24 [label="2024 Lok Sabha\\nRegional Results"   shape=cylinder fillcolor="#2d2d4e" fontcolor="#f8fafc"]
+        SIR  [label="SIR Deletion Data\\n(91L deleted voters)"  shape=cylinder fillcolor="#2d2d4e" fontcolor="#f8fafc"]
+    }
+
+    subgraph cluster_prior {
+        label="STEP 1 — BUILD PRIOR (once per model version)"
+        style=filled color="#1a1a3e" fontcolor="#94a3b8" fontsize=12
+        P1 [label="Constituency win rate\\nfrom ECI (2021×0.5 + 2016×0.3 + 2011×0.2)\\nWeights sum to 1.0" shape=box fillcolor="#3b3b6e" fontcolor="#f8fafc"]
+        P2 [label="Regional baseline calibration\\n(REGIONAL_WIN_PRIOR)\\nIncorporates 2024 LS trends" shape=box fillcolor="#3b3b6e" fontcolor="#f8fafc"]
+        P3 [label="Convert to LOGIT space\\nlogit(p) = log(p / 1−p)\\nUnbounded: 0.5→0, 0.88→+2.0, 0.27→−1.0" shape=box fillcolor="#4a4a7e" fontcolor="#f8fafc"]
+    }
+
+    subgraph cluster_sir {
+        label="STEP 2 — SIR ADJUSTMENT (in PROBABILITY space)"
+        style=filled color="#2a1a1a" fontcolor="#94a3b8" fontsize=12
+        S1 [label="Blended TMC lean of deleted voters\\nMuslim share × 0.85 + Hindu share × 0.45\\n(63L Hindu + 28L Muslim deleted statewide)" shape=box fillcolor="#5e2d2d" fontcolor="#f8fafc"]
+        S2 [label="excess_lean = tmc_lean − 0.50\\ndelta_p = deletion_rate × excess_lean\\n(Only excess over neutral baseline matters)" shape=box fillcolor="#5e2d2d" fontcolor="#f8fafc"]
+        S3 [label="win_adj = win_prior − delta_p\\nThen convert EXACTLY to logit\\n(NOT ×4 approximation)" shape=box fillcolor="#6e3d3d" fontcolor="#f8fafc"]
+    }
+
+    subgraph cluster_news {
+        label="STEP 3 — DAILY NEWS UPDATE"
+        style=filled color="#1a2a1a" fontcolor="#94a3b8" fontsize=12
+        N1 [label="Fetch: GDELT + NewsAPI.ai + YouTube\\n~300 articles/day" shape=box fillcolor="#2d5e2d" fontcolor="#f8fafc"]
+        N2 [label="Claude AI filter\\nNoise removed (BJP PR, duplicates)\\nSignal scored −1 to +1 per region" shape=box fillcolor="#2d5e2d" fontcolor="#f8fafc"]
+        N3 [label="Bayesian update (logit space)\\nobs = mu_adj + signal × 0.30\\nPrecision-weighted: news gets ~50% weight\\nPrior gets ~50% weight  (τ = σ = 1.20)" shape=box fillcolor="#3d6e3d" fontcolor="#f8fafc"]
+    }
+
+    subgraph cluster_mc {
+        label="STEP 4 — MONTE CARLO (10,000 simulations)"
+        style=filled color="#2a1a2a" fontcolor="#94a3b8" fontsize=12
+        M1 [label="Draw GLOBAL SHOCK once per simulation\\nε_global ~ Normal(0, σ=0.65) ← in LOGIT space\\nNOT a probability — logit shift applied to all 294 seats\\n(models correlated election wave: 2019 BJP wave, 2021 TMC wave)" shape=box fillcolor="#5e2d5e" fontcolor="#f8fafc"]
+        M2 [label="For each of 294 constituencies:\\nlogit_i = mu_post_i + ε_global + Normal(0, σ=0.80)\\n                                         ↑ constituency noise\\nTMC wins seat if logit_i > 0  (i.e. prob > 50%)" shape=box fillcolor="#5e2d5e" fontcolor="#f8fafc"]
+        M3 [label="Count TMC seats won in this simulation\\nBJP = 294 − TMC − 15 (Left/Others fixed)\\nRepeat 10,000 times → distribution" shape=box fillcolor="#6e3d6e" fontcolor="#f8fafc"]
+    }
+
+    subgraph cluster_out {
+        label="OUTPUT"
+        style=filled color="#1a2a2a" fontcolor="#94a3b8" fontsize=12
+        O1 [label="p50 = median seats (most likely outcome)\\np25−p75 = likely range (middle 50% of sims)\\np5−p95 = 90% CI (full uncertainty range)\\nP(TMC majority), P(Hung), P(BJP majority)" shape=box fillcolor="#2d5e5e" fontcolor="#f8fafc"]
+    }
+
+    ECI  -> P1
+    LS24 -> P2
+    P1   -> P2
+    P2   -> P3
+    SIR  -> S1
+    P3   -> S1 [label="win_prior (probability)"]
+    S1   -> S2
+    S2   -> S3
+    S3   -> N3 [label="mu_adj, sigma_adj\\n(LOGIT space)"]
+    N1   -> N2
+    N2   -> N3 [label="signal ∈ [−1, +1]"]
+    N3   -> M1 [label="mu_post per constituency\\n(still in LOGIT space)"]
+    M1   -> M2
+    M2   -> M3
+    M3   -> M1 [label="next simulation" style=dashed]
+    M3   -> O1 [label="after 10,000 sims"]
+}
+""", use_container_width=True)
+
+    st.info(
+        "**Key clarification on logit space:** Every number the model works with internally "
+        "(mu_prior, mu_adj, mu_post, global shock, constituency noise) is in **logit space** — "
+        "an unbounded scale where 0 = 50% win chance, +2 ≈ 88%, −2 ≈ 12%. "
+        "The global shock of σ=0.65 is NOT a 65% probability — it is a logit-space standard deviation. "
+        "Only the final step converts logit back to probability via sigmoid(x) = 1/(1+e^−x)."
+    )
 
     st.divider()
 
