@@ -218,7 +218,14 @@ if st.session_state.get("run_pipeline_triggered") and st.session_state.get("admi
             from pipeline.filter_extract import filter_and_extract, aggregate_regional_signals, extract_bjp_conditions
             enriched = filter_and_extract(articles)
             signal_count = sum(1 for a in enriched if not a.get("is_noise"))
-            st.write(f"{signal_count} signal articles, {len(enriched)-signal_count} filtered as noise.")
+            noise_count = len(enriched) - signal_count
+            st.write(f"{signal_count} signal articles, {noise_count} filtered as noise.")
+            if signal_count == 0 and len(enriched) > 0:
+                st.warning(
+                    "⚠️ All articles marked as noise — likely cause: **Anthropic API credit balance is zero**. "
+                    "Top up at console.anthropic.com → Plans & Billing. "
+                    "Pipeline will continue with neutral signals (forecast unchanged)."
+                )
 
             st.write("Storing articles...")
             from pipeline.db import (get_conn, insert_articles, upsert_forecast,
