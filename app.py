@@ -853,49 +853,53 @@ elif page == "Scenario Analysis":
 
     forecast = _forecast_latest()
 
-    # All scenarios enforce TMC + BJP + Others(15) = 294
-    # bjp_low  = 294 - tmc_high - 15
-    # bjp_high = 294 - tmc_low  - 15
-    # bjp_mid  = 294 - tmc_mid  - 15
+    # All scenarios enforce TMC + BJP + Others(20) = 294
+    # Others=20 accounts for Congress seats in Malda/Murshidabad + Left + ISF
+    # bjp_low  = 294 - tmc_high - 20
+    # bjp_high = 294 - tmc_low  - 20
+    # bjp_mid  = 294 - tmc_mid  - 20
     SCENARIOS = {
         "TMC Wave": {
             "color": "#22c55e",
             "tmc_low": 200, "tmc_high": 230, "tmc_mid": 215,
-            "bjp_low":  49, "bjp_high":  79, "bjp_mid":  64,
+            "bjp_low":  44, "bjp_high":  74, "bjp_mid":  59,
             "prob": "20–30%",
             "sir": "SIR rolls partially/fully restored by court order",
             "conditions": [
-                "Court orders restore significant voter names",
-                "Minority consolidation >85% behind TMC",
+                "Court orders restore significant voter names before Phase 2",
+                "Minority consolidation >85% behind TMC (counter-mobilisation from SIR anger)",
+                "IPAC shutdown absorbed by TMC state machinery",
                 "North Bengal partial recovery by TMC",
-                "BJP organizational failure on booth management",
+                "BJP booth management fails despite RSS groundwork",
             ],
         },
         "Status Quo": {
             "color": "#f59e0b",
-            "tmc_low": 170, "tmc_high": 205, "tmc_mid": 187,
-            "bjp_low":  74, "bjp_high": 109, "bjp_mid": 92,
+            "tmc_low": 170, "tmc_high": 205, "tmc_mid": 189,
+            "bjp_low":  69, "bjp_high": 104, "bjp_mid":  85,
             "prob": "45–55%",
             "sir": "SIR as-is (12% deletion, concentrated in minority areas)",
             "conditions": [
-                "SIR impact as-is — minority voters largely absent",
-                "Minority vote broadly consolidates for TMC",
-                "BJP holds North Bengal + Jangalmahal base",
-                "No major new swing factor emerges",
+                "SIR impact as-is — deletions in Muslim-majority seats flow to Congress, not BJP",
+                "IPAC shutdown hurts TMC operations but Mamata brand holds",
+                "Minority vote broadly consolidates for TMC despite SIR anger",
+                "BJP holds North Bengal + Jangalmahal base (RSS mobilisation effective)",
+                "No major new swing factor emerges before May 4",
             ],
         },
         "BJP Surge": {
             "color": "#ef4444",
             "tmc_low": 130, "tmc_high": 158, "tmc_mid": 144,
-            "bjp_low": 121, "bjp_high": 149, "bjp_mid": 135,
+            "bjp_low": 116, "bjp_high": 144, "bjp_mid": 130,
             "prob": "15–25%",
             "sir": "Full SIR suppression + minority fragmentation",
             "conditions": [
-                "SIR fully effective + Left/ISF draws 15%+ in Muslim seats",
-                "North Bengal sweep: BJP wins 33-35+ seats",
-                "Jangalmahal hold: 18+ of 25",
-                "Urban anti-incumbency converts 10+ seats",
-                "Broad anti-TMC wave driven by governance issues",
+                "SIR fully effective in Nadia/mixed seats; tactical Muslim vote absent",
+                "IPAC shutdown compounds TMC booth collapse in swing seats",
+                "North Bengal sweep: BJP wins 33–35+ seats",
+                "Jangalmahal hold: 18+ of 25 seats",
+                "Left/ISF draws 15%+ in key Muslim-plurality seats, splitting anti-BJP vote",
+                "Broad anti-incumbency wave driven by economic stagnation + youth unemployment",
             ],
         },
     }
@@ -910,8 +914,8 @@ elif page == "Scenario Analysis":
             st.markdown(f"*{s['sir']}*")
 
             fig = go.Figure(go.Pie(
-                labels=["TMC", "BJP", "Left / Others"],
-                values=[s["tmc_mid"], s["bjp_mid"], 15],
+                labels=["TMC", "BJP", "Congress / Left / Others"],
+                values=[s["tmc_mid"], s["bjp_mid"], 20],
                 hole=0.45,
                 marker_colors=[s["color"], "#ef4444", "#3b82f6"],
                 textinfo="label+value",
