@@ -245,8 +245,10 @@ if st.session_state.get("run_pipeline_triggered") and st.session_state.get("admi
 
             st.write("Running Bayesian model...")
             from pipeline.bayesian import run_full_pipeline
+            from pipeline.db import get_latest_market_data
             prev = get_latest_forecast(conn)
-            forecast_new, _ = run_full_pipeline(signals)
+            mkt = get_latest_market_data(conn)
+            forecast_new, _ = run_full_pipeline(signals, market_data=mkt)
             forecast_new["prev_tmc_p50"] = prev["tmc_p50"] if prev else None
             upsert_forecast(conn, date.today(), forecast_new)
             conn.close()
@@ -1669,7 +1671,8 @@ elif page == "Manual Input":
             prev = _forecast_latest()
             prev_tmc_p50 = prev["tmc_p50"] if prev else None
 
-            forecast_m, _ = run_full_pipeline(manual_signals)
+            mkt_manual = _market_data()
+            forecast_m, _ = run_full_pipeline(manual_signals, market_data=mkt_manual)
             forecast_m["prev_tmc_p50"] = prev_tmc_p50
 
         st.success("Forecast computed.")

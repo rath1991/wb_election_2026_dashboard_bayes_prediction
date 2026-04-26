@@ -20,12 +20,24 @@ from scipy.special import logit, expit  # logit = log(p/(1-p)), expit = sigmoid
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
-# Signal noise in logit space (news is a very noisy proxy for true probability)
-TAU_LOGIT = 1.20
+# Signal noise per source tier (logit space) — lower τ = signal is trusted more.
+# Framework weight: news/social = 3%, polls/markets = 5% of total model.
+# Tier 1 (ECI official) is near-truth; Tier 6 (social) is very noisy.
+TAU_LOGIT_BY_TIER = {
+    1: 0.40,   # ECI official — near ground truth
+    2: 0.80,   # Tier-1 news (Indian Express, The Hindu, NDTV) — reliable reporting
+    3: 1.10,   # Regional Bengali news — good but some bias
+    4: 1.50,   # Aggregated (Google News, GDELT) — noisy aggregation
+    5: 2.00,   # Prediction markets — sentiment only, not ground truth
+    6: 2.50,   # Social / YouTube — very high noise
+}
+TAU_LOGIT = 1.20                # legacy default (used if tier not specified)
 # Max logit shift per day from a strong signal (+/-1.0)
 SIGNAL_SCALE_LOGIT = 0.30
 # Prior σ used for Bayesian update (per-constituency uncertainty)
 SIGMA_LOGIT_PRIOR = 1.20
+# Polymarket: market odds enter as very weak observation
+TAU_LOGIT_MARKET = 2.00        # high noise — sentiment, not booth data
 
 # Monte Carlo uncertainty decomposed into two components:
 # 1. GLOBAL: election-wave factor correlated across ALL constituencies (BJP/TMC wave)
@@ -293,20 +305,36 @@ def apply_organizational_factors(adj_priors: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def bayesian_update(adj_priors: pd.DataFrame, regional_signals: dict) -> pd.DataFrame:
+def bayesian_update(
+    adj_priors: pd.DataFrame,
+    regional_signals: dict,
+    market_data: dict | None = None,
+) -> pd.DataFrame:
     """
     Normal-Normal conjugate update in logit space.
 
-    regional_signals: {region: {"signal_strength": float ∈ [-1,+1], "article_count": int}}
+    regional_signals: {region: {
+        "signal_strength": float ∈ [-1,+1],
+        "article_count": int,
+        "avg_source_tier": float   ← NEW: mean tier of contributing articles
+    }}
 
-    Observation in logit space: obs = mu_adj + signal_strength × SIGNAL_SCALE_LOGIT
-    Since TAU_LOGIT(0.5) >> sigma_adj(~0.45): news gets ~45% weight, prior ~55%.
+    market_data: optional Polymarket odds {
+        "tmc_probability": float,   ← converted to logit → statewide obs
+        "bjp_probability": float,
+    }
+
+    TAU varies by source tier:
+      Tier 1 (official) τ=0.40 → very strong signal
+      Tier 2 (quality news) τ=0.80 → reliable
+      Tier 6 (social) τ=2.50 → nearly ignored
+
+    Weights per framework: news/social 3%, markets 5% of total model.
+    The structural prior (history + SIR + org factors) dominates at ~92%.
     """
     updated = adj_priors.copy()
     updated["mu_post"] = updated["mu_adj"]
     updated["sigma_post"] = updated["sigma_adj"]
-
-    precision_obs = 1.0 / (TAU_LOGIT ** 2)
 
     for region, sig in regional_signals.items():
         mask = updated["region"] == region
@@ -314,16 +342,37 @@ def bayesian_update(adj_priors: pd.DataFrame, regional_signals: dict) -> pd.Data
             continue
 
         s = float(sig.get("signal_strength", 0.0))
-        obs_logit = updated.loc[mask, "mu_adj"] + s * SIGNAL_SCALE_LOGIT
+        # Use tier-specific TAU — higher tier sources are trusted more
+        avg_tier = float(sig.get("avg_source_tier", 4.0))
+        # Interpolate: pick the TAU for the nearest integer tier
+        tier_int = max(1, min(6, round(avg_tier)))
+        tau = TAU_LOGIT_BY_TIER.get(tier_int, TAU_LOGIT)
 
+        obs_logit = updated.loc[mask, "mu_adj"] + s * SIGNAL_SCALE_LOGIT
         precision_prior = 1.0 / updated.loc[mask, "sigma_adj"] ** 2
+        precision_obs   = 1.0 / (tau ** 2)
         denom = precision_prior + precision_obs
 
         updated.loc[mask, "mu_post"] = (
             precision_prior * updated.loc[mask, "mu_adj"] +
-            precision_obs * obs_logit
+            precision_obs   * obs_logit
         ) / denom
         updated.loc[mask, "sigma_post"] = np.sqrt(1.0 / denom)
+
+    # ── Polymarket signal (statewide, very weak) ──────────────────────────────
+    if market_data and market_data.get("tmc_probability"):
+        tmc_mkt = float(market_data["tmc_probability"])
+        tmc_mkt = np.clip(tmc_mkt, 0.05, 0.95)
+        obs_market_logit = float(logit(tmc_mkt))
+        precision_market = 1.0 / (TAU_LOGIT_MARKET ** 2)
+
+        precision_prior = 1.0 / updated["sigma_post"] ** 2
+        denom = precision_prior + precision_market
+        updated["mu_post"] = (
+            precision_prior * updated["mu_post"] +
+            precision_market * obs_market_logit
+        ) / denom
+        updated["sigma_post"] = np.sqrt(1.0 / denom)
 
     updated["win_post"] = expit(updated["mu_post"])
     return updated
@@ -388,11 +437,15 @@ def monte_carlo(posteriors: pd.DataFrame, n_sim: int = 10_000) -> dict:
     }
 
 
-def run_full_pipeline(regional_signals: dict, data_dir: Path = DATA_DIR) -> tuple[dict, pd.DataFrame]:
+def run_full_pipeline(
+    regional_signals: dict,
+    data_dir: Path = DATA_DIR,
+    market_data: dict | None = None,
+) -> tuple[dict, pd.DataFrame]:
     """Entry point: returns (forecast_dict, constituency_posteriors)."""
     priors = build_priors(data_dir)
     adj = apply_sir_adjustment(priors, data_dir)
     adj = apply_organizational_factors(adj)
-    post = bayesian_update(adj, regional_signals)
+    post = bayesian_update(adj, regional_signals, market_data=market_data)
     results = monte_carlo(post)
     return results, post

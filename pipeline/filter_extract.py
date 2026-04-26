@@ -163,13 +163,19 @@ def aggregate_regional_signals(enriched: list[dict]) -> dict:
                   - 0.4*rss_mobilization_signal - 0.3*bjp_leadership_signal) / 2.5
     Weighted by credibility. Also returns top articles per region for citations.
     """
-    accum = {r: {"weighted_sum": 0.0, "weight_total": 0.0, "article_count": 0, "top_articles": []} for r in REGIONS}
+    accum = {r: {"weighted_sum": 0.0, "weight_total": 0.0, "article_count": 0,
+                 "tier_sum": 0.0, "tier_count": 0, "top_articles": []} for r in REGIONS}
+
+    # Source tier multiplier: higher-tier sources get amplified weight
+    TIER_WEIGHT = {1: 2.0, 2: 1.5, 3: 1.0, 4: 0.6, 5: 0.3, 6: 0.2}
 
     for article in enriched:
         if article.get("is_noise"):
             continue
         tags = article.get("signal_tags", {})
         cred = float(article.get("credibility_score", 0.3))
+        tier = int(article.get("source_tier", 4))
+        tier_mult = TIER_WEIGHT.get(tier, 0.5)
         region_tags = article.get("region_tags", [])
 
         net = (
@@ -186,9 +192,12 @@ def aggregate_regional_signals(enriched: list[dict]) -> dict:
             effective_regions = REGIONS  # statewide
 
         for region in effective_regions:
-            accum[region]["weighted_sum"] += net * cred
-            accum[region]["weight_total"] += cred
+            effective_weight = cred * tier_mult
+            accum[region]["weighted_sum"] += net * effective_weight
+            accum[region]["weight_total"] += effective_weight
             accum[region]["article_count"] += 1
+            accum[region]["tier_sum"] += tier
+            accum[region]["tier_count"] += 1
             if len(accum[region]["top_articles"]) < 5:
                 accum[region]["top_articles"].append({
                     "headline": article.get("headline", "")[:120],
@@ -207,9 +216,11 @@ def aggregate_regional_signals(enriched: list[dict]) -> dict:
             strength = 0.0
         # Sort top articles by abs(net_signal) descending so most impactful comes first
         top = sorted(a["top_articles"], key=lambda x: abs(x["net_signal"]), reverse=True)
+        avg_tier = round(a["tier_sum"] / a["tier_count"], 2) if a["tier_count"] > 0 else 4.0
         signals[region] = {
             "signal_strength": round(strength, 4),
             "article_count": a["article_count"],
+            "avg_source_tier": avg_tier,
             "top_articles": top,
         }
 
