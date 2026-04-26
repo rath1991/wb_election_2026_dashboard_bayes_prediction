@@ -43,12 +43,20 @@ def _ensure_schema(conn: duckdb.DuckDBPyConnection):
             article_count INTEGER,
             sir_adjusted_mu DOUBLE,
             sir_sigma DOUBLE,
+            top_articles_json VARCHAR,
             UNIQUE (date, region)
         )
     """)
     conn.execute("""
         CREATE SEQUENCE IF NOT EXISTS regional_signals_seq START 1
     """)
+    # Migration: add top_articles_json column if it doesn't exist yet
+    try:
+        cols_df = conn.execute("SELECT column_name FROM information_schema.columns WHERE table_name='regional_signals'").fetchdf()
+        if "top_articles_json" not in cols_df["column_name"].tolist():
+            conn.execute("ALTER TABLE regional_signals ADD COLUMN top_articles_json VARCHAR")
+    except Exception:
+        pass
     conn.execute("""
         CREATE TABLE IF NOT EXISTS bjp_conditions (
             id INTEGER PRIMARY KEY,
@@ -125,17 +133,19 @@ def get_forecast_history(conn: duckdb.DuckDBPyConnection, days: int = 30) -> pd.
 def upsert_regional_signals(conn: duckdb.DuckDBPyConnection, signal_date: date, signals: dict):
     for region, sig in signals.items():
         conn.execute("""
-            INSERT INTO regional_signals (id, date, region, signal_strength, article_count, sir_adjusted_mu, sir_sigma)
-            VALUES (nextval('regional_signals_seq'), ?, ?, ?, ?, ?, ?)
+            INSERT INTO regional_signals (id, date, region, signal_strength, article_count, sir_adjusted_mu, sir_sigma, top_articles_json)
+            VALUES (nextval('regional_signals_seq'), ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (date, region) DO UPDATE SET
                 signal_strength = excluded.signal_strength,
-                article_count = excluded.article_count
+                article_count = excluded.article_count,
+                top_articles_json = excluded.top_articles_json
         """, [
             str(signal_date), region,
             round(sig.get("signal_strength", 0.0), 4),
             sig.get("article_count", 0),
             sig.get("sir_adjusted_mu"),
             sig.get("sir_sigma"),
+            json.dumps(sig.get("top_articles", [])),
         ])
 
 
@@ -145,6 +155,23 @@ def get_regional_signals(conn: duckdb.DuckDBPyConnection, days: int = 7) -> pd.D
         "SELECT * FROM regional_signals WHERE date >= ? ORDER BY date",
         [str(since)]
     ).fetchdf()
+
+
+def get_latest_regional_signals_with_articles(conn: duckdb.DuckDBPyConnection) -> list[dict]:
+    """Return today's (or most recent) regional signals with top_articles for citations."""
+    result = conn.execute("""
+        SELECT region, signal_strength, article_count, top_articles_json
+        FROM regional_signals
+        WHERE date = (SELECT MAX(date) FROM regional_signals)
+        ORDER BY region
+    """).fetchdf()
+    if result.empty:
+        return []
+    rows = result.to_dict("records")
+    for row in rows:
+        raw = row.get("top_articles_json") or "[]"
+        row["top_articles"] = json.loads(raw) if isinstance(raw, str) else []
+    return rows
 
 
 # ── bjp_conditions ──────────────────────────────────────────────────────────

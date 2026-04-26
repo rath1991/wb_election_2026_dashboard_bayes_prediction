@@ -136,6 +136,12 @@ def _articles(min_cred):
     return get_recent_articles(_db(), days=2, min_credibility=min_cred)
 
 
+@st.cache_data(ttl=1800, show_spinner=False)
+def _signals_with_articles():
+    from pipeline.db import get_latest_regional_signals_with_articles
+    return get_latest_regional_signals_with_articles(_db())
+
+
 # ─── Sidebar ────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.title("🗳️ WB 2026")
@@ -468,6 +474,60 @@ if page == "Headline Forecast":
             st.plotly_chart(fig4, use_container_width=True, key="regional_heatmap")
 
 
+    # ── Citation expander ──────────────────────────────────────────────────────
+    st.markdown("---")
+    with st.expander("📰 What drove today's forecast update?", expanded=False):
+        st.caption(
+            "Articles fetched from NewsAPI.ai and YouTube, filtered by Claude (claude-sonnet-4-6). "
+            "Credibility scores: 0.8+ = major outlets (NDTV, Telegraph India, The Hindu, ABP Ananda), "
+            "0.5–0.8 = regional/verified sources, <0.5 = blogs/unverified."
+        )
+        region_labels = {
+            "north_bengal": "North Bengal",
+            "jangalmahal": "Jangalmahal",
+            "medinipur": "Medinipur",
+            "urban_kolkata": "Urban Kolkata",
+            "south_bengal_rural": "South Bengal Rural",
+        }
+        signals_data = _signals_with_articles()
+        if not signals_data:
+            st.info("No article data available yet. Run the news pipeline to populate citations.")
+        else:
+            for row in signals_data:
+                region = row.get("region", "")
+                strength = float(row.get("signal_strength", 0.0))
+                article_count = int(row.get("article_count", 0))
+                top = row.get("top_articles", [])
+
+                direction = "→ TMC favorable" if strength > 0.05 else ("→ BJP favorable" if strength < -0.05 else "→ neutral")
+                color = "#22c55e" if strength > 0.05 else ("#ef4444" if strength < -0.05 else "#94a3b8")
+                label = region_labels.get(region, region)
+
+                st.markdown(
+                    f"**{label}** &nbsp; "
+                    f'<span style="color:{color}">signal: {strength:+.3f} ({direction})</span>'
+                    f" &nbsp; _{article_count} articles_",
+                    unsafe_allow_html=True,
+                )
+                if top:
+                    for art in top[:3]:
+                        headline = art.get("headline", "")
+                        source = art.get("source", "")
+                        url = art.get("url", "")
+                        cred = float(art.get("credibility", 0.0))
+                        net_sig = float(art.get("net_signal", 0.0))
+                        sig_dir = "↑ TMC" if net_sig > 0.02 else ("↓ BJP" if net_sig < -0.02 else "≈ neutral")
+                        link = f"[{headline}]({url})" if url else headline
+                        st.markdown(
+                            f"&nbsp;&nbsp;&nbsp;• {link} &nbsp; "
+                            f"_({source}, cred {cred:.2f}, signal {net_sig:+.3f} {sig_dir})_",
+                            unsafe_allow_html=True,
+                        )
+                else:
+                    st.markdown("&nbsp;&nbsp;&nbsp;_No articles with signal data yet._")
+                st.markdown("")
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # PAGE 2: REGIONAL TRACKER
 # ─────────────────────────────────────────────────────────────────────────────
@@ -610,14 +670,61 @@ elif page == "BJP Pathway":
                     "2024 LS showed TMC resurgence at national level.",
             "ls2024": "BJP national narrative failed in 2024 WB — TMC won 29/42 seats.",
         },
+        "rss_organizational_mobilization": {
+            "label": "RSS/organizational mobilization effective",
+            "desc": "BJP has deployed 1,823 shakhas (up from 1,320, +38% in Madhya Banga Prant alone) "
+                    "and conducted 1.75 lakh voter-awareness meetings across ~250 of 294 constituencies. "
+                    "Sunil Bansal's panna pramukh system targets 80,000 booths. "
+                    "GREEN if RSS shakha attendance is high and booth-agent coverage exceeds 70% of targets. "
+                    "Estimated seat impact if green: +8–15 seats (concentrated in North Bengal + Jangalmahal). "
+                    "Ceiling: RSS mobilization consolidates existing BJP voters; limited ability to convert genuine TMC voters.",
+            "ls2024": "RSS was active in 2024 LS but TMC still won 29/42 — mobilization alone is insufficient without other conditions.",
+        },
+        "bjp_clear_cm_face": {
+            "label": "BJP declares credible CM face",
+            "desc": "BJP has NOT declared a CM candidate. Suvendu Adhikari (LoP) and Sukanta Majumdar "
+                    "(state president) both vie for the role. Dilip Ghosh sidelining has demoralized "
+                    "South Bengal booth workers. Without a popular Bengali CM face, BJP votes convert "
+                    "poorly to seats — voters are voting AGAINST TMC, not FOR a BJP alternative. "
+                    "Historical impact: parties without CM face in Bengal underperform vote-to-seat "
+                    "conversion by ~15–20%. Estimated seat impact if resolved: +10–18 seats statewide. "
+                    "This is BJP's single largest unresolved structural drag.",
+            "ls2024": "BJP had no CM face in 2021 either — won 77 seats despite 38% vote share (poor conversion). Pattern repeating.",
+        },
     }
 
     conditions = _bjp_conditions()
     conditions_by_key = {c["condition_key"]: c for c in conditions} if conditions else {}
     green = [k for k, v in conditions_by_key.items() if v.get("status") == "green"]
     yellow = [k for k, v in conditions_by_key.items() if v.get("status") == "yellow"]
+    total_conditions = len(CONDITIONS_META)
 
-    st.progress(len(green) / len(CONDITIONS_META), text=f"{len(green)}/7 conditions met (🟢 {len(green)} green, 🟡 {len(yellow)} yellow)")
+    st.progress(len(green) / total_conditions, text=f"{len(green)}/{total_conditions} conditions met (🟢 {len(green)} green, 🟡 {len(yellow)} yellow)")
+
+    # Structural analysis box
+    with st.expander("📋 Structural Factor Analysis — BJP's Organizational vs Leadership Trade-off", expanded=False):
+        st.markdown("""
+**BJP has deployed an unprecedented organizational machine but faces an unresolved leadership vacuum.**
+
+| Factor | Direction | Seat Impact | Status |
+|--------|-----------|-------------|--------|
+| Bansal/Yadav panna pramukh system | BJP ▲ | +5–10 seats | Active (80,000 booths targeted) |
+| RSS shakha expansion (+500 shakhas, 1.75L meetings) | BJP ▲ | +8–15 seats | Active (concentrated NB + Jangalmahal) |
+| No CM face declared (Suvendu vs Sukanta unresolved) | BJP ▼ | −10–18 seats | 🔴 Unresolved |
+| TMC booth management still superior | BJP ▼ | −5–8 seats | Structural |
+| **Net effect** | **Slight BJP −** | **−2 to −6 seats** | Organizational gains offset by leadership gap |
+
+**Why the CM face matters more than it seems:**
+In FPTP elections, marginal seats are decided by the 3–5% of voters who are persuadable.
+These voters need a reason to vote *for* someone, not just *against* the incumbent.
+BJP's organizational machine can bring their base to the booth (turnout efficiency),
+but cannot manufacture the "positive vote" that undecided voters need to cross over.
+Mamata Banerjee remains the only statewide figure with genuine cross-community appeal.
+Until BJP presents a credible Bengali alternative, their ceiling remains structurally capped at ~130–150 seats
+even in a favorable scenario.
+""")
+
+    st.markdown("---")
     st.markdown("---")
 
     for key, meta in CONDITIONS_META.items():
@@ -654,7 +761,13 @@ elif page == "BJP Pathway":
                 if snippets:
                     st.markdown("**Evidence from today's news:**")
                     for s in snippets[:3]:
-                        st.markdown(f"› {s.get('headline', '')} *(cred: {s.get('credibility', 0):.1f})*")
+                        hl = s.get("headline", "")
+                        src = s.get("source", "")
+                        url = s.get("url", "")
+                        cred = s.get("credibility", 0)
+                        link = f"[{hl}]({url})" if url else hl
+                        src_str = f" — *{src}*" if src else ""
+                        st.markdown(f"› {link}{src_str} *(cred: {cred:.1f})*")
                 else:
                     st.caption("No direct evidence in recent news.")
             except Exception:
@@ -1244,8 +1357,10 @@ elif page == "Manual Input":
         "medinipur_majority":           "Medinipur majority",
         "urban_kolkata_gain_10plus":    "Urban Kolkata gain (10+ seats)",
         "minority_fragmentation":       "Minority vote fragmentation",
-        "sir_voter_suppression":        "SIR suppression effective",
-        "anti_incumbency_national":     "National anti-incumbency wave",
+        "sir_voter_suppression":            "SIR suppression effective",
+        "anti_incumbency_national":         "National anti-incumbency wave",
+        "rss_organizational_mobilization":  "RSS/organizational mobilization effective",
+        "bjp_clear_cm_face":                "BJP declares credible CM face",
     }
 
     st.header("Regional Signal Strengths")

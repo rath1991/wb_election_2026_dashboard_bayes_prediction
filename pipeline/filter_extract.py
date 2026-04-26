@@ -46,9 +46,11 @@ For each article/comment in the input JSON array, return an object with:
    - "sir_impact": +1 = SIR effectively suppressing TMC votes, -1 = SIR impact being reversed/challenged
    - "minority_consolidation": +1 = minorities consolidating behind TMC, -1 = minorities fragmenting
    - "turnout_signal": +1 = high broad-based turnout (structurally favors TMC), -1 = signs of suppression/low turnout in TMC areas
+   - "rss_mobilization_signal": +1 = strong RSS/BJP organizational activity (shakha expansion, booth management, voter-awareness meetings, Sunil Bansal/Bhupendra Yadav involvement), -1 = BJP organizational failure/disarray
+   - "bjp_leadership_signal": +1 = BJP announced credible CM face or strong unified leadership, -1 = leadership vacuum, factionalism (Suvendu vs Sukanta vs Dilip Ghosh), or negative news about BJP leadership
 
 5. "bjp_conditions_hit": list of BJP win conditions evidenced in this article:
-   ["north_bengal_sweep_35plus", "jangalmahal_hold_18plus", "medinipur_majority", "urban_kolkata_gain_10plus", "minority_fragmentation", "sir_voter_suppression_effective", "anti_incumbency_national"]
+   ["north_bengal_sweep_35plus", "jangalmahal_hold_18plus", "medinipur_majority", "urban_kolkata_gain_10plus", "minority_fragmentation", "sir_voter_suppression_effective", "anti_incumbency_national", "rss_organizational_mobilization", "bjp_clear_cm_face"]
 
 Return a valid JSON array, one object per input item, in the same order. No markdown, no explanation."""
 
@@ -145,10 +147,11 @@ REGIONS = ["north_bengal", "jangalmahal", "medinipur", "urban_kolkata", "south_b
 def aggregate_regional_signals(enriched: list[dict]) -> dict:
     """
     Aggregate per-article signals into per-region signal_strength ∈ [-1, +1].
-    Net signal = (tmc_momentum - bjp_momentum + 0.5*minority_consolidation + 0.3*turnout_signal) / 1.8
-    Weighted by credibility.
+    Net signal = (tmc_momentum - bjp_momentum + 0.5*minority_consolidation + 0.3*turnout_signal
+                  - 0.4*rss_mobilization_signal - 0.3*bjp_leadership_signal) / 2.5
+    Weighted by credibility. Also returns top articles per region for citations.
     """
-    accum = {r: {"weighted_sum": 0.0, "weight_total": 0.0, "article_count": 0} for r in REGIONS}
+    accum = {r: {"weighted_sum": 0.0, "weight_total": 0.0, "article_count": 0, "top_articles": []} for r in REGIONS}
 
     for article in enriched:
         if article.get("is_noise"):
@@ -162,7 +165,9 @@ def aggregate_regional_signals(enriched: list[dict]) -> dict:
             - tags.get("bjp_momentum", 0.0)
             + 0.5 * tags.get("minority_consolidation", 0.0)
             + 0.3 * tags.get("turnout_signal", 0.0)
-        ) / 1.8
+            - 0.4 * tags.get("rss_mobilization_signal", 0.0)
+            - 0.3 * tags.get("bjp_leadership_signal", 0.0)
+        ) / 2.5
 
         effective_regions = [r for r in region_tags if r in REGIONS]
         if not effective_regions:
@@ -172,6 +177,14 @@ def aggregate_regional_signals(enriched: list[dict]) -> dict:
             accum[region]["weighted_sum"] += net * cred
             accum[region]["weight_total"] += cred
             accum[region]["article_count"] += 1
+            if len(accum[region]["top_articles"]) < 5:
+                accum[region]["top_articles"].append({
+                    "headline": article.get("headline", "")[:120],
+                    "source": article.get("source", ""),
+                    "url": article.get("url", ""),
+                    "credibility": round(cred, 2),
+                    "net_signal": round(net, 3),
+                })
 
     signals = {}
     for region in REGIONS:
@@ -180,9 +193,12 @@ def aggregate_regional_signals(enriched: list[dict]) -> dict:
             strength = max(-1.0, min(1.0, a["weighted_sum"] / a["weight_total"]))
         else:
             strength = 0.0
+        # Sort top articles by abs(net_signal) descending so most impactful comes first
+        top = sorted(a["top_articles"], key=lambda x: abs(x["net_signal"]), reverse=True)
         signals[region] = {
             "signal_strength": round(strength, 4),
             "article_count": a["article_count"],
+            "top_articles": top,
         }
 
     return signals
@@ -197,6 +213,8 @@ def extract_bjp_conditions(enriched: list[dict]) -> dict:
         "minority_fragmentation",
         "sir_voter_suppression_effective",
         "anti_incumbency_national",
+        "rss_organizational_mobilization",
+        "bjp_clear_cm_face",
     ]
 
     evidence: dict = {c: {"hits": 0, "snippets": []} for c in CONDITIONS}
@@ -211,6 +229,8 @@ def extract_bjp_conditions(enriched: list[dict]) -> dict:
                 if len(evidence[cond]["snippets"]) < 3:
                     evidence[cond]["snippets"].append({
                         "headline": article.get("headline", "")[:100],
+                        "source": article.get("source", ""),
+                        "url": article.get("url", ""),
                         "credibility": round(cred, 2),
                     })
 
