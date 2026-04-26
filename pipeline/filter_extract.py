@@ -87,14 +87,49 @@ def filter_and_extract(articles: list[dict]) -> list[dict]:
     if not articles:
         return []
 
-    # Pre-filter: only send WB-relevant articles to Claude API
-    relevant = [a for a in articles if _is_wb_relevant(a)]
-    noise_only = [a for a in articles if not _is_wb_relevant(a)]
-    print(f"  Pre-filter: {len(relevant)} WB-relevant / {len(articles)} total (skipping {len(noise_only)} non-WB)")
+    # ── Tier split ────────────────────────────────────────────────────────────
+    # Tier 1–3: send to Claude for full noise-filter + signal extraction
+    # Tier 4+:  auto-score with defaults (Google News headlines lack enough
+    #           content for Claude to add signal beyond keyword matching, and
+    #           their TIER_WEIGHT=0.6 means they barely move the model anyway)
+    high_quality = [a for a in articles if int(a.get("source_tier", 4)) <= 3]
+    low_quality  = [a for a in articles if int(a.get("source_tier", 4)) >  3]
 
-    # Mark non-relevant articles as noise without API call
+    # Pre-filter high-quality by WB relevance (catches any stray non-WB articles)
+    relevant  = [a for a in high_quality if _is_wb_relevant(a)]
+    irrelevant = [a for a in high_quality if not _is_wb_relevant(a)]
+
+    print(f"  Tier 1–3: {len(relevant)} WB-relevant → Claude  |  {len(irrelevant)} non-WB → noise")
+    print(f"  Tier 4+:  {len(low_quality)} articles → auto-scored (no Claude call)")
+
     results = []
-    _mark_noise(noise_only, results)
+    _mark_noise(irrelevant, results)
+
+    # Auto-score Tier 4+ articles: not noise, default credibility, keyword-based region tags
+    for a in low_quality:
+        text = (a.get("headline", "") + " " + a.get("body_snippet", "")).lower()
+        region_tags = []
+        if any(k in text for k in ["north bengal", "darjeeling", "cooch behar", "jalpaiguri", "malda", "murshidabad"]):
+            region_tags.append("north_bengal")
+        if any(k in text for k in ["jangalmahal", "purulia", "bankura", "jhargram", "bishnupur"]):
+            region_tags.append("jangalmahal")
+        if any(k in text for k in ["medinipur", "midnapore", "contai", "tamluk", "nandigram"]):
+            region_tags.append("medinipur")
+        if any(k in text for k in ["kolkata", "calcutta", "howrah", "hooghly"]):
+            region_tags.append("urban_kolkata")
+        if any(k in text for k in ["south bengal", "nadia", "24 parganas", "basirhat", "diamond harbour"]):
+            region_tags.append("south_bengal_rural")
+        if not region_tags:
+            region_tags = ["statewide"]
+        a.update({
+            "is_noise": False,
+            "credibility_score": 0.50,
+            "region_tags": region_tags,
+            "signal_tags": {},
+            "bjp_conditions_hit": [],
+            "date": str(date.today()),
+        })
+        results.append(a)
 
     if not relevant:
         return results
