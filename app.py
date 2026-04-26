@@ -845,95 +845,7 @@ elif page == "Scenario Analysis":
     }
 
     # ── Summary comparison chart ───────────────────────────────────────────────
-    scenario_names = list(SCENARIOS.keys())
-    tmc_mids = [SCENARIOS[n]["tmc_mid"] for n in scenario_names]
-    bjp_mids = [SCENARIOS[n]["bjp_mid"] for n in scenario_names]
-    tmc_lows  = [SCENARIOS[n]["tmc_low"]  for n in scenario_names]
-    tmc_highs = [SCENARIOS[n]["tmc_high"] for n in scenario_names]
-    bjp_lows  = [SCENARIOS[n]["bjp_low"]  for n in scenario_names]
-    bjp_highs = [SCENARIOS[n]["bjp_high"] for n in scenario_names]
-    sc_colors = [SCENARIOS[n]["color"] for n in scenario_names]
-
-    fig_summary = go.Figure()
-
-    # TMC range bars (floating: base = low, size = high-low)
-    fig_summary.add_trace(go.Bar(
-        name="TMC range",
-        x=scenario_names,
-        y=[h - l for h, l in zip(tmc_highs, tmc_lows)],
-        base=tmc_lows,
-        marker_color=["rgba(34,197,94,0.25)"] * 3,
-        marker_line_color=["#22c55e"] * 3,
-        marker_line_width=2,
-        showlegend=False,
-        hovertemplate="%{x}<br>TMC range: %{base}–%{y}<extra></extra>",
-    ))
-    # TMC midpoints
-    fig_summary.add_trace(go.Scatter(
-        name="TMC median",
-        x=scenario_names, y=tmc_mids,
-        mode="markers+text",
-        marker=dict(color="#22c55e", size=14, symbol="diamond"),
-        text=[f"<b>{v}</b>" for v in tmc_mids],
-        textposition="top center",
-        textfont=dict(size=15, color="#22c55e"),
-    ))
-
-    # BJP range bars
-    fig_summary.add_trace(go.Bar(
-        name="BJP range",
-        x=scenario_names,
-        y=[h - l for h, l in zip(bjp_highs, bjp_lows)],
-        base=bjp_lows,
-        marker_color=["rgba(239,68,68,0.25)"] * 3,
-        marker_line_color=["#ef4444"] * 3,
-        marker_line_width=2,
-        showlegend=False,
-        hovertemplate="%{x}<br>BJP range: %{base}–%{y}<extra></extra>",
-    ))
-    # BJP midpoints
-    fig_summary.add_trace(go.Scatter(
-        name="BJP median",
-        x=scenario_names, y=bjp_mids,
-        mode="markers+text",
-        marker=dict(color="#ef4444", size=14, symbol="diamond"),
-        text=[f"<b>{v}</b>" for v in bjp_mids],
-        textposition="bottom center",
-        textfont=dict(size=15, color="#ef4444"),
-    ))
-
-    fig_summary.add_hline(
-        y=148, line_dash="dash", line_color="#f59e0b", line_width=2,
-        annotation_text="<b>Majority line — 148</b>",
-        annotation_position="top right",
-        annotation_font_color="#f59e0b",
-    )
-    fig_summary.update_layout(
-        height=420, barmode="overlay",
-        yaxis=dict(title="Seats", range=[0, 260], gridcolor="#2d2d4e"),
-        xaxis=dict(title=""),
-        plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
-        font=dict(color="#f8fafc", size=13),
-        legend=dict(bgcolor="#1e1e2e", orientation="h", y=-0.15),
-        margin=dict(t=20, b=60, l=50, r=20),
-        annotations=[
-            dict(x=n, y=SCENARIOS[n]["tmc_low"] - 6,
-                 text=f"<span style='color:#22c55e'>{SCENARIOS[n]['tmc_low']}–{SCENARIOS[n]['tmc_high']}</span>",
-                 showarrow=False, font=dict(size=11, color="#22c55e"), xanchor="center")
-            for n in scenario_names
-        ] + [
-            dict(x=n, y=SCENARIOS[n]["bjp_high"] + 6,
-                 text=f"<span style='color:#ef4444'>{SCENARIOS[n]['bjp_low']}–{SCENARIOS[n]['bjp_high']}</span>",
-                 showarrow=False, font=dict(size=11, color="#ef4444"), xanchor="center")
-            for n in scenario_names
-        ],
-    )
-    st.plotly_chart(fig_summary, use_container_width=True, key="scenario_summary")
-
-    st.markdown("*Green band = TMC seat range · Red band = BJP seat range · Diamond = midpoint · Dashed line = majority*")
-    st.markdown("---")
-
-    # ── Individual scenario cards ──────────────────────────────────────────────
+    # ── Individual scenario cards with pie charts ─────────────────────────────
     cols = st.columns(3)
     for i, (name, s) in enumerate(SCENARIOS.items()):
         with cols[i]:
@@ -941,46 +853,26 @@ elif page == "Scenario Analysis":
             st.markdown(f"**Probability: {s['prob']}**")
             st.markdown(f"*{s['sir']}*")
 
-            fig = go.Figure()
-            parties = ["TMC", "BJP", "Others"]
-            mids = [s["tmc_mid"], s["bjp_mid"], 15]
-            lows = [s["tmc_low"], s["bjp_low"], 12]
-            highs = [s["tmc_high"], s["bjp_high"], 18]
-            colors = [s["color"], "#ef4444", "#3b82f6"]
-
-            # Range bars
-            fig.add_trace(go.Bar(
-                x=parties,
-                y=[h - l for h, l in zip(highs, lows)],
-                base=lows,
-                marker_color=[c.replace(")", ",0.2)").replace("rgb", "rgba") if "rgb" in c
-                              else c + "33" for c in colors],
-                marker_line_color=colors,
-                marker_line_width=2,
-                showlegend=False,
-                hovertemplate="%{x}: %{base}–%{y} seats<extra></extra>",
+            fig = go.Figure(go.Pie(
+                labels=["TMC", "BJP", "Left / Others"],
+                values=[s["tmc_mid"], s["bjp_mid"], 15],
+                hole=0.45,
+                marker_colors=[s["color"], "#ef4444", "#3b82f6"],
+                textinfo="label+value",
+                textfont=dict(size=15),
+                hovertemplate="%{label}: %{value} seats (%{percent})<extra></extra>",
             ))
-            # Midpoint markers with large labels
-            fig.add_trace(go.Scatter(
-                x=parties, y=mids,
-                mode="markers+text",
-                marker=dict(color=colors, size=16, symbol="diamond",
-                            line=dict(color="#f8fafc", width=1)),
-                text=[f"<b>{m}</b>" for m in mids],
-                textposition=["top center", "top center", "top center"],
-                textfont=dict(size=16),
-                showlegend=False,
-            ))
-            fig.add_hline(y=148, line_dash="dash", line_color="#f59e0b",
-                          annotation_text="148", annotation_position="right",
-                          annotation_font=dict(color="#f59e0b", size=11))
+            fig.add_annotation(
+                text=f"<b>294</b><br>seats",
+                x=0.5, y=0.5, showarrow=False,
+                font=dict(size=14, color="#f8fafc"),
+            )
             fig.update_layout(
-                height=340, barmode="overlay",
-                yaxis=dict(range=[0, 260], gridcolor="#2d2d4e", title="Seats"),
-                xaxis=dict(tickfont=dict(size=13)),
-                plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
+                height=300,
+                paper_bgcolor="#0e1117",
                 font=dict(color="#f8fafc"),
-                margin=dict(t=10, b=10, l=40, r=50),
+                legend=dict(bgcolor="#1e1e2e", font=dict(size=11)),
+                margin=dict(t=10, b=10, l=10, r=10),
             )
             st.plotly_chart(fig, use_container_width=True, key=f"scenario_bar_{i}")
 
