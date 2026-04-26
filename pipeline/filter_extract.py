@@ -27,15 +27,26 @@ Context:
 - SIR (Special Summary Revision): 91 lakh voter names deleted from rolls, disproportionately in Muslim/minority areas, which are TMC strongholds. This is a major structural issue.
 - Key regions: north_bengal (BJP competitive), jangalmahal (BJP's 2019 stronghold, weakened in 2024), medinipur (mixed), urban_kolkata (TMC stronghold), south_bengal_rural (TMC dominant, heavily affected by SIR).
 
+SOURCE TIER SYSTEM — each article includes a source_tier field. Use it to anchor credibility:
+  Tier 1 = Official ECI/CEO WB data — treat as ground truth (credibility 0.95–1.0)
+  Tier 2 = Tier-1 national news (Indian Express, The Hindu, NDTV, Reuters, TOI, Telegraph India) — high credibility (0.75–0.90)
+  Tier 3 = Regional Bengali news (ABP Ananda, Zee 24 Ghanta, Bartaman) — medium-high (0.60–0.80)
+  Tier 4 = Aggregated (Google News, GDELT) — medium (0.50–0.70), verify claim before scoring high
+  Tier 5 = Prediction markets — sentiment only, not factual (credibility 0.30–0.50)
+  Tier 6 = Social/YouTube — treat as weak signal, high noise (credibility 0.20–0.45)
+
+IMPORTANT: A claim is only as credible as its source tier. Do not give a Tier 6 YouTube comment the same score as a Tier 2 Indian Express report even if the content sounds authoritative.
+
 For each article/comment in the input JSON array, return an object with:
 
 1. "is_noise": true/false
    Mark TRUE if: pure party propaganda/PR, sensationalist without factual content, completely unrelated to WB election, duplicate framing, unverifiable anonymous rumor.
 
 2. "credibility_score": 0.0–1.0
-   High: established news organizations (NDTV, ABP Ananda, The Hindu, Telegraph India, Wire, Scroll)
-   Medium: smaller outlets, BJP/TMC official statements with factual content
-   Low: anonymous blogs, WhatsApp forwards, pure opinion without data
+   Anchor to source_tier ranges above. Adjust within range based on content quality.
+   High: ECI official data, established Tier 2 outlets with named sources and data
+   Medium: Tier 3 regional outlets, Tier 2 opinion pieces
+   Low: Tier 4–6, anonymous sources, unverified claims
 
 3. "region_tags": list from ["north_bengal", "jangalmahal", "medinipur", "urban_kolkata", "south_bengal_rural", "statewide"]
    Which WB regions does this article provide signal for?
@@ -69,8 +80,9 @@ def filter_and_extract(articles: list[dict]) -> list[dict]:
             {
                 "index": j,
                 "source": a.get("source", ""),
+                "source_tier": a.get("source_tier", 4),
                 "headline": a.get("headline", "")[:200],
-                "snippet": a.get("body_snippet", "")[:400],
+                "snippet": a.get("body_snippet", "")[:600],
             }
             for j, a in enumerate(batch)
         ]

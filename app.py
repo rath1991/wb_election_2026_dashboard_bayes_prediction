@@ -131,6 +131,12 @@ def _bjp_conditions():
 
 
 @st.cache_data(ttl=1800, show_spinner=False)
+def _market_data():
+    from pipeline.db import get_latest_market_data
+    return get_latest_market_data(_db())
+
+
+@st.cache_data(ttl=1800, show_spinner=False)
 def _articles(min_cred):
     from pipeline.db import get_recent_articles
     return get_recent_articles(_db(), days=2, min_credibility=min_cred)
@@ -227,6 +233,16 @@ if st.session_state.get("run_pipeline_triggered") and st.session_state.get("admi
             conditions = extract_bjp_conditions(enriched)
             upsert_bjp_conditions(conn, date.today(), conditions)
 
+            st.write("Fetching Polymarket odds...")
+            from pipeline.fetchers import fetch_polymarket
+            from pipeline.db import upsert_market_data
+            market = fetch_polymarket()
+            if market:
+                upsert_market_data(conn, market)
+                st.write(f"Polymarket: TMC {market.get('tmc_probability','—')} · BJP {market.get('bjp_probability','—')}")
+            else:
+                st.write("Polymarket: no data available.")
+
             st.write("Running Bayesian model...")
             from pipeline.bayesian import run_full_pipeline
             prev = get_latest_forecast(conn)
@@ -290,6 +306,30 @@ if page == "Headline Forecast":
         band = forecast.get("sir_uncertainty_band", 0)
         st.metric("SIR Uncertainty", f"{band} seats wide")
         st.caption("CI width attributable to voter roll deletions")
+
+    # ── Polymarket odds (Tier 5 — sentiment only) ──────────────────────────
+    market = _market_data()
+    if market and (market.get("tmc_probability") or market.get("bjp_probability")):
+        st.markdown("---")
+        st.caption("📊 **Prediction Market** (Polymarket) — sentiment signal only, not ground truth")
+        pm1, pm2, pm3, pm4 = st.columns(4)
+        tmc_mkt = market.get("tmc_probability")
+        bjp_mkt = market.get("bjp_probability")
+        shift   = market.get("market_shift_24h")
+        vol     = market.get("volume_usd")
+        with pm1:
+            st.metric("Market P(TMC)", f"{tmc_mkt:.0%}" if tmc_mkt else "—",
+                      delta=f"{shift:+.1%}" if shift else None)
+        with pm2:
+            st.metric("Market P(BJP)", f"{bjp_mkt:.0%}" if bjp_mkt else "—")
+        with pm3:
+            st.metric("Volume traded", f"${vol:,.0f}" if vol else "—")
+        with pm4:
+            st.caption(f"Source: {market.get('source','Polymarket')} · {market.get('date','')}")
+        st.caption(
+            "⚠️ Market odds reflect trader sentiment, not booth-level evidence. "
+            "Model weight: 5% (per source hierarchy). Do not use as primary forecast."
+        )
 
     st.markdown("")
 
@@ -967,7 +1007,28 @@ elif page == "Scenario Analysis":
 # ─────────────────────────────────────────────────────────────────────────────
 elif page == "News Feed":
     st.title("Filtered News Feed")
-    st.caption("Noise-filtered by Claude. Only non-noise articles above credibility threshold shown.")
+    st.caption("Noise-filtered by Claude. Sources ranked by tier — Official > Tier-1 News > Regional > Aggregated > Social.")
+
+    TIER_LABELS = {
+        1: ("🏛️ Official",    "#22c55e"),
+        2: ("📰 Tier-1 News", "#3b82f6"),
+        3: ("📡 Regional",    "#f59e0b"),
+        4: ("🌐 Aggregated",  "#94a3b8"),
+        5: ("📊 Market",      "#a78bfa"),
+        6: ("📱 Social",      "#6b7280"),
+    }
+    with st.expander("Source tier legend", expanded=False):
+        for tier, (label, color) in TIER_LABELS.items():
+            st.markdown(
+                f'<span style="color:{color}">**{label}**</span> — '
+                + {1: "ECI/CEO WB official data — ground truth",
+                   2: "Indian Express, The Hindu, NDTV, Reuters, TOI, Telegraph India — high credibility",
+                   3: "ABP Ananda, Zee 24 Ghanta, regional Bengali outlets — medium-high",
+                   4: "Google News RSS, GDELT — aggregated, verify before trusting",
+                   5: "Polymarket, prediction markets — sentiment only",
+                   6: "YouTube, social media — weak signal, high noise"}[tier],
+                unsafe_allow_html=True,
+            )
 
     col_f1, col_f2, col_f3 = st.columns([2, 2, 1])
     with col_f1:
@@ -1016,6 +1077,8 @@ elif page == "News Feed":
         cred_icon = "🟢" if cred >= 0.7 else "🟡" if cred >= 0.5 else "🔴"
         headline = row.get("headline", "No title")[:100]
         source = row.get("source", "")
+        tier = int(row.get("source_tier", 4)) if "source_tier" in row.index else 4
+        tier_label, tier_color = TIER_LABELS.get(tier, ("🌐 Aggregated", "#94a3b8"))
         tags = row.get("region_tags") or []
         tags_str = " · ".join(tags) if tags else "—"
 
@@ -1027,6 +1090,10 @@ elif page == "News Feed":
                 if url and url.startswith("http"):
                     st.markdown(f"[Read full article ↗]({url})")
             with col_b:
+                st.markdown(
+                    f'<span style="color:{tier_color};font-size:0.85rem">**{tier_label}**</span>',
+                    unsafe_allow_html=True,
+                )
                 st.metric("Credibility", f"{cred:.2f}")
                 st.caption(f"Regions: {tags_str}")
 

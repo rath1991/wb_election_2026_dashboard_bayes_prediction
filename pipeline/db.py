@@ -23,7 +23,7 @@ def get_conn() -> duckdb.DuckDBPyConnection:
     return conn
 
 
-def _ensure_schema(conn: duckdb.DuckDBPyConnection):
+def _ensure_schema(conn: duckdb.DuckDBPyConnection):  # noqa: C901
     conn.execute("""
         CREATE TABLE IF NOT EXISTS forecasts (
             date DATE PRIMARY KEY,
@@ -73,8 +73,8 @@ def _ensure_schema(conn: duckdb.DuckDBPyConnection):
     conn.execute("""
         CREATE TABLE IF NOT EXISTS articles (
             id INTEGER PRIMARY KEY,
-            date DATE, source VARCHAR, url VARCHAR,
-            headline VARCHAR, body_snippet VARCHAR,
+            date DATE, source VARCHAR, source_tier INTEGER DEFAULT 4,
+            url VARCHAR, headline VARCHAR, body_snippet VARCHAR,
             credibility_score DOUBLE,
             is_noise BOOLEAN DEFAULT FALSE,
             region_tags VARCHAR,
@@ -86,6 +86,38 @@ def _ensure_schema(conn: duckdb.DuckDBPyConnection):
     conn.execute("""
         CREATE SEQUENCE IF NOT EXISTS articles_seq START 1
     """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS market_data (
+            date DATE PRIMARY KEY,
+            tmc_probability DOUBLE,
+            bjp_probability DOUBLE,
+            market_shift_24h DOUBLE,
+            volume_usd DOUBLE,
+            source VARCHAR,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS turnout_live (
+            id INTEGER PRIMARY KEY,
+            date DATE, phase INTEGER, district VARCHAR,
+            ac_name VARCHAR, turnout_percent DOUBLE,
+            absolute_votes BIGINT,
+            turnout_vs_2021 DOUBLE,
+            turnout_vs_2024 DOUBLE,
+            source VARCHAR,
+            UNIQUE (date, ac_name)
+        )
+    """)
+    conn.execute("CREATE SEQUENCE IF NOT EXISTS turnout_live_seq START 1")
+
+    # Migration: add source_tier to articles if missing
+    try:
+        cols_df = conn.execute("SELECT column_name FROM information_schema.columns WHERE table_name='articles'").fetchdf()
+        if "source_tier" not in cols_df["column_name"].tolist():
+            conn.execute("ALTER TABLE articles ADD COLUMN source_tier INTEGER DEFAULT 4")
+    except Exception:
+        pass
 
 
 # ── forecasts ──────────────────────────────────────────────────────────────
@@ -207,16 +239,55 @@ def get_bjp_conditions(conn: duckdb.DuckDBPyConnection, cond_date: date | None =
 
 # ── articles ────────────────────────────────────────────────────────────────
 
+def upsert_market_data(conn: duckdb.DuckDBPyConnection, data: dict):
+    if not data:
+        return
+    prev = conn.execute(
+        "SELECT tmc_probability FROM market_data ORDER BY date DESC LIMIT 1"
+    ).fetchone()
+    shift = None
+    if prev and data.get("tmc_probability") is not None:
+        shift = round(data["tmc_probability"] - prev[0], 4)
+    conn.execute("""
+        INSERT INTO market_data (date, tmc_probability, bjp_probability, market_shift_24h, volume_usd, source)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT (date) DO UPDATE SET
+            tmc_probability = excluded.tmc_probability,
+            bjp_probability = excluded.bjp_probability,
+            market_shift_24h = excluded.market_shift_24h,
+            volume_usd = excluded.volume_usd
+    """, [
+        str(date.today()),
+        data.get("tmc_probability"),
+        data.get("bjp_probability"),
+        shift,
+        data.get("volume_usd"),
+        data.get("source", "Polymarket"),
+    ])
+
+
+def get_latest_market_data(conn: duckdb.DuckDBPyConnection) -> dict | None:
+    result = conn.execute(
+        "SELECT * FROM market_data ORDER BY date DESC LIMIT 1"
+    ).fetchdf()
+    if result.empty:
+        return None
+    row = result.iloc[0].to_dict()
+    row["date"] = str(row["date"])
+    return row
+
+
 def insert_articles(conn: duckdb.DuckDBPyConnection, articles: list[dict]):
     for a in articles:
         conn.execute("""
             INSERT INTO articles
-                (id, date, source, url, headline, body_snippet, credibility_score,
-                 is_noise, region_tags, signal_tags, bjp_conditions_hit)
-            VALUES (nextval('articles_seq'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (id, date, source, source_tier, url, headline, body_snippet,
+                 credibility_score, is_noise, region_tags, signal_tags, bjp_conditions_hit)
+            VALUES (nextval('articles_seq'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, [
             a.get("date", str(date.today())),
             a.get("source", "")[:200],
+            int(a.get("source_tier", 4)),
             a.get("url", "")[:500],
             a.get("headline", "")[:500],
             a.get("body_snippet", "")[:800],
