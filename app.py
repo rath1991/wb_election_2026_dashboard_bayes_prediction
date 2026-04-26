@@ -200,6 +200,7 @@ if st.session_state.get("show_admin_login") and not st.session_state.get("admin_
 # ─── Pipeline trigger ────────────────────────────────────────────────────────
 if st.session_state.get("run_pipeline_triggered") and st.session_state.get("admin_authenticated"):
     st.session_state["run_pipeline_triggered"] = False
+    _pipeline_ok = False
     with st.status("Running pipeline — this takes 1–2 minutes...", expanded=True) as status:
         try:
             st.write("Fetching news from GDELT, NewsAPI.ai, YouTube...")
@@ -232,13 +233,19 @@ if st.session_state.get("run_pipeline_triggered") and st.session_state.get("admi
             forecast_new, _ = run_full_pipeline(signals)
             forecast_new["prev_tmc_p50"] = prev["tmc_p50"] if prev else None
             upsert_forecast(conn, date.today(), forecast_new)
+            conn.close()
 
             status.update(label=f"Pipeline complete — TMC median: {forecast_new['tmc_p50']} seats", state="complete")
-            st.cache_data.clear()
-            st.rerun()
+            _pipeline_ok = True
         except Exception as e:
             status.update(label=f"Pipeline failed: {e}", state="error")
             st.exception(e)
+
+    # st.rerun() MUST be outside try/except — it raises RerunException which
+    # would otherwise be caught as a generic Exception, aborting the rerun.
+    if _pipeline_ok:
+        st.cache_data.clear()
+        st.rerun()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PAGE 1: HEADLINE FORECAST
