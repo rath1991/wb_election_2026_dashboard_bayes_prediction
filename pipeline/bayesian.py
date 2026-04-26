@@ -63,11 +63,16 @@ SIR_LEAN_SIGMA_FACTOR = 0.15
 #
 # RSS effect on TMC win probability per region (negative = hurts TMC):
 RSS_MOBILIZATION_DELTA_P: dict[str, float] = {
-    "north_bengal":        -0.030,  # BJP's shakha network deepest; Matua belt + hill seat work
-    "jangalmahal":         -0.020,  # BJP's tribal stronghold; booth-level management targeted
-    "medinipur":           -0.010,  # Partial RSS presence; Suvendu Adhikari's home turf
-    "urban_kolkata":        0.000,  # RSS mobilization structurally ineffective in urban TMC core
-    "south_bengal_rural":  -0.010,  # Marginal shakha presence; partially offset by Muslim vote
+    "north_bengal":        -0.030,  # BJP shakha network deepest; Matua belt + hill seat work
+    "jangalmahal":         -0.020,  # BJP tribal stronghold; booth-level management targeted
+    "medinipur":           -0.015,  # Suvendu home turf; RSS + personal network combined
+    "urban_kolkata":       -0.012,  # RSS drives Hindu consolidation (bhadralok + migrant workers).
+                                    # PARTIALLY OFFSET by Muslim counter-mobilization: RSS visibility
+                                    # in 35%+ Muslim wards hardens TMC consolidation there.
+                                    # Net: small non-zero BJP gain in Hindu-majority urban wards.
+    "south_bengal_rural":  -0.018,  # RSS worked 250/294 constituencies — rural penetration real.
+                                    # Higher Hindu population share than urban Kolkata reduces
+                                    # counter-mobilization intensity. Larger net BJP gain vs urban.
 }
 # ±50% uncertainty on the RSS delta (WB conversion rate from organization → votes is empirically noisy)
 RSS_SIGMA_FACTOR = 0.50

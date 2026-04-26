@@ -1232,13 +1232,13 @@ deployed, TMC still won **29/42** seats. WB's political culture — strong Mamat
 personal brand, minority bloc, booth-level TMC machine — resists the standard RSS
 playbook. We apply ~25% of the equivalent UP conversion rate.
 
-| Region | RSS effect on TMC win prob |
-|--------|---------------------------|
-| North Bengal | −3.0pp (shakha network deepest) |
-| Jangalmahal | −2.0pp (BJP tribal stronghold) |
-| Medinipur | −1.0pp (Suvendu home turf, partial) |
-| Urban Kolkata | 0.0pp (RSS structurally ineffective) |
-| South Bengal Rural | −1.0pp (marginal presence) |
+| Region | RSS effect on TMC win prob | Reasoning |
+|--------|---------------------------|-----------|
+| North Bengal | −3.0pp | Shakha network deepest; Matua belt + hill seat targeting |
+| Jangalmahal | −2.0pp | BJP tribal stronghold; booth management most effective |
+| Medinipur | −1.5pp | Suvendu home turf; RSS + personal network combined |
+| **Urban Kolkata** | **−1.2pp** | Hindu consolidation (bhadralok + migrants) real, but **partially offset** by Muslim counter-mobilization — RSS visibility in 35%+ Muslim wards hardens TMC alignment |
+| **South Bengal Rural** | **−1.8pp** | 1.75L meetings covered rural constituencies; higher Hindu share than urban Kolkata means less counter-mobilization intensity, larger net BJP gain |
 
 Uncertainty: **±50%** on these estimates.
 """)
@@ -1275,18 +1275,20 @@ Uncertainty: **±40%** (Suvendu could be declared CM face before election).
 The two effects partially offset. RSS mobilization hurts TMC in BJP-competitive regions;
 CM face vacuum helps TMC across the board (especially urban Kolkata).
 
-| Region | RSS Δp | CM face Δp | **Net Δp** | Constituency count |
-|--------|---------|------------|-----------|-------------------|
-| North Bengal | −0.030 | +0.010 | **−0.020** | 54 seats |
-| Jangalmahal | −0.020 | +0.010 | **−0.010** | 25 seats |
-| Medinipur | −0.010 | +0.015 | **+0.005** | 27 seats |
-| Urban Kolkata | 0.000 | +0.030 | **+0.030** | 68 seats |
-| South Bengal Rural | −0.010 | +0.020 | **+0.010** | 120 seats |
+| Region | RSS Δp | CM face Δp | **Net Δp** | Seats |
+|--------|---------|------------|-----------|-------|
+| North Bengal | −0.030 | +0.010 | **−0.020** | 54 |
+| Jangalmahal | −0.020 | +0.010 | **−0.010** | 25 |
+| Medinipur | −0.015 | +0.015 | **0.000** | 27 |
+| Urban Kolkata | −0.012 | +0.030 | **+0.018** | 68 |
+| South Bengal Rural | −0.018 | +0.020 | **+0.002** | 120 |
 
-**Net seat impact:** TMC median **+1 seat**, P(TMC majority) **+1.1pp**, P(BJP majority) **−1.3pp**.
-The CM face vacuum effect (urban + rural TMC gain) slightly outweighs the RSS mobilization
-effect (BJP-competitive region gain), because urban Kolkata (68 seats) and South Bengal Rural
-(120 seats) dominate by seat count.
+**Net seat impact vs. SIR-only baseline:** TMC median **−2 seats** (197→195).
+RSS mobilization now applies to all regions including strongholds. South Bengal Rural (120 seats)
+has the largest seat count and a near-zero net (RSS −1.8pp vs CM vacuum +2.0pp), making it
+the swing region. Urban Kolkata remains TMC-positive (+1.8pp net) because Mamata's personal
+vote effect is strongest there. Overall, RSS mobilization across all regions slightly outweighs
+the CM face vacuum advantage.
 """)
 
     st.divider()
