@@ -6,11 +6,12 @@ vote share. We model P(TMC wins constituency) directly in logit space rather tha
 comparing vote share against 0.5.
 
 Pipeline:
-  build_priors()           → per-constituency win probability from historical win rates + 2024 LS
-  apply_sir_adjustment()   → systematic downward shift in logit space
-  bayesian_update()        → Normal-Normal conjugate update from daily news signals (in logit space)
-  monte_carlo()            → 10,000 simulations → seat distribution + win probs
-  run_full_pipeline()      → orchestrates all steps
+  build_priors()                  → per-constituency win probability from historical win rates + 2024 LS
+  apply_sir_adjustment()          → systematic downward shift from voter deletion (SIR)
+  apply_organizational_factors()  → BJP RSS mobilization + CM-face vacuum structural adjustments
+  bayesian_update()               → Normal-Normal conjugate update from daily news signals (in logit space)
+  monte_carlo()                   → 10,000 simulations → seat distribution + win probs
+  run_full_pipeline()             → orchestrates all steps
 """
 import numpy as np
 import pandas as pd
@@ -46,6 +47,53 @@ TMC_LEAN_MAJORITY = 0.45   # Hindu deleted voters → slight BJP lean
 
 # SIR uncertainty: we don't know exact lean factors; model as ±15% of deletion_rate
 SIR_LEAN_SIGMA_FACTOR = 0.15
+
+# ── Organizational factor constants ──────────────────────────────────────────
+#
+# SOURCE: BJP deployed Sunil Bansal (national gen. sec.) + Bhupendra Yadav from 2022
+#   onwards for WB 2026 groundwork. RSS expanded from 1,320 → 1,823 shakhas (+38%)
+#   in Madhya Banga Prant alone; 1.75 lakh voter-awareness meetings across ~250/294
+#   constituencies (BJP internal estimate, reported in India Today / The Print 2024).
+#
+# HISTORICAL CAP (why effect is bounded):
+#   WB 2021: BJP had full RSS mobilization + Sunil Bansal yet won only 77/294 seats
+#            (target was 130+). WB politics resists the standard RSS mobilization playbook.
+#   2024 LS: BJP deployed Bansal; TMC still won 29/42 seats. RSS advantage did not
+#            translate proportionally. Estimate: WB conversion rate ~25% of UP equivalent.
+#
+# RSS effect on TMC win probability per region (negative = hurts TMC):
+RSS_MOBILIZATION_DELTA_P: dict[str, float] = {
+    "north_bengal":        -0.030,  # BJP's shakha network deepest; Matua belt + hill seat work
+    "jangalmahal":         -0.020,  # BJP's tribal stronghold; booth-level management targeted
+    "medinipur":           -0.010,  # Partial RSS presence; Suvendu Adhikari's home turf
+    "urban_kolkata":        0.000,  # RSS mobilization structurally ineffective in urban TMC core
+    "south_bengal_rural":  -0.010,  # Marginal shakha presence; partially offset by Muslim vote
+}
+# ±50% uncertainty on the RSS delta (WB conversion rate from organization → votes is empirically noisy)
+RSS_SIGMA_FACTOR = 0.50
+
+# BJP CM face vacuum effect on TMC win probability (positive = helps TMC):
+#
+# SOURCE: As of 2026, BJP has NOT declared a CM candidate for WB.
+#   Suvendu Adhikari (Leader of Opposition) and Sukanta Majumdar (state president)
+#   both positioning themselves. Dilip Ghosh (former state chief, mass connect) was
+#   sidelined after 2021 loss — creating demoralization in old guard cadre.
+#   (Ref: Indian Express 2024 "BJP Bengal CM face dilemma", Anandabazar Patrika 2025)
+#
+# Historical precedent:
+#   2021: BJP had no state CM face ("Modi-for-PM" campaign) → 77 seats.
+#   2016: No CM face → 10 seats.
+#   Mamata's personal vote (CM face brand) is worth ~5-8% in urban swing seats.
+#
+CM_FACE_VACUUM_DELTA_P: dict[str, float] = {
+    "north_bengal":        0.010,   # Some Modi-wave residual; CM face less decisive here
+    "jangalmahal":         0.010,   # Rural/tribal vote — CM face less sensitive
+    "medinipur":           0.015,   # Suvendu's local pull partially offsets vacuum
+    "urban_kolkata":       0.030,   # Highest — Mamata's personal vote vs. BJP anonymity
+    "south_bengal_rural":  0.020,   # Minority + TMC loyalty; no BJP face compounds BJP weakness
+}
+# ±40% uncertainty (Suvendu could be declared as CM face before election, partially closing gap)
+CM_FACE_SIGMA_FACTOR = 0.40
 
 # Fixed Left/Others seats
 LEFT_OTHERS_FIXED = 15
@@ -186,6 +234,60 @@ def apply_sir_adjustment(priors: pd.DataFrame, data_dir: Path = DATA_DIR) -> pd.
     return df
 
 
+def apply_organizational_factors(adj_priors: pd.DataFrame) -> pd.DataFrame:
+    """
+    Apply structural BJP organizational factors as a permanent prior adjustment.
+
+    Two effects modeled:
+
+    1. RSS mobilization (BJP advantage, capped by WB historical conversion rate):
+       BJP expanded from 1,320 → 1,823 shakhas (+38%, Madhya Banga Prant), conducted
+       1.75 lakh voter-awareness meetings across ~250/294 constituencies. Sunil Bansal
+       + Bhupendra Yadav redeployed from 2022 for WB 2026 groundwork.
+       Cap: WB 2021 BJP won 77 seats (target 130+) despite full RSS mobilization;
+       2024 LS TMC won 29/42 with Bansal deployed → conversion rate ~25% of UP equivalent.
+       Effect: negative delta on TMC win probability in BJP-competitive regions.
+
+    2. BJP CM face vacuum (TMC advantage):
+       BJP has not declared a CM candidate. Suvendu Adhikari vs. Sukanta Majumdar rivalry.
+       Dilip Ghosh sidelined post-2021 → cadre demoralization. Mamata Banerjee's personal
+       vote (strong incumbent CM face) historically worth 5-8% in urban swing seats.
+       Effect: positive delta on TMC win probability, strongest in urban_kolkata.
+
+    Both effects applied in probability space (exact), then converted to logit.
+    Uncertainty propagated in quadrature and folded into sigma_adj.
+    """
+    df = adj_priors.copy()
+
+    rss_delta = df["region"].map(RSS_MOBILIZATION_DELTA_P).fillna(0.0)
+    cm_delta = df["region"].map(CM_FACE_VACUUM_DELTA_P).fillna(0.0)
+    net_delta_p = rss_delta + cm_delta
+
+    win_p = expit(df["mu_adj"])
+    win_org_p = (win_p + net_delta_p).clip(0.02, 0.98)
+
+    df["org_rss_delta_p"] = rss_delta
+    df["org_cm_delta_p"] = cm_delta
+    df["org_net_delta_p"] = net_delta_p
+    df["mu_org"] = _safe_logit(win_org_p)
+
+    # Uncertainty: sigma in probability space → delta-method to logit
+    sigma_rss_p = df["region"].map(
+        {r: abs(v) * RSS_SIGMA_FACTOR for r, v in RSS_MOBILIZATION_DELTA_P.items()}
+    ).fillna(0.0)
+    sigma_cm_p = df["region"].map(
+        {r: abs(v) * CM_FACE_SIGMA_FACTOR for r, v in CM_FACE_VACUUM_DELTA_P.items()}
+    ).fillna(0.0)
+    sigma_org_p = np.sqrt(sigma_rss_p ** 2 + sigma_cm_p ** 2)
+    sigma_org_logit = sigma_org_p / (win_org_p * (1 - win_org_p))
+
+    df["sigma_adj"] = np.sqrt(df["sigma_adj"] ** 2 + sigma_org_logit ** 2)
+    df["mu_adj"] = df["mu_org"]
+    df["win_adj"] = expit(df["mu_adj"])
+
+    return df
+
+
 def bayesian_update(adj_priors: pd.DataFrame, regional_signals: dict) -> pd.DataFrame:
     """
     Normal-Normal conjugate update in logit space.
@@ -285,6 +387,7 @@ def run_full_pipeline(regional_signals: dict, data_dir: Path = DATA_DIR) -> tupl
     """Entry point: returns (forecast_dict, constituency_posteriors)."""
     priors = build_priors(data_dir)
     adj = apply_sir_adjustment(priors, data_dir)
+    adj = apply_organizational_factors(adj)
     post = bayesian_update(adj, regional_signals)
     results = monte_carlo(post)
     return results, post
