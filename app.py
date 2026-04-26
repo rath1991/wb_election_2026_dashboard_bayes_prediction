@@ -844,6 +844,96 @@ elif page == "Scenario Analysis":
         },
     }
 
+    # ── Summary comparison chart ───────────────────────────────────────────────
+    scenario_names = list(SCENARIOS.keys())
+    tmc_mids = [SCENARIOS[n]["tmc_mid"] for n in scenario_names]
+    bjp_mids = [SCENARIOS[n]["bjp_mid"] for n in scenario_names]
+    tmc_lows  = [SCENARIOS[n]["tmc_low"]  for n in scenario_names]
+    tmc_highs = [SCENARIOS[n]["tmc_high"] for n in scenario_names]
+    bjp_lows  = [SCENARIOS[n]["bjp_low"]  for n in scenario_names]
+    bjp_highs = [SCENARIOS[n]["bjp_high"] for n in scenario_names]
+    sc_colors = [SCENARIOS[n]["color"] for n in scenario_names]
+
+    fig_summary = go.Figure()
+
+    # TMC range bars (floating: base = low, size = high-low)
+    fig_summary.add_trace(go.Bar(
+        name="TMC range",
+        x=scenario_names,
+        y=[h - l for h, l in zip(tmc_highs, tmc_lows)],
+        base=tmc_lows,
+        marker_color=["rgba(34,197,94,0.25)"] * 3,
+        marker_line_color=["#22c55e"] * 3,
+        marker_line_width=2,
+        showlegend=False,
+        hovertemplate="%{x}<br>TMC range: %{base}–%{y}<extra></extra>",
+    ))
+    # TMC midpoints
+    fig_summary.add_trace(go.Scatter(
+        name="TMC median",
+        x=scenario_names, y=tmc_mids,
+        mode="markers+text",
+        marker=dict(color="#22c55e", size=14, symbol="diamond"),
+        text=[f"<b>{v}</b>" for v in tmc_mids],
+        textposition="top center",
+        textfont=dict(size=15, color="#22c55e"),
+    ))
+
+    # BJP range bars
+    fig_summary.add_trace(go.Bar(
+        name="BJP range",
+        x=scenario_names,
+        y=[h - l for h, l in zip(bjp_highs, bjp_lows)],
+        base=bjp_lows,
+        marker_color=["rgba(239,68,68,0.25)"] * 3,
+        marker_line_color=["#ef4444"] * 3,
+        marker_line_width=2,
+        showlegend=False,
+        hovertemplate="%{x}<br>BJP range: %{base}–%{y}<extra></extra>",
+    ))
+    # BJP midpoints
+    fig_summary.add_trace(go.Scatter(
+        name="BJP median",
+        x=scenario_names, y=bjp_mids,
+        mode="markers+text",
+        marker=dict(color="#ef4444", size=14, symbol="diamond"),
+        text=[f"<b>{v}</b>" for v in bjp_mids],
+        textposition="bottom center",
+        textfont=dict(size=15, color="#ef4444"),
+    ))
+
+    fig_summary.add_hline(
+        y=148, line_dash="dash", line_color="#f59e0b", line_width=2,
+        annotation_text="<b>Majority line — 148</b>",
+        annotation_position="top right",
+        annotation_font_color="#f59e0b",
+    )
+    fig_summary.update_layout(
+        height=420, barmode="overlay",
+        yaxis=dict(title="Seats", range=[0, 260], gridcolor="#2d2d4e"),
+        xaxis=dict(title=""),
+        plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
+        font=dict(color="#f8fafc", size=13),
+        legend=dict(bgcolor="#1e1e2e", orientation="h", y=-0.15),
+        margin=dict(t=20, b=60, l=50, r=20),
+        annotations=[
+            dict(x=n, y=SCENARIOS[n]["tmc_low"] - 6,
+                 text=f"<span style='color:#22c55e'>{SCENARIOS[n]['tmc_low']}–{SCENARIOS[n]['tmc_high']}</span>",
+                 showarrow=False, font=dict(size=11, color="#22c55e"), xanchor="center")
+            for n in scenario_names
+        ] + [
+            dict(x=n, y=SCENARIOS[n]["bjp_high"] + 6,
+                 text=f"<span style='color:#ef4444'>{SCENARIOS[n]['bjp_low']}–{SCENARIOS[n]['bjp_high']}</span>",
+                 showarrow=False, font=dict(size=11, color="#ef4444"), xanchor="center")
+            for n in scenario_names
+        ],
+    )
+    st.plotly_chart(fig_summary, use_container_width=True, key="scenario_summary")
+
+    st.markdown("*Green band = TMC seat range · Red band = BJP seat range · Diamond = midpoint · Dashed line = majority*")
+    st.markdown("---")
+
+    # ── Individual scenario cards ──────────────────────────────────────────────
     cols = st.columns(3)
     for i, (name, s) in enumerate(SCENARIOS.items()):
         with cols[i]:
@@ -852,57 +942,125 @@ elif page == "Scenario Analysis":
             st.markdown(f"*{s['sir']}*")
 
             fig = go.Figure()
-            parties = ["TMC", "BJP", "Left/Others"]
+            parties = ["TMC", "BJP", "Others"]
             mids = [s["tmc_mid"], s["bjp_mid"], 15]
-            errs = [
-                (s["tmc_high"] - s["tmc_low"]) // 2,
-                (s["bjp_high"] - s["bjp_low"]) // 2,
-                3,
-            ]
+            lows = [s["tmc_low"], s["bjp_low"], 12]
+            highs = [s["tmc_high"], s["bjp_high"], 18]
+            colors = [s["color"], "#ef4444", "#3b82f6"]
+
+            # Range bars
             fig.add_trace(go.Bar(
-                x=parties, y=mids,
-                error_y=dict(type="data", array=errs, visible=True, color="#94a3b8"),
-                marker_color=[s["color"], "#6b7280", "#3b82f6"],
-                text=[f"{m}±{e}" for m, e in zip(mids, errs)],
-                textposition="outside",
-            ))
-            fig.add_hline(y=148, line_dash="dash", line_color="#94a3b8",
-                          annotation_text="Majority", annotation_position="right")
-            fig.update_layout(
-                height=280, yaxis_range=[0, 240],
+                x=parties,
+                y=[h - l for h, l in zip(highs, lows)],
+                base=lows,
+                marker_color=[c.replace(")", ",0.2)").replace("rgb", "rgba") if "rgb" in c
+                              else c + "33" for c in colors],
+                marker_line_color=colors,
+                marker_line_width=2,
                 showlegend=False,
+                hovertemplate="%{x}: %{base}–%{y} seats<extra></extra>",
+            ))
+            # Midpoint markers with large labels
+            fig.add_trace(go.Scatter(
+                x=parties, y=mids,
+                mode="markers+text",
+                marker=dict(color=colors, size=16, symbol="diamond",
+                            line=dict(color="#f8fafc", width=1)),
+                text=[f"<b>{m}</b>" for m in mids],
+                textposition=["top center", "top center", "top center"],
+                textfont=dict(size=16),
+                showlegend=False,
+            ))
+            fig.add_hline(y=148, line_dash="dash", line_color="#f59e0b",
+                          annotation_text="148", annotation_position="right",
+                          annotation_font=dict(color="#f59e0b", size=11))
+            fig.update_layout(
+                height=340, barmode="overlay",
+                yaxis=dict(range=[0, 260], gridcolor="#2d2d4e", title="Seats"),
+                xaxis=dict(tickfont=dict(size=13)),
                 plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
-                font={"color": "#f8fafc"}, margin=dict(t=10, b=10, l=10, r=60),
+                font=dict(color="#f8fafc"),
+                margin=dict(t=10, b=10, l=40, r=50),
             )
             st.plotly_chart(fig, use_container_width=True, key=f"scenario_bar_{i}")
 
-            st.markdown(f"TMC: **{s['tmc_low']}–{s['tmc_high']}**  \nBJP: **{s['bjp_low']}–{s['bjp_high']}**")
+            st.markdown(
+                f"🟢 TMC: **{s['tmc_low']}–{s['tmc_high']}** (mid {s['tmc_mid']})  \n"
+                f"🔴 BJP: **{s['bjp_low']}–{s['bjp_high']}** (mid {s['bjp_mid']})"
+            )
             st.markdown("**Key requirements:**")
             for cond in s["conditions"]:
                 st.markdown(f"• {cond}")
 
     st.markdown("---")
     st.subheader("SIR Swing Analysis")
-    st.markdown("""
-| SIR Scenario | TMC Seat Impact | Mechanism |
-|---|---|---|
-| **Full roll restoration** (courts intervene) | **+15 to +25** seats | Deleted minority voters re-enfranchised in Murshidabad, Malda, N24P, Kolkata |
-| **Partial restoration** (50% restored) | **+8 to +12** seats | Partial court relief, some constituencies restored |
-| **As-is** (baseline) | **0** (reference) | 91L deleted voters absent; our baseline forecast assumes this |
-| **As-is + fragmentation** | **-10 to -18** seats | Left/ISF splits vote in Muslim-majority seats on top of deletions |
-
-> Samserganj alone: 74,000 deletions in a 95%-Muslim constituency (~25% of total electorate). If deletions hold, this seat almost certainly flips.
-""")
+    st.markdown("> Samserganj alone: 74,000 deletions in a 95%-Muslim constituency (~25% of total electorate). If deletions hold, this seat almost certainly flips.")
 
     if forecast:
+        base = forecast["tmc_p50"]
+        sir_labels = [
+            "Full restoration\n(courts intervene)",
+            "Partial restoration\n(50% restored)",
+            "As-is\n(baseline)",
+            "As-is +\nminority fragmentation",
+        ]
+        sir_mids  = [base + 20, base + 10, base, base - 14]
+        sir_lows  = [base + 15, base + 8,  base, base - 18]
+        sir_highs = [base + 25, base + 12, base, base - 10]
+        sir_colors = ["#22c55e", "#86efac", "#f59e0b", "#ef4444"]
+
+        fig_sir = go.Figure()
+        # Range
+        fig_sir.add_trace(go.Bar(
+            x=sir_labels,
+            y=[h - l for h, l in zip(sir_highs, sir_lows)],
+            base=sir_lows,
+            marker_color=["rgba(34,197,94,0.2)", "rgba(134,239,172,0.2)",
+                          "rgba(245,158,11,0.2)", "rgba(239,68,68,0.2)"],
+            marker_line_color=sir_colors,
+            marker_line_width=2,
+            showlegend=False,
+            hovertemplate="%{x}<br>TMC range: %{base}–%{y} seats<extra></extra>",
+        ))
+        # Midpoints
+        fig_sir.add_trace(go.Scatter(
+            x=sir_labels, y=sir_mids,
+            mode="markers+text",
+            marker=dict(color=sir_colors, size=16, symbol="diamond",
+                        line=dict(color="#f8fafc", width=1)),
+            text=[f"<b>{v}</b>" for v in sir_mids],
+            textposition="top center",
+            textfont=dict(size=15),
+            showlegend=False,
+        ))
+        fig_sir.add_hline(y=148, line_dash="dash", line_color="#f59e0b", line_width=2,
+                          annotation_text="<b>Majority — 148</b>",
+                          annotation_position="top right",
+                          annotation_font_color="#f59e0b")
+        fig_sir.update_layout(
+            height=380, barmode="overlay",
+            yaxis=dict(title="TMC Seats", gridcolor="#2d2d4e",
+                       range=[min(sir_lows) - 15, max(sir_highs) + 20]),
+            xaxis=dict(tickfont=dict(size=12)),
+            plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
+            font=dict(color="#f8fafc"),
+            margin=dict(t=20, b=20, l=50, r=80),
+        )
+        st.plotly_chart(fig_sir, use_container_width=True, key="sir_swing_chart")
+
+        st.markdown("""
+| SIR Scenario | TMC Seat Impact | Mechanism |
+|---|---|---|
+| **Full roll restoration** | **+15 to +25** | Deleted minority voters re-enfranchised in Murshidabad, Malda, N24P, Kolkata |
+| **Partial restoration (50%)** | **+8 to +12** | Partial court relief, some constituencies restored |
+| **As-is** *(baseline)* | **0** (reference) | 91L deleted voters absent; our baseline assumes this |
+| **As-is + fragmentation** | **−10 to −18** | Left/ISF splits vote in Muslim-majority seats on top of deletions |
+""")
         col_x, col_y = st.columns(2)
         with col_x:
-            st.metric("Current model TMC (p50)", forecast["tmc_p50"])
-            st.caption("Assumes SIR as-is")
+            st.metric("Current model TMC (p50)", base, help="Assumes SIR as-is")
         with col_y:
-            restored_est = forecast["tmc_p50"] + 18
-            st.metric("Estimated TMC if rolls restored", f"~{restored_est}")
-            st.caption("Rule-of-thumb: +15–25 if courts act")
+            st.metric("If rolls fully restored", f"~{base + 20}", delta="+20", help="+15–25 seats if courts act")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
