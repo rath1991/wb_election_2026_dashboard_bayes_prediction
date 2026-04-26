@@ -66,16 +66,44 @@ For each article/comment in the input JSON array, return an object with:
 Return a valid JSON array, one object per input item, in the same order. No markdown, no explanation."""
 
 
+_WB_KEYWORDS = [
+    "bengal", "bengali", "mamata", "tmc", "trinamool", "bjp", "west bengal",
+    "kolkata", "calcutta", "murshidabad", "malda", "nadia", "jangalmahal",
+    "darjeeling", "asansol", "midnapore", "medinipur", "cooch behar",
+    "sir ", "voter roll", "voter deletion", "election commission",
+    "বাংলা", "বঙ্গ", "তৃণমূল", "বিজেপি", "মমতা",
+    "shah", "suvendu", "sukanta", "dilip ghosh",
+    "assembly election", "vidhansabha", "vidhan sabha",
+]
+
+def _is_wb_relevant(article: dict) -> bool:
+    text = (
+        (article.get("headline", "") + " " + article.get("body_snippet", "")).lower()
+    )
+    return any(kw in text for kw in _WB_KEYWORDS)
+
+
 def filter_and_extract(articles: list[dict]) -> list[dict]:
     if not articles:
         return []
 
-    client = get_client()
+    # Pre-filter: only send WB-relevant articles to Claude API
+    relevant = [a for a in articles if _is_wb_relevant(a)]
+    noise_only = [a for a in articles if not _is_wb_relevant(a)]
+    print(f"  Pre-filter: {len(relevant)} WB-relevant / {len(articles)} total (skipping {len(noise_only)} non-WB)")
+
+    # Mark non-relevant articles as noise without API call
     results = []
+    _mark_noise(noise_only, results)
+
+    if not relevant:
+        return results
+
+    client = get_client()
     batch_size = 20
 
-    for i in range(0, len(articles), batch_size):
-        batch = articles[i : i + batch_size]
+    for i in range(0, len(relevant), batch_size):
+        batch = relevant[i : i + batch_size]
         batch_input = [
             {
                 "index": j,
@@ -90,7 +118,7 @@ def filter_and_extract(articles: list[dict]) -> list[dict]:
         try:
             response = client.messages.create(
                 model="claude-sonnet-4-6",
-                max_tokens=6000,
+                max_tokens=3500,
                 system=[
                     {
                         "type": "text",

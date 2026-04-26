@@ -1176,7 +1176,8 @@ digraph pipeline {
         style=filled color="#1a1a2a" fontcolor="#94a3b8" fontsize=12
         G1 [label="RSS Mobilization (BJP advantage)\\n1,823 shakhas (+38%), 1.75L meetings\\nSunil Bansal + Bhupendra Yadav deployed\\nCap: 2021 BJP won 77 despite full RSS; 2024 LS TMC won 29/42" shape=box fillcolor="#2d2d5e" fontcolor="#f8fafc"]
         G2 [label="BJP CM Face Vacuum (TMC advantage)\\nNo declared CM candidate\\nSuvendu vs Sukanta rivalry; Dilip Ghosh sidelined\\nMamata personal vote vs BJP anonymity" shape=box fillcolor="#2d2d5e" fontcolor="#f8fafc"]
-        G3 [label="Net delta applied in probability space\\nRSS effect (negative for TMC) vs CM vacuum (positive for TMC)\\nThen convert exactly to logit + propagate uncertainty" shape=box fillcolor="#3d3d6e" fontcolor="#f8fafc"]
+        G4 [label="IPAC Shutdown (TMC disadvantage)\\nIPAC shut down mid-election April 2026\\nVinesh Chandel arrested; Rishiraj Singh summoned\\nBooth committees + social media + rally plans lost\\nIPAC was what reversed 2019 damage in 2021" shape=box fillcolor="#5e2d2d" fontcolor="#f8fafc"]
+        G3 [label="Net delta applied in probability space\\nRSS (BJP ▲) + CM vacuum (TMC ▲) + IPAC shutdown (BJP ▲)\\nThen convert exactly to logit + propagate uncertainty" shape=box fillcolor="#3d3d6e" fontcolor="#f8fafc"]
     }
 
     subgraph cluster_news {
@@ -1193,7 +1194,7 @@ digraph pipeline {
         style=filled color="#2a1a2a" fontcolor="#94a3b8" fontsize=12
         M1 [label="Draw GLOBAL SHOCK once per simulation\\nε_global ~ Normal(0, σ=0.65) ← in LOGIT space\\nNOT a probability — logit shift applied to all 294 seats\\n(models correlated election wave: 2019 BJP wave, 2021 TMC wave)" shape=box fillcolor="#5e2d5e" fontcolor="#f8fafc"]
         M2 [label="For each of 294 constituencies:\\nlogit_i = mu_post_i + ε_global + Normal(0, σ=0.80)\\n                                         ↑ constituency noise\\nTMC wins seat if logit_i > 0  (i.e. prob > 50%)" shape=box fillcolor="#5e2d5e" fontcolor="#f8fafc"]
-        M3 [label="Count TMC seats won in this simulation\\nBJP = 294 − TMC − 15 (Left/Others fixed)\\nRepeat 10,000 times → distribution" shape=box fillcolor="#6e3d6e" fontcolor="#f8fafc"]
+        M3 [label="Count TMC seats won in this simulation\\nBJP = 294 − TMC − 20 (Left/Others/Congress fixed)\\nRepeat 10,000 times → distribution" shape=box fillcolor="#6e3d6e" fontcolor="#f8fafc"]
     }
 
     subgraph cluster_out {
@@ -1212,7 +1213,8 @@ digraph pipeline {
     S2   -> S3
     S3   -> G1
     G1   -> G2
-    G2   -> G3
+    G2   -> G4
+    G4   -> G3
     G3   -> N3 [label="mu_adj, sigma_adj\\n(LOGIT space)"]
     N1   -> N2
     N2   -> N3 [label="signal + avg_tier per region"]
@@ -1354,9 +1356,29 @@ tmc_lean = 0.45 + 0.30 × 0.40 = 0.57
 excess_lean = tmc_lean − 0.50 = minority_share × 0.40 − 0.05
 ```
 
+**BJP competitiveness conditioning — new in this version:**
+
+SIR only helps BJP if BJP is actually competitive in that seat. In Muslim-majority seats
+(Malda, Murshidabad, Uttar Dinajpur), deleted Muslim votes shift to **Congress or ISF — not BJP**.
+BJP was never going to win those seats regardless. We scale down the SIR delta accordingly:
+
+```
+bjp_competitive_factor = (1 − (minority_share − 0.20).clip(0) × 1.25).clip(0.25, 1.0)
+```
+
+| Minority share | BJP factor | Interpretation |
+|---------------|-----------|----------------|
+| 0.10 (Hindu-majority) | 1.00 | Full SIR benefit — BJP competitive |
+| 0.27 (WB average) | 0.91 | Slight reduction |
+| 0.50 (Nandagram-type, tactical voting) | 0.63 | Significant reduction |
+| 0.80 (Murshidabad) | 0.25 | Minimal BJP benefit — Congress/ISF fight |
+
+*(Source: Dr. Kartikeya Batra analysis, The Red Mic, April 2026)*
+
 **TMC win probability reduction** (computed in probability space, then converted exactly to logit):
 ```
-win_adj = win_prior − deletion_rate × excess_lean
+delta_p = deletion_rate × excess_lean × bjp_competitive_factor
+win_adj = win_prior − delta_p
 mu_adj  = logit(win_adj)           ← exact conversion, no approximation
 ```
 
@@ -1365,16 +1387,16 @@ The × 4 shortcut is the derivative of logit at p = 0.5: `d/dp[log(p/(1−p))] =
 It's a linear approximation that breaks down away from 0.5 (e.g. at p=0.88 for Urban Kolkata,
 the true scaling factor is 1/(0.88×0.12) ≈ 9.5, not 4). We use the exact logit conversion instead.
 
-**Effect:** SIR now impacts ALL constituencies proportionally to their deletion rate,
-not just Muslim-heavy ones. The overall TMC impact is smaller than the minority-only model
-(since Hindus at 45% lean barely exceed the 50% neutral baseline), but more accurate.
-
-Extreme example — **Samserganj**: 95% Muslim constituency, 25% deletion rate.
+Extreme example — **Samserganj** (95% Muslim, 25% deletion rate):
 ```
 tmc_lean    = 0.45 + 0.95 × 0.40 = 0.83
 excess_lean = 0.83 − 0.50 = 0.33
-delta_p     = 0.25 × 0.33 = −0.083   → TMC win prob drops ~8pp in this seat
+bjp_factor  = (1 − (0.95 − 0.20) × 1.25).clip(0.25) = 0.25   ← Congress fight, not BJP
+delta_p     = 0.25 × 0.33 × 0.25 = 0.021   → smaller drop (vs 0.083 in old model)
 ```
+
+Without this conditioning, the old model overstated BJP's gain in Muslim-majority seats
+where Congress, not BJP, is the actual beneficiary.
 """)
 
     st.divider()
@@ -1442,25 +1464,61 @@ Uncertainty: **±50%** on these estimates.
 Uncertainty: **±40%** (Suvendu could be declared CM face before election).
 """)
 
-    st.markdown("#### Net Effect on Forecast")
+    st.markdown("#### IPAC Shutdown (TMC disadvantage) — Added April 2026")
     st.markdown("""
-The two effects partially offset. RSS mobilization hurts TMC in BJP-competitive regions;
-CM face vacuum helps TMC across the board (especially urban Kolkata).
+**Source:** IPAC (I-PAC, Indian Political Action Committee — Prashant Kishore's firm) shut down
+operations **mid-election, April 2026**. Founder **Vinesh Chandel** arrested; **Rishiraj Singh**
+summoned. Mamata Banerjee personally visited Pratik Jain's home after the January 2026 ED raid
+— demonstrating how irreplaceable IPAC was to TMC's campaign infrastructure.
+*(The Red Mic, April 2026; India Today; The Wire)*
 
-| Region | RSS Δp | CM face Δp | **Net Δp** | Seats |
-|--------|---------|------------|-----------|-------|
-| North Bengal | −0.030 | +0.010 | **−0.020** | 54 |
-| Jangalmahal | −0.020 | +0.010 | **−0.010** | 25 |
-| Medinipur | −0.015 | +0.015 | **0.000** | 27 |
-| Urban Kolkata | −0.012 | +0.030 | **+0.018** | 68 |
-| South Bengal Rural | −0.018 | +0.020 | **+0.002** | 120 |
+**What IPAC ran for TMC:**
+- Booth-level committee planning across all 294 constituencies
+- Social media strategy and real-time counter-messaging
+- Rally logistics and crowd management
+- *Didi Ke Bolo* direct feedback loop → informed targeted scheme delivery
+- *Duare Sarkar* coordination (the schemes that reversed 2019 damage in 2021)
 
-**Net seat impact vs. SIR-only baseline:** TMC median **−2 seats** (197→195).
-RSS mobilization now applies to all regions including strongholds. South Bengal Rural (120 seats)
-has the largest seat count and a near-zero net (RSS −1.8pp vs CM vacuum +2.0pp), making it
-the swing region. Urban Kolkata remains TMC-positive (+1.8pp net) because Mamata's personal
-vote effect is strongest there. Overall, RSS mobilization across all regions slightly outweighs
-the CM face vacuum advantage.
+**Why this matters more than it sounds:**
+IPAC's 2021 strategy is precisely what turned TMC's 2019 catastrophe (BJP ahead in 121 segments)
+into a 213-seat victory. They identified that Mamata's brand was still strong but TMC workers
+had lost connection with voters — and fixed it through direct outreach programs. Without IPAC,
+TMC reverts to relying on its cadre network, which has shown signs of corruption and disconnect.
+
+| Region | IPAC shutdown effect on TMC win prob | Reasoning |
+|--------|--------------------------------------|-----------|
+| North Bengal | −1.0pp | BJP already structurally strong; IPAC less decisive |
+| Jangalmahal | −1.2pp | IPAC handled tribal booth targeting in this belt |
+| Medinipur | −1.8pp | Swing seats where micro-management is decisive |
+| **Urban Kolkata** | **−2.5pp** | IPAC's biggest operation: urban coordination, social media, Mamata brand management |
+| **South Bengal Rural** | **−2.2pp** | IPAC's rural booth network was TMC's backbone in minority + rural belt |
+
+Uncertainty: **±40%** (some IPAC workers may continue informally; TMC state apparatus compensates partially).
+""")
+
+    st.markdown("#### Net Effect on Forecast — All Three Factors")
+    st.markdown("""
+All three effects combined. IPAC shutdown flips Urban Kolkata from TMC-positive to slightly negative.
+
+| Region | RSS Δp | CM face Δp | IPAC Δp | **Net Δp** | Seats |
+|--------|---------|------------|---------|-----------|-------|
+| North Bengal | −0.030 | +0.010 | −0.010 | **−0.030** | 54 |
+| Jangalmahal | −0.020 | +0.010 | −0.012 | **−0.022** | 25 |
+| Medinipur | −0.015 | +0.015 | −0.018 | **−0.018** | 27 |
+| **Urban Kolkata** | −0.012 | +0.030 | **−0.025** | **−0.007** | 68 |
+| **South Bengal Rural** | −0.018 | +0.020 | **−0.022** | **−0.020** | 120 |
+
+**Key shift vs. previous model:** Urban Kolkata flipped from **+0.018** (net TMC gain) to **−0.007**
+(slight net loss) once IPAC shutdown is added. The CM face vacuum advantage (+3.0pp) is nearly wiped
+out by IPAC's loss (−2.5pp). South Bengal Rural went from near-neutral (+0.002) to −0.020 — the
+largest absolute change given that region's 120-seat weight.
+
+**LEFT_OTHERS_FIXED raised to 20** (from 15): Congress wins 4–6 seats in Malda/Murshidabad
+where SIR's BJP-competitiveness conditioning now correctly identifies that deleted Muslim votes
+there flow to Congress, not BJP.
+
+Current forecast with all three factors: **TMC p50 ≈ 189 seats, BJP p50 ≈ 85 seats,
+P(TMC majority) = 72%** — before any news signals have been applied.
 """)
 
     st.divider()

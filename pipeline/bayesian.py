@@ -112,8 +112,50 @@ CM_FACE_VACUUM_DELTA_P: dict[str, float] = {
 # ±40% uncertainty (Suvendu could be declared as CM face before election, partially closing gap)
 CM_FACE_SIGMA_FACTOR = 0.40
 
-# Fixed Left/Others seats
-LEFT_OTHERS_FIXED = 15
+# IPAC shutdown effect on TMC win probability (negative = hurts TMC):
+#
+# SOURCE: IPAC (I-PAC, Indian Political Action Committee) shut down operations mid-election
+#   April 2026. Founder Vinesh Chandel arrested; Rishiraj Singh summoned. Mamata personally
+#   visited Pratik Jain's home after January 2026 ED raid — shows IPAC was irreplaceable.
+#   IPAC responsibility: booth-level committees, social media strategy, rally planning,
+#   Didi Ke Bolo feedback loop, Duare Sarkar coordination. (Ref: Red Mic video April 2026,
+#   India Today / Wire reporting on IPAC shutdown).
+#
+# IPAC was the reason TMC recovered from 2019 disaster to win 213/294 in 2021.
+# Its mid-election shutdown removes TMC's primary campaign infrastructure.
+#
+# Effect magnitude: comparable to RSS mobilization (both are ground-level org factors).
+# Largest in urban_kolkata/south_bengal_rural where IPAC ran tightest operations.
+# Smaller in north_bengal/jangalmahal where BJP was already strong regardless.
+IPAC_SHUTDOWN_DELTA_P: dict[str, float] = {
+    "north_bengal":        -0.010,  # BJP-competitive; IPAC loss less decisive vs BJP structural advantage
+    "jangalmahal":         -0.012,  # Rural tribal belt; IPAC handled booth targeting here
+    "medinipur":           -0.018,  # Key swing seats; IPAC's micro-management was critical
+    "urban_kolkata":       -0.025,  # IPAC most critical: urban coordination, social media, feedback loops
+    "south_bengal_rural":  -0.022,  # IPAC's rural booth network was TMC's backbone in minority belt
+}
+# ±40% uncertainty: some IPAC workers may continue informally; TMC state apparatus partly compensates
+IPAC_SIGMA_FACTOR = 0.40
+
+# Seat-type SIR conditioning: SIR benefits BJP ONLY in BJP-competitive seats.
+# SOURCE: In Malda-Murshidabad (Muslim-majority), competition is Congress vs TMC — not BJP.
+#   If Muslim votes are deleted there, Congress/ISF gains, not BJP. Nandagram (95% Muslim
+#   deletions) and Nadia are mixed seats where tactical Muslim vote matters for BJP competition.
+#   (Ref: Dr. Kartikeya Batra analysis, The Red Mic, April 2026)
+#
+# At minority_share=0.20: BJP fully competitive → full SIR delta applies (factor=1.0)
+# At minority_share=0.50: BJP partially competitive → factor ~0.63
+# At minority_share=0.80: BJP non-competitive (Congress/ISF fight) → factor=0.25 (floor)
+SIR_BJP_COMPETITIVE_THRESHOLD = 0.20  # above this, start scaling down
+SIR_BJP_COMPETITIVE_RATE = 1.25       # rate of scale-down per unit of minority_share
+SIR_BJP_COMPETITIVE_FLOOR = 0.25      # minimum factor even in fully Muslim-majority seats
+
+# Fixed Left/Others/Congress seats — raised from 15 to 20.
+# Congress wins several Malda/Murshidabad seats (Muslim-majority) where competition
+# is Congress vs TMC, not BJP. SIR-conditioning reduces BJP attribution there, but
+# the floor is captured here. (2021: Congress+Left+ISF won ~12 seats; 2026 baseline ~20
+# with ISF contesting separately and Congress recovering slightly in their belt.)
+LEFT_OTHERS_FIXED = 20
 MAJORITY = 148
 
 
@@ -207,14 +249,19 @@ def apply_sir_adjustment(priors: pd.DataFrame, data_dir: Path = DATA_DIR) -> pd.
       excess_lean = tmc_lean - 0.50
                   = minority_share × 0.40 - 0.05
 
+    BJP competitiveness conditioning (KEY: SIR only helps BJP in BJP-competitive seats):
+      In Muslim-majority seats (Malda/Murshidabad), competition is Congress vs TMC — not BJP.
+      If Muslim votes are deleted there, Congress/ISF gains, not BJP. Seat-type factor:
+        bjp_competitive_factor = (1 - (minority_share - 0.20).clip(0) × 1.25).clip(0.25, 1.0)
+      This scales the delta down in Muslim-majority seats, preventing over-attribution to BJP.
+      (Source: Dr. Kartikeya Batra, The Red Mic, April 2026)
+
     TMC win probability reduction (in probability space):
-      delta_p = -deletion_rate × excess_lean
+      delta_p = deletion_rate × excess_lean × bjp_competitive_factor
 
     We then convert EXACTLY to logit space (no linear approximation):
       win_adj = win_prior - delta_p
       mu_adj  = logit(win_adj)
-
-    This avoids the LOGIT_SCALE≈4 linearization which only holds near p=0.5.
 
     Uncertainty (in logit space via delta method):
       sigma_sir ≈ deletion_rate × SIR_LEAN_SIGMA_FACTOR / (win_adj × (1 - win_adj))
@@ -228,9 +275,14 @@ def apply_sir_adjustment(priors: pd.DataFrame, data_dir: Path = DATA_DIR) -> pd.
     tmc_lean = TMC_LEAN_MAJORITY + df["minority_share"] * (TMC_LEAN_MINORITY - TMC_LEAN_MAJORITY)
     excess_lean = tmc_lean - 0.50  # impact relative to neutral 50% baseline
 
+    # BJP competitiveness factor: reduces SIR delta in Muslim-majority/non-BJP-competitive seats
+    bjp_competitive_factor = (
+        1.0 - (df["minority_share"] - SIR_BJP_COMPETITIVE_THRESHOLD).clip(lower=0.0) * SIR_BJP_COMPETITIVE_RATE
+    ).clip(lower=SIR_BJP_COMPETITIVE_FLOOR, upper=1.0)
+
     # Adjust in probability space (exact), then convert to logit
     win_p = expit(df["mu_logit"])
-    delta_p = df["deletion_rate"] * excess_lean
+    delta_p = df["deletion_rate"] * excess_lean * bjp_competitive_factor
     win_adj_p = (win_p - delta_p).clip(0.02, 0.98)
     df["delta_p"] = delta_p
     df["mu_adj"] = _safe_logit(win_adj_p)
@@ -255,7 +307,7 @@ def apply_organizational_factors(adj_priors: pd.DataFrame) -> pd.DataFrame:
     """
     Apply structural BJP organizational factors as a permanent prior adjustment.
 
-    Two effects modeled:
+    Three effects modeled:
 
     1. RSS mobilization (BJP advantage, capped by WB historical conversion rate):
        BJP expanded from 1,320 → 1,823 shakhas (+38%, Madhya Banga Prant), conducted
@@ -271,20 +323,29 @@ def apply_organizational_factors(adj_priors: pd.DataFrame) -> pd.DataFrame:
        vote (strong incumbent CM face) historically worth 5-8% in urban swing seats.
        Effect: positive delta on TMC win probability, strongest in urban_kolkata.
 
-    Both effects applied in probability space (exact), then converted to logit.
+    3. IPAC shutdown (TMC disadvantage):
+       IPAC (Vinesh Chandel arrested; Rishiraj Singh summoned) shut down mid-election April 2026.
+       IPAC ran booth-level committees, social media strategy, rally planning, and Duare Sarkar
+       coordination — the very infrastructure that reversed 2019 damage in 2021.
+       Effect: negative delta on TMC win probability, largest in urban_kolkata and south_bengal_rural
+       where IPAC's operations were most critical.
+
+    All effects applied in probability space (exact), then converted to logit.
     Uncertainty propagated in quadrature and folded into sigma_adj.
     """
     df = adj_priors.copy()
 
     rss_delta = df["region"].map(RSS_MOBILIZATION_DELTA_P).fillna(0.0)
     cm_delta = df["region"].map(CM_FACE_VACUUM_DELTA_P).fillna(0.0)
-    net_delta_p = rss_delta + cm_delta
+    ipac_delta = df["region"].map(IPAC_SHUTDOWN_DELTA_P).fillna(0.0)
+    net_delta_p = rss_delta + cm_delta + ipac_delta
 
     win_p = expit(df["mu_adj"])
     win_org_p = (win_p + net_delta_p).clip(0.02, 0.98)
 
     df["org_rss_delta_p"] = rss_delta
     df["org_cm_delta_p"] = cm_delta
+    df["org_ipac_delta_p"] = ipac_delta
     df["org_net_delta_p"] = net_delta_p
     df["mu_org"] = _safe_logit(win_org_p)
 
@@ -295,7 +356,10 @@ def apply_organizational_factors(adj_priors: pd.DataFrame) -> pd.DataFrame:
     sigma_cm_p = df["region"].map(
         {r: abs(v) * CM_FACE_SIGMA_FACTOR for r, v in CM_FACE_VACUUM_DELTA_P.items()}
     ).fillna(0.0)
-    sigma_org_p = np.sqrt(sigma_rss_p ** 2 + sigma_cm_p ** 2)
+    sigma_ipac_p = df["region"].map(
+        {r: abs(v) * IPAC_SIGMA_FACTOR for r, v in IPAC_SHUTDOWN_DELTA_P.items()}
+    ).fillna(0.0)
+    sigma_org_p = np.sqrt(sigma_rss_p ** 2 + sigma_cm_p ** 2 + sigma_ipac_p ** 2)
     sigma_org_logit = sigma_org_p / (win_org_p * (1 - win_org_p))
 
     df["sigma_adj"] = np.sqrt(df["sigma_adj"] ** 2 + sigma_org_logit ** 2)
