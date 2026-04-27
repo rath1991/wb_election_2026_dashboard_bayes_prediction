@@ -1034,7 +1034,7 @@ elif page == "Scenario Analysis":
                 labels=["TMC", "BJP", "Congress / Left / Others"],
                 values=[s["tmc_mid"], s["bjp_mid"], s["others_mid"]],
                 hole=0.45,
-                marker_colors=[s["color"], "#ef4444", "#3b82f6"],
+                marker_colors=["#22c55e", "#ef4444", "#3b82f6"],
                 textinfo="label+value",
                 textfont=dict(size=15),
                 hovertemplate="%{label}: %{value} seats (%{percent})<extra></extra>",
