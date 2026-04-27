@@ -1298,12 +1298,19 @@ digraph pipeline {
         G3 [label="Net delta applied in probability space\\nRSS (BJP ▲) + CM vacuum (TMC ▲) + IPAC shutdown (BJP ▲)\\nThen convert exactly to logit + propagate uncertainty" shape=box fillcolor="#3d3d6e" fontcolor="#f8fafc"]
     }
 
+    subgraph cluster_turnout {
+        label="STEP 3a — PHASE TURNOUT (Tier 1 official data)"
+        style=filled color="#1a2a3a" fontcolor="#94a3b8" fontsize=12
+        T1 [label="ECI VTR App + CEO WB + post-scrutiny press notes\\nAC-wise + district turnout % (initial & post-scrutiny)\\nPhase 1: 93.19% overall; Cooch Behar 96.2%; Kalimpong 83.04%\\nForm 17C from booth agents (manual entry)" shape=box fillcolor="#2d4e5e" fontcolor="#f8fafc"]
+        T2 [label="Turnout swing signal = (current − 2021) / 15pp\\nBJP-competitive belt (NB/Jangal): swing → BJP signal × 0.6\\nTMC stronghold (Kolkata/South Rural): swing → TMC signal × 0.4\\nBlended 30% into news signal before Bayesian update" shape=box fillcolor="#2d4e5e" fontcolor="#f8fafc"]
+    }
+
     subgraph cluster_news {
-        label="STEP 3 — DAILY NEWS UPDATE (source-tiered)"
+        label="STEP 3b — DAILY NEWS UPDATE (source-tiered)"
         style=filled color="#1a2a1a" fontcolor="#94a3b8" fontsize=12
-        N1 [label="Fetch: RSS (Indian Express, The Hindu, NDTV, TOI,\\nTelegraph, Wire, ABP Ananda) + Google News RSS\\n+ GDELT fallback + YouTube (Tier 6 weak signal)" shape=box fillcolor="#2d5e2d" fontcolor="#f8fafc"]
+        N1 [label="Tier 1–3 only → Claude (~22 articles, 2 batches, ~$0.08/run)\\nTier 2: RSS Indian Express, Hindu, NDTV, TOI, Telegraph, Wire\\nTier 3: ABP Ananda, Zee 24 Ghanta (Bengali)\\nTier 4+: auto-scored by keyword (no Claude call)" shape=box fillcolor="#2d5e2d" fontcolor="#f8fafc"]
         N2 [label="Claude AI filter (tier-aware)\\nNoise removed · Credibility anchored to source tier\\nTier 1 ECI = 0.95-1.0  Tier 2 news = 0.75-0.90\\nTier 6 social = 0.20-0.45\\nSignal scored −1 to +1 per region + avg_source_tier" shape=box fillcolor="#2d5e2d" fontcolor="#f8fafc"]
-        N3 [label="Bayesian update — tier-specific TAU\\nTier 1 τ=0.40 (ECI near ground truth)\\nTier 2 τ=0.80 (quality news)  Tier 6 τ=2.50 (social)\\nobs = mu_adj + signal × 0.30  |  weight = 1/(1 + τ²/σ²)" shape=box fillcolor="#2d5e2d" fontcolor="#f8fafc"]
+        N3 [label="Bayesian update — tier-specific TAU\\nTier 1 τ=0.40 (ECI near ground truth)\\nTier 2 τ=0.80 (quality news)  Tier 6 τ=2.50 (social)\\nobs = mu_adj + (0.7×news + 0.3×turnout signal) × 0.30" shape=box fillcolor="#2d5e2d" fontcolor="#f8fafc"]
         N4 [label="Polymarket odds (Tier 5)\\nτ=2.00 statewide weak signal\\n~5% effective weight per source hierarchy" shape=box fillcolor="#1a3a1a" fontcolor="#f8fafc"]
     }
 
@@ -1333,9 +1340,11 @@ digraph pipeline {
     G1   -> G2
     G2   -> G4
     G4   -> G3
-    G3   -> N3 [label="mu_adj, sigma_adj\\n(LOGIT space)"]
+    G3   -> T1 [label="mu_adj, sigma_adj\\n(LOGIT space)"]
+    T1   -> T2
+    T2   -> N3 [label="turnout signal (30% blend)"]
     N1   -> N2
-    N2   -> N3 [label="signal + avg_tier per region"]
+    N2   -> N3 [label="news signal (70% blend) + avg_tier"]
     N4   -> N3 [label="market logit obs"]
     N3   -> M1 [label="mu_post per constituency\\n(still in LOGIT space)"]
     M1   -> M2
@@ -1362,33 +1371,64 @@ The model treats different data sources with explicitly different levels of trus
 **Fact**, **reported claim**, and **model inference** are kept separate throughout.
 """)
     hierarchy_data = {
-        "Priority": ["1 — Official", "2 — Turnout/SIR live", "3 — Historical baseline",
-                     "4 — BJP/RSS org (structural)", "5 — Quality news", "6 — Regional news",
-                     "7 — Opinion polls", "8 — Prediction markets", "9 — Social/YouTube"],
+        "Priority": ["1 — Official live", "2 — Phase turnout", "3 — Historical baseline",
+                     "4 — BJP/RSS/IPAC org (structural)", "5 — Quality news (Tier 2)",
+                     "6 — Regional Bengali news (Tier 3)", "7 — Aggregated news (Tier 4)",
+                     "8 — Opinion polls", "9 — Prediction markets", "10 — Social/YouTube"],
         "Source": ["ECI / CEO WB / Form 20 / Affidavits",
-                   "ECI turnout data, CEO WB phase-wise reports",
+                   "ECI VTR App, CEO WB, post-scrutiny RO notes, Form 17C (booth agents)",
                    "2021 Assembly + 2024 LS assembly-segment data",
-                   "Reported shakha counts, deployment records (India Today, The Print)",
-                   "Indian Express, The Hindu, NDTV, TOI, Reuters, Telegraph India",
-                   "ABP Ananda, Zee 24 Ghanta, Bartaman, district reporters",
+                   "RSS shakha counts, IPAC shutdown, CM-face vacuum (structural priors)",
+                   "Indian Express, The Hindu, NDTV, TOI, Reuters, Telegraph India, Wire",
+                   "ABP Ananda, Zee 24 Ghanta, Bartaman",
+                   "Google News RSS (288 articles/run), GDELT — auto-scored, no Claude",
                    "Pre-election surveys (limited availability in WB)",
                    "Polymarket WB election market",
                    "YouTube comments, X/Twitter, WhatsApp"],
+        "Claude call?": ["No", "No", "No", "No", "Yes (Tier 1–3 only, ~$0.08/run)",
+                         "Yes", "No (keyword auto-score)", "No", "No", "Yes (very weak)"],
         "Model weight": ["Ground truth — overrides model",
-                         "25% (turnout + SIR layer)",
-                         "35% (historical prior)",
-                         "10% (org factor adjustment, baked in)",
-                         "~3% via τ=0.80 news update",
-                         "~2% via τ=1.10 regional update",
-                         "Not yet wired (polling vacuum in WB)",
+                         "~15% (turnout swing blended 30% into Step 3 signal)",
+                         "35% (historical prior, baked in)",
+                         "10% (permanent prior adjustment)",
+                         "~3% via τ=0.80 Bayesian update",
+                         "~2% via τ=1.10 Bayesian update",
+                         "~1% (credibility=0.50, TIER_WEIGHT=0.6)",
+                         "Not wired (polling vacuum in WB)",
                          "~5% via τ=2.00 statewide signal",
                          "<1% via τ=2.50, near-ignored"],
-        "Label in dashboard": ["FACT", "FACT", "FACT", "STRUCTURAL PRIOR",
-                                "REPORTED CLAIM", "REPORTED CLAIM",
-                                "SENTIMENT", "SENTIMENT", "WEAK SIGNAL"],
+        "Label": ["FACT", "FACT", "FACT", "STRUCTURAL PRIOR",
+                  "REPORTED CLAIM", "REPORTED CLAIM", "WEAK SIGNAL",
+                  "SENTIMENT", "SENTIMENT", "WEAK SIGNAL"],
     }
     import pandas as pd
     st.dataframe(pd.DataFrame(hierarchy_data), use_container_width=True, hide_index=True)
+
+    st.divider()
+
+    # ── Data sources breakdown ──
+    st.header("What We Fetch Each Run")
+    st.markdown("""
+| Source | Tier | Volume | Claude? | Cost | Notes |
+|--------|------|--------|---------|------|-------|
+| ECI VTR App | 1 | AC-wise turnout | No | Free | Falls back to seeded Phase 1 district data if API down |
+| Form 17C (manual) | 1 | Booth-level votes | No | Free | Enter via Manual Input page; single-party entries flagged |
+| Indian Express, The Hindu, NDTV, HT, TOI, Telegraph, Wire, Scroll | 2 | ~15–25 articles | **Yes** | ~$0.08/run | Full body via trafilatura; only WB-relevant sent to Claude |
+| ABP Ananda, Zee 24 Ghanta | 3 | ~5–10 Bengali articles | **Yes** | included above | Bengali RSS feeds |
+| Google News RSS | 4 | ~288 articles | No | Free | 7 English + 3 Bengali queries; auto-scored by keyword |
+| GDELT | 4 | ~10–30 articles | No | Free | Fallback for WB-specific queries; often times out |
+| Polymarket gamma API | 5 | 1 odds record | No | Free | TMC/BJP win probabilities; τ=2.00 weak statewide signal |
+| YouTube | 6 | Comments | **Yes** | minimal | WB political channels; near-ignored weight τ=2.50 |
+
+**Cost control:** Tier 4+ articles (Google News, GDELT) are **never sent to Claude**. They are auto-scored
+with `credibility=0.50` and keyword-based region tags. Only Tier 1–3 (~22 articles typical) reach Claude,
+costing **~$0.08 per full pipeline run** (down from ~$1.75 before this optimization).
+
+**Three data availability tiers (from ECI framework):**
+- **Available now (public):** ECI VTR app, CEO WB elector data, post-scrutiny press notes
+- **Available only to candidates/agents:** Form 17C Part I (booth-level votes — enter via Manual Input)
+- **Available only after counting:** Form 20 (booth-wise result — use to backtest model post-May 4)
+""")
 
     st.divider()
 
@@ -1642,16 +1682,35 @@ P(TMC majority) = 72%** — before any news signals have been applied.
     st.divider()
 
     # ── Step 3: Bayesian Update ──
-    st.header("Step 3 — Daily Bayesian Update from News")
+    st.header("Step 3 — Daily Bayesian Update (Turnout + News)")
     st.markdown("""
-**How today's headlines move the forecast — and why source quality determines how much.**
+**How Phase turnout and today's headlines move the forecast — and why source quality determines how much.**
 
-Each day the pipeline fetches articles from RSS feeds and Google News → Claude filters noise
-and scores regional signals → Bayesian update applied per constituency in logit space.
+Each day the pipeline runs two parallel signal streams, then blends them before the Bayesian update:
+
+**Stream A — Phase turnout (Tier 1 ECI):**
+AC/district turnout from ECI VTR App, CEO WB, and Form 17C booth agents.
+Turnout swing vs 2021 is converted to a regional signal:
+```
+signal = (turnout_current − turnout_2021) / 15pp   [capped at ±1.0]
+
+BJP-competitive areas (North Bengal, Jangalmahal):  BJP signal = swing × 0.6
+TMC strongholds (Urban Kolkata, South Bengal Rural): TMC signal = swing × 0.4 (inverted)
+```
+Phase 1 (April 23): overall 93.19% post-scrutiny — ~+13pp swing vs 2021 (≈76.9%).
+Cooch Behar 96.2% → strong BJP-belt signal. Kalimpong 83.04% → modest GJM/hill signal.
+
+**Stream B — News signals (Tier 2–6):**
+RSS articles → Claude filter (Tier 1–3 only, ~$0.08/run) → regional scores −1 to +1.
+Tier 4+ (Google News, GDELT) auto-scored by keyword, never sent to Claude.
+
+**Blend before update:**
+```
+combined_signal = 0.7 × news_signal + 0.3 × turnout_signal
+```
 
 **Critically: not all sources are equal.** TAU (observation noise) varies by source tier.
-A low TAU means the model trusts the signal more and moves further; a high TAU means the
-signal is treated as weak and the prior barely moves.
+A low TAU means the model trusts the signal more and moves further.
 """)
 
     st.markdown("#### Source Hierarchy & TAU Values")
