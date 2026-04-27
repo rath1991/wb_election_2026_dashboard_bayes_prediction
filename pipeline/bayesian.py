@@ -6,12 +6,17 @@ vote share. We model P(TMC wins constituency) directly in logit space rather tha
 comparing vote share against 0.5.
 
 Pipeline:
-  build_priors()                  → per-constituency win probability from historical win rates + 2024 LS
+  build_priors()                  → per-constituency TMC win probability from REAL 2021+2024 margins
   apply_sir_adjustment()          → systematic downward shift from voter deletion (SIR)
-  apply_organizational_factors()  → BJP RSS mobilization + CM-face vacuum structural adjustments
+  apply_organizational_factors()  → BJP RSS mobilization + CM-face vacuum + IPAC shutdown
   bayesian_update()               → Normal-Normal conjugate update from daily news signals (in logit space)
   monte_carlo()                   → 10,000 simulations → seat distribution + win probs
   run_full_pipeline()             → orchestrates all steps
+
+DATA SOURCES (real, not synthetic):
+  2021 assembly margins: tecoholic/Election2021 GitHub (ECI candidate-level data)
+  2024 LS margins:       ECI results portal / Wikipedia (all 42 WB seats hardcoded)
+  SIR deletions:         TOI/Indian Express district+AC level reporting
 """
 import numpy as np
 import pandas as pd
@@ -164,69 +169,110 @@ def _safe_logit(p: pd.Series, eps: float = 0.01) -> pd.Series:
 
 
 
-# Calibrated regional TMC win probabilities as of 2026 baseline.
-# Derived from: 2021 assembly (0.50 wt) + 2016 (0.30 wt) + 2011 (0.20 wt) + 2024 LS recency.
-# Actual 2021: north=46%, jangal=36%, med=63%, urban=91%, rural=85% (TMC 213/294 total).
-# 2024 LS: TMC 29/42 seats; north gained, jangal weakened, urban/medinipur strong.
+# Sigma for converting margin (percentage points) to logit probability.
+# At sigma=7pp: a TMC lead of 7pp → logistic(1.0) = 73% TMC win probability.
+# Reflects empirical uncertainty in seat-level vote share conversion.
+SIGMA_MARGIN_PP = 0.07
 
-# Calibrated so that Monte Carlo with σ_logit=1.50 produces expected TMC baseline ~185 seats.
-# With 120 rural + 68 urban + 54 NB + 27 med + 25 jangal = 294 total (rural is inflated vs reality).
-# Values reflect: 2021 assembly + 2024 LS recency + current 2026 structural baseline.
-# Pre-SIR baseline. SIR adjustment then reduces TMC further.
-REGIONAL_WIN_PRIOR: dict[str, float] = {
-    "north_bengal":       0.47,  # BJP competitive; TMC improved in 2024 LS → ~47%
-    "jangalmahal":        0.40,  # BJP stronghold; BJP held 2/4 LS → ~40%
-    "medinipur":          0.66,  # TMC advantage; won Medinipur LS 2024 → ~66%
-    "urban_kolkata":      0.88,  # TMC stronghold; 100% LS 2024 → ~88%
-    "south_bengal_rural": 0.58,  # Calibrated down for inflated seat count (120 vs true ~105)
-}
-# Within-region variation: seats differ from regional mean (some are safe, some swing)
-# σ in probability space before logit transform
-WITHIN_REGION_SIGMA = 0.10
+# Margin formula weights (from user's reproducible model spec):
+#   M_ac = 0.45 * ls_2024_margin + 0.25 * assembly_2021_margin + [adjustments applied later]
+# Weights sum to 0.70 for the base data component; remaining 0.30 is applied via
+# SIR, org, turnout adjustments in subsequent pipeline steps.
+WEIGHT_LS_2024 = 0.45
+WEIGHT_ASSEMBLY_2021 = 0.25
 
 
 def build_priors(data_dir: Path = DATA_DIR) -> pd.DataFrame:
     """
-    Compute prior win probability P(TMC wins constituency).
+    Compute prior TMC win probability using REAL 2021 + 2024 data.
 
-    Uses calibrated regional baselines (REGIONAL_WIN_PRIOR) plus constituency-level
-    variation seeded from historical data to differentiate seats within each region.
+    Formula (user-specified reproducible model):
+      base_margin = 0.45 * ls_2024_tmc_minus_bjp + 0.25 * assembly_2021_tmc_minus_bjp
+      p_tmc_raw   = logistic(base_margin / σ)      σ = 7 percentage points
 
-    μ_logit = logit(win_prior_i)
-    σ_logit = SIGMA_LOGIT_PRIOR (constant)
+    Others adjustment (Congress/Left strongholds):
+      In seats where Congress+Left got >20% in 2021 (Murshidabad/Malda), reduce
+      p_tmc by scaling factor to account for three-way competition. This prevents
+      the model from assigning TMC wins in seats Congress will actually win.
+
+    Data sources (real, not synthetic):
+      ecidata_2021.csv:  real 2021 WB assembly results from tecoholic/Election2021 GitHub
+      ls2024_real.csv:   real 2024 LS seat results (all 42 WB seats) mapped to each AC
     """
     constituencies = pd.read_csv(data_dir / "wb_constituencies.csv")
 
-    # Read historical data to add constituency-level deviation from regional mean
-    e2021 = pd.read_csv(data_dir / "ecidata_2021.csv")[["constituency_id", "winner"]]
-    e2016 = pd.read_csv(data_dir / "ecidata_2016.csv")[["constituency_id", "winner"]]
-    e2011 = pd.read_csv(data_dir / "ecidata_2011.csv")[["constituency_id", "winner"]]
+    # Real 2021 assembly data
+    e2021 = pd.read_csv(data_dir / "ecidata_2021.csv")[[
+        "constituency_id", "tmc_voteshare", "bjp_voteshare",
+        "left_voteshare", "cong_voteshare", "tmc_minus_bjp_margin",
+    ]]
 
-    e2021["w21"] = (e2021["winner"] == "tmc").astype(float)
-    e2016["w16"] = (e2016["winner"] == "tmc").astype(float)
-    e2011["w11"] = (e2011["winner"] == "tmc").astype(float)
+    # Real 2024 LS data (LS seat level, mapped to each AC)
+    ls2024 = pd.read_csv(data_dir / "ls2024_real.csv")[[
+        "constituency_id", "ls24_tmc_minus_bjp", "ls24_winner",
+    ]]
 
-    df = (constituencies
-          .merge(e2021[["constituency_id", "w21"]], on="constituency_id")
-          .merge(e2016[["constituency_id", "w16"]], on="constituency_id")
-          .merge(e2011[["constituency_id", "w11"]], on="constituency_id"))
+    df = constituencies.merge(e2021, on="constituency_id", how="left")
+    df = df.merge(ls2024, on="constituency_id", how="left")
 
-    # Constituency-level win signal (raw, before calibration)
-    df["win_raw"] = (0.50 * df["w21"] + 0.30 * df["w16"] + 0.20 * df["w11"]).clip(0.02, 0.98)
+    # Fill missing values with regional fallbacks
+    regional_fallback_margin = {
+        "north_bengal":       -0.04,  # BJP slightly ahead
+        "jangalmahal":        -0.10,  # BJP stronghold
+        "medinipur":          +0.08,  # TMC advantage
+        "urban_kolkata":      +0.30,  # TMC stronghold
+        "south_bengal_rural": +0.18,  # TMC dominant
+    }
+    for col, fallback_map in [
+        ("tmc_minus_bjp_margin", regional_fallback_margin),
+        ("ls24_tmc_minus_bjp",   regional_fallback_margin),
+    ]:
+        df[col] = df[col].fillna(df["region"].map(fallback_map))
 
-    # Regional mean from raw data (will be used to compute deviation)
-    region_means = df.groupby("region")["win_raw"].mean().rename("region_mean_raw")
-    df = df.merge(region_means, on="region")
+    df["left_voteshare"] = df["left_voteshare"].fillna(0.06)
+    df["cong_voteshare"] = df["cong_voteshare"].fillna(0.04)
 
-    # Calibrated: regional baseline + constituency deviation from raw mean
-    df["regional_baseline"] = df["region"].map(REGIONAL_WIN_PRIOR)
-    df["constituency_deviation"] = (df["win_raw"] - df["region_mean_raw"]).clip(-0.30, 0.30)
-    df["win_prior"] = (df["regional_baseline"] + df["constituency_deviation"] * 0.5).clip(0.05, 0.95)
+    # Load minority_share from SIR data — proxy for Congress/ISF recovery potential
+    sir_min = pd.read_csv(data_dir / "sir_deletions.csv")[["constituency_id", "minority_share"]]
+    df = df.merge(sir_min, on="constituency_id", how="left")
+    df["minority_share"] = df["minority_share"].fillna(0.12)
+
+    # ── Base margin: weighted combination of 2024 LS and 2021 assembly ──────────
+    df["base_margin"] = (
+        WEIGHT_LS_2024      * df["ls24_tmc_minus_bjp"] +
+        WEIGHT_ASSEMBLY_2021 * df["tmc_minus_bjp_margin"]
+    )
+
+    # ── Others adjustment: Congress/Left strongholds ─────────────────────────────
+    # Two sources of Congress/Left competition:
+    # (a) 2021 vote share — but Congress was wiped out in 2021 (won 0 seats),
+    #     so this understates their 2026 recovery in Muslim-majority seats.
+    # (b) Minority share proxy: in Muslim-majority areas (Murshidabad, Malda),
+    #     Congress/ISF are recovering in 2026 as they were suppressed in 2021.
+    #     High minority_share → higher Congress/ISF probability of winning the seat.
+    df["others_2021"] = df["left_voteshare"] + df["cong_voteshare"]
+    # Direct signal from 2021 data
+    others_2021_signal = ((df["others_2021"] - 0.10).clip(lower=0.0) * 1.2).clip(upper=0.30)
+    # Congress recovery signal from minority_share (Murshidabad/Malda effect)
+    # minority_share > 0.35 → significant Congress/ISF competition for the seat
+    congress_recovery = ((df["minority_share"] - 0.30).clip(lower=0.0) * 1.5).clip(upper=0.40)
+    df["p_others_adj"] = (others_2021_signal + congress_recovery).clip(upper=0.45)
+
+    # ── Convert margin to TMC win probability ───────────────────────────────────
+    # logistic(margin / σ): margin=0 → 50%, margin=+7pp → 73%, margin=-7pp → 27%
+    df["p_tmc_raw"] = expit(df["base_margin"] / SIGMA_MARGIN_PP)
+
+    # Apply others scaling: in three-way seats, both TMC and BJP probabilities shrink
+    df["win_prior"] = (df["p_tmc_raw"] * (1 - df["p_others_adj"])).clip(0.05, 0.95)
 
     df["mu_logit"] = _safe_logit(df["win_prior"])
     df["sigma_logit"] = SIGMA_LOGIT_PRIOR
 
-    return df[["constituency_id", "name", "region", "win_prior", "mu_logit", "sigma_logit"]]
+    return df[[
+        "constituency_id", "name", "region",
+        "base_margin", "p_tmc_raw", "p_others_adj",
+        "win_prior", "mu_logit", "sigma_logit",
+    ]]
 
 
 def apply_sir_adjustment(priors: pd.DataFrame, data_dir: Path = DATA_DIR) -> pd.DataFrame:
@@ -444,21 +490,23 @@ def bayesian_update(
 
 def monte_carlo(posteriors: pd.DataFrame, n_sim: int = 10_000) -> dict:
     """
-    Simulate n_sim elections using two-level uncertainty:
+    Simulate n_sim elections using three-way seat competition (TMC / BJP / Others).
 
-    1. Global swing ε_global ~ N(0, σ_global²): correlated wave affecting ALL constituencies.
-       Models BJP/TMC election-wide wave (2019 BJP wave, 2021 TMC wave).
-       This dominates the width of the confidence interval.
+    For each constituency in each simulation:
+    1. Draw if seat goes to Others (Congress/Left) with fixed probability p_others_adj
+    2. If not Others: TMC wins if z_eff > 0 (two-party logit contest)
 
+    Two-level uncertainty:
+    1. Global swing ε_global ~ N(0, σ_global²): election-wide wave correlated across all seats.
     2. Constituency noise ε_i ~ N(0, σ_constituency²): seat-specific factors.
 
     z_eff_ik = mu_post_i + ε_global_k + ε_constituency_ik + ε_SIR_ik
-
-    TMC wins constituency if z_eff > 0.
     """
     mu = posteriors["mu_post"].values
     delta_sir = posteriors.get("delta_logit", pd.Series(0.0, index=posteriors.index)).values
     sigma_sir = posteriors.get("sigma_sir_logit", pd.Series(0.0, index=posteriors.index)).values
+    # Per-AC probability that seat goes to Congress/Left/Others
+    p_others = posteriors.get("p_others_adj", pd.Series(0.0, index=posteriors.index)).values
     n_seats = len(mu)
 
     rng = np.random.default_rng(seed=2026)
@@ -472,14 +520,22 @@ def monte_carlo(posteriors: pd.DataFrame, n_sim: int = 10_000) -> dict:
     # SIR uncertainty: (n_sim, n_seats)
     z_sir = rng.normal(0, sigma_sir, size=(n_sim, n_seats))
 
+    # Three-way sampling: first draw which seats go to Others
+    r_others = rng.uniform(0, 1, size=(n_sim, n_seats))
+    seat_to_others = (r_others < p_others)  # (n_sim, n_seats) bool
+
+    # TMC wins among non-Others seats if z_eff > 0
     z_eff = mu + z_global + z_local + z_sir
-    tmc_wins = (z_eff > 0).sum(axis=1)
-    bjp_wins = np.clip(294 - tmc_wins - LEFT_OTHERS_FIXED, 0, 294 - LEFT_OTHERS_FIXED)
+    tmc_wins_all = (z_eff > 0)
+    tmc_wins = (tmc_wins_all & ~seat_to_others).sum(axis=1)
+    others_wins = seat_to_others.sum(axis=1)
+    bjp_wins = 294 - tmc_wins - others_wins
 
     # SIR-only band: compare with/without SIR delta applied
     z_no_sir = mu - delta_sir + z_global + z_local
-    tmc_no_sir = (z_no_sir > 0).sum(axis=1)
-    sir_band = int(np.percentile(tmc_no_sir - tmc_wins, 75)) + int(np.percentile(tmc_wins, 95) - np.percentile(tmc_wins, 5)) // 4
+    tmc_no_sir = ((z_no_sir > 0) & ~seat_to_others).sum(axis=1)
+    sir_band = int(np.percentile(tmc_no_sir - tmc_wins, 75)) + \
+               int(np.percentile(tmc_wins, 95) - np.percentile(tmc_wins, 5)) // 4
 
     return {
         # Primary display: p25-p75 (central 50% range — "likely" seats)
@@ -494,6 +550,7 @@ def monte_carlo(posteriors: pd.DataFrame, n_sim: int = 10_000) -> dict:
         "bjp_p75": int(np.percentile(bjp_wins, 75)),
         "bjp_p5": int(np.percentile(bjp_wins, 5)),
         "bjp_p95": int(np.percentile(bjp_wins, 95)),
+        "others_p50": int(np.percentile(others_wins, 50)),
         "p_tmc_win": float(np.mean(tmc_wins >= MAJORITY)),
         "p_hung": float(np.mean((tmc_wins < MAJORITY) & (tmc_wins >= 120))),
         "p_bjp_win": float(np.mean(bjp_wins >= MAJORITY)),

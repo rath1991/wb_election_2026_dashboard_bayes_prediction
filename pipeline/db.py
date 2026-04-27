@@ -29,6 +29,7 @@ def _ensure_schema(conn: duckdb.DuckDBPyConnection):  # noqa: C901
             date DATE PRIMARY KEY,
             tmc_p5 INTEGER, tmc_p25 INTEGER, tmc_p50 INTEGER, tmc_p75 INTEGER, tmc_p95 INTEGER,
             bjp_p5 INTEGER, bjp_p25 INTEGER, bjp_p50 INTEGER, bjp_p75 INTEGER, bjp_p95 INTEGER,
+            others_p50 INTEGER,
             p_tmc_win DOUBLE, p_hung DOUBLE, p_bjp_win DOUBLE,
             sir_uncertainty_band INTEGER,
             prev_tmc_p50 INTEGER,
@@ -50,11 +51,17 @@ def _ensure_schema(conn: duckdb.DuckDBPyConnection):  # noqa: C901
     conn.execute("""
         CREATE SEQUENCE IF NOT EXISTS regional_signals_seq START 1
     """)
-    # Migration: add top_articles_json column if it doesn't exist yet
+    # Migrations: add columns to existing tables if they don't exist yet
     try:
         cols_df = conn.execute("SELECT column_name FROM information_schema.columns WHERE table_name='regional_signals'").fetchdf()
         if "top_articles_json" not in cols_df["column_name"].tolist():
             conn.execute("ALTER TABLE regional_signals ADD COLUMN top_articles_json VARCHAR")
+    except Exception:
+        pass
+    try:
+        cols_df = conn.execute("SELECT column_name FROM information_schema.columns WHERE table_name='forecasts'").fetchdf()
+        if "others_p50" not in cols_df["column_name"].tolist():
+            conn.execute("ALTER TABLE forecasts ADD COLUMN others_p50 INTEGER")
     except Exception:
         pass
     conn.execute("""

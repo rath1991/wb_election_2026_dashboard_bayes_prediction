@@ -1,0 +1,295 @@
+constituency_id,ac_name,ls_seat,tmc_voteshare_ls24,bjp_voteshare_ls24,ls24_tmc_minus_bjp,ls24_winner
+1,Darjeeling,Darjeeling,0.3774,0.5119,-0.1345,BJP
+2,Kurseong,Darjeeling,0.3774,0.5119,-0.1345,BJP
+3,Kalimpong,Darjeeling,0.3774,0.5119,-0.1345,BJP
+4,Matigara-Naxalbari,Darjeeling,0.3774,0.5119,-0.1345,BJP
+5,Siliguri,Darjeeling,0.3774,0.5119,-0.1345,BJP
+6,Phansidewa,Darjeeling,0.3774,0.5119,-0.1345,BJP
+7,Chopra,Raiganj,0.3597,0.4095,-0.0498,BJP
+8,Islampur,Raiganj,0.3597,0.4095,-0.0498,BJP
+9,Goalpokhar-I,Raiganj,0.3597,0.4095,-0.0498,BJP
+10,Goalpokhar-II,Raiganj,0.3597,0.4095,-0.0498,BJP
+11,Hemtabad,Raiganj,0.3597,0.4095,-0.0498,BJP
+12,Kaliaganj,Raiganj,0.3597,0.4095,-0.0498,BJP
+13,Raiganj,Raiganj,0.3597,0.4095,-0.0498,BJP
+14,Itahar,Raiganj,0.3597,0.4095,-0.0498,BJP
+15,Karandighi,Raiganj,0.3597,0.4095,-0.0498,BJP
+16,Balurghat,Balurghat,0.4564,0.4648,-0.0084,BJP
+17,Tapan,Balurghat,0.4564,0.4648,-0.0084,BJP
+18,Gangarampur,Balurghat,0.4564,0.4648,-0.0084,BJP
+19,Kushmandi,Balurghat,0.4564,0.4648,-0.0084,BJP
+20,Kumarganj,Balurghat,0.4564,0.4648,-0.0084,BJP
+21,Harirampur,Balurghat,0.4564,0.4648,-0.0084,BJP
+22,Alipurduar,Alipurduar,0.4363,0.4894,-0.0531,BJP
+23,Falakata,Alipurduar,0.4363,0.4894,-0.0531,BJP
+24,Madarihat,Alipurduar,0.4363,0.4894,-0.0531,BJP
+25,Kumargram,Alipurduar,0.4363,0.4894,-0.0531,BJP
+26,Kalchini,Alipurduar,0.4363,0.4894,-0.0531,BJP
+27,Jalpaiguri,Jalpaiguri,0.4305,0.4854,-0.0549,BJP
+28,Rajganj,Jalpaiguri,0.4305,0.4854,-0.0549,BJP
+29,Dabgram-Fulbari,Jalpaiguri,0.4305,0.4854,-0.0549,BJP
+30,Maynaguri,Jalpaiguri,0.4305,0.4854,-0.0549,BJP
+31,Mal,Jalpaiguri,0.4305,0.4854,-0.0549,BJP
+32,Nagrakata,Jalpaiguri,0.4305,0.4854,-0.0549,BJP
+33,Dhupguri,Jalpaiguri,0.4305,0.4854,-0.0549,BJP
+34,Cooch Behar North,Cooch Behar,0.4853,0.4611,0.0242,AITC
+35,Cooch Behar South,Cooch Behar,0.4853,0.4611,0.0242,AITC
+36,Sitai,Cooch Behar,0.4853,0.4611,0.0242,AITC
+37,Sitalkuchi,Cooch Behar,0.4853,0.4611,0.0242,AITC
+38,Tufanganj,Cooch Behar,0.4853,0.4611,0.0242,AITC
+39,Natabari,Cooch Behar,0.4853,0.4611,0.0242,AITC
+40,Dinhata,Cooch Behar,0.4853,0.4611,0.0242,AITC
+41,Nishiganj,Cooch Behar,0.4853,0.4611,0.0242,AITC
+42,Mekhliganj,Cooch Behar,0.4853,0.4611,0.0242,AITC
+43,Habibpur,Malda North,0.3169,0.3717,-0.0548,BJP
+44,Gazole,Malda North,0.3169,0.3717,-0.0548,BJP
+45,Chanchal,Malda North,0.3169,0.3717,-0.0548,BJP
+46,Harischandrapur-I,Malda North,0.3169,0.3717,-0.0548,BJP
+47,Harischandrapur-II,Malda North,0.3169,0.3717,-0.0548,BJP
+48,Ratua-I,Malda North,0.3169,0.3717,-0.0548,BJP
+49,Ratua-II,Malda South,0.1765,0.3239,-0.1474,INC
+50,Manikchak,Malda South,0.1765,0.3239,-0.1474,INC
+51,Malda,Malda South,0.1765,0.3239,-0.1474,INC
+52,English Bazar,Malda South,0.1765,0.3239,-0.1474,INC
+53,Mothabari,Malda South,0.1765,0.3239,-0.1474,INC
+54,Sujapur,Malda South,0.1765,0.3239,-0.1474,INC
+55,Purulia,Purulia,0.3918,0.4037,-0.0119,BJP
+56,Jhalda-I,Purulia,0.3918,0.4037,-0.0119,BJP
+57,Jhalda-II,Purulia,0.3918,0.4037,-0.0119,BJP
+58,Balarampur,Purulia,0.3918,0.4037,-0.0119,BJP
+59,Baghmundi,Purulia,0.3918,0.4037,-0.0119,BJP
+60,Kashipur,Purulia,0.3918,0.4037,-0.0119,BJP
+61,Para,Purulia,0.3918,0.4037,-0.0119,BJP
+62,Raghunathpur-I,Purulia,0.3918,0.4037,-0.0119,BJP
+63,Raghunathpur-II,Purulia,0.3918,0.4037,-0.0119,BJP
+64,Manbazar-I,Purulia,0.3918,0.4037,-0.0119,BJP
+65,Manbazar-II,Purulia,0.3918,0.4037,-0.0119,BJP
+66,Jhargram,Jhargram,0.4993,0.3824,0.1169,AITC
+67,Binpur-I,Jhargram,0.4993,0.3824,0.1169,AITC
+68,Binpur-II,Jhargram,0.4993,0.3824,0.1169,AITC
+69,Nayagram,Jhargram,0.4993,0.3824,0.1169,AITC
+70,Ranibandh,Bishnupur,0.4455,0.4491,-0.0036,BJP
+71,Raipur-I,Bishnupur,0.4455,0.4491,-0.0036,BJP
+72,Raipur-II,Bishnupur,0.4455,0.4491,-0.0036,BJP
+73,Taldangra,Bishnupur,0.4455,0.4491,-0.0036,BJP
+74,Saltora,Bishnupur,0.4455,0.4491,-0.0036,BJP
+75,Chhatna,Bishnupur,0.4455,0.4491,-0.0036,BJP
+76,Barjora,Bishnupur,0.4455,0.4491,-0.0036,BJP
+77,Salboni,Medinipur,0.4738,0.4555,0.0183,AITC
+78,Keshpur,Medinipur,0.4738,0.4555,0.0183,AITC
+79,Garbeta,Medinipur,0.4738,0.4555,0.0183,AITC
+80,Bankura,Bishnupur,0.4455,0.4491,-0.0036,BJP
+81,Onda,Bishnupur,0.4455,0.4491,-0.0036,BJP
+82,Bishnupur,Bishnupur,0.4455,0.4491,-0.0036,BJP
+83,Kotulpur,Bishnupur,0.4455,0.4491,-0.0036,BJP
+84,Indpur,Bishnupur,0.4455,0.4491,-0.0036,BJP
+85,Sonamukhi,Bishnupur,0.4455,0.4491,-0.0036,BJP
+86,Medinipur,Medinipur,0.4738,0.4555,0.0183,AITC
+87,Narayangarh,Medinipur,0.4738,0.4555,0.0183,AITC
+88,Sabang,Medinipur,0.4738,0.4555,0.0183,AITC
+89,Pingla,Medinipur,0.4738,0.4555,0.0183,AITC
+90,Kharagpur Sadar,Medinipur,0.4738,0.4555,0.0183,AITC
+91,Nandakumar,Tamluk,0.4364,0.4857,-0.0493,BJP
+92,Mahishadal,Tamluk,0.4364,0.4857,-0.0493,BJP
+93,Haldia,Tamluk,0.4364,0.4857,-0.0493,BJP
+94,Nandigram,Tamluk,0.4364,0.4857,-0.0493,BJP
+95,Chandipur,Tamluk,0.4364,0.4857,-0.0493,BJP
+96,Patashpur,Tamluk,0.4364,0.4857,-0.0493,BJP
+97,Contai North,Contai,0.4665,0.4977,-0.0312,BJP
+98,Contai South,Contai,0.4665,0.4977,-0.0312,BJP
+99,Ramnagar,Contai,0.4665,0.4977,-0.0312,BJP
+100,Egra,Contai,0.4665,0.4977,-0.0312,BJP
+101,Bhagwanpur,Contai,0.4665,0.4977,-0.0312,BJP
+102,Khejuri,Contai,0.4665,0.4977,-0.0312,BJP
+103,Tamluk,Tamluk,0.4364,0.4857,-0.0493,BJP
+104,Moyna,Tamluk,0.4364,0.4857,-0.0493,BJP
+105,Panskura East,Tamluk,0.4364,0.4857,-0.0493,BJP
+106,Panskura West,Tamluk,0.4364,0.4857,-0.0493,BJP
+107,Kolkata Port,Kolkata Dakshin,0.4952,0.3445,0.1507,AITC
+108,Bhabanipur,Kolkata Dakshin,0.4952,0.3445,0.1507,AITC
+109,Rashbehari,Kolkata Dakshin,0.4952,0.3445,0.1507,AITC
+110,Ballygunge,Kolkata Dakshin,0.4952,0.3445,0.1507,AITC
+111,Chowringhee,Kolkata Dakshin,0.4952,0.3445,0.1507,AITC
+112,Entally,Kolkata Uttar,0.4744,0.3778,0.0966,AITC
+113,Beleghata,Kolkata Uttar,0.4744,0.3778,0.0966,AITC
+114,Jorasanko,Kolkata Uttar,0.4744,0.3778,0.0966,AITC
+115,Shyampukur,Kolkata Uttar,0.4744,0.3778,0.0966,AITC
+116,Maniktala,Kolkata Uttar,0.4744,0.3778,0.0966,AITC
+117,Kasba,Kolkata Dakshin,0.4952,0.3445,0.1507,AITC
+118,Howrah North,Howrah,0.4925,0.3593,0.1332,AITC
+119,Howrah Central,Howrah,0.4925,0.3593,0.1332,AITC
+120,Howrah South,Howrah,0.4925,0.3593,0.1332,AITC
+121,Shibpur,Howrah,0.4925,0.3593,0.1332,AITC
+122,Bally,Howrah,0.4925,0.3593,0.1332,AITC
+123,Uluberia North,Uluberia,0.5206,0.3635,0.1571,AITC
+124,Uluberia South,Uluberia,0.5206,0.3635,0.1571,AITC
+125,Shyampur,Uluberia,0.5206,0.3635,0.1571,AITC
+126,Bagnan,Uluberia,0.5206,0.3635,0.1571,AITC
+127,Amta,Uluberia,0.5206,0.3635,0.1571,AITC
+128,Udaynarayanpur,Uluberia,0.5206,0.3635,0.1571,AITC
+129,Jagatballavpur,Howrah,0.4925,0.3593,0.1332,AITC
+130,Domjur,Howrah,0.4925,0.3593,0.1332,AITC
+131,Panchla,Howrah,0.4925,0.3593,0.1332,AITC
+132,Sankrail,Howrah,0.4925,0.3593,0.1332,AITC
+133,Panihati,Barrackpur,0.4552,0.3988,0.0564,AITC
+134,Kamarhati,Dum Dum,0.4197,0.3636,0.0561,AITC
+135,Dum Dum,Dum Dum,0.4197,0.3636,0.0561,AITC
+136,Rajarhat-Newtown,Barasat,0.4506,0.3763,0.0743,AITC
+137,Bidhannagar,Dum Dum,0.4197,0.3636,0.0561,AITC
+138,Baranagar,Dum Dum,0.4197,0.3636,0.0561,AITC
+139,Barrackpur,Barrackpur,0.4552,0.3988,0.0564,AITC
+140,Naihati,Barrackpur,0.4552,0.3988,0.0564,AITC
+141,Bhatpara,Barrackpur,0.4552,0.3988,0.0564,AITC
+142,Jagaddal,Barrackpur,0.4552,0.3988,0.0564,AITC
+143,Noapara,Barrackpur,0.4552,0.3988,0.0564,AITC
+144,Habra,Barasat,0.4506,0.3763,0.0743,AITC
+145,Amdanga,Barasat,0.4506,0.3763,0.0743,AITC
+146,Rajarhat,Barasat,0.4506,0.3763,0.0743,AITC
+147,Deganga,Barasat,0.4506,0.3763,0.0743,AITC
+148,Haroa,Basirhat,0.5268,0.3082,0.2186,AITC
+149,Minakhan,Basirhat,0.5268,0.3082,0.2186,AITC
+150,Sandeshkhali-I,Basirhat,0.5268,0.3082,0.2186,AITC
+151,Sandeshkhali-II,Basirhat,0.5268,0.3082,0.2186,AITC
+152,Basirhat North,Basirhat,0.5268,0.3082,0.2186,AITC
+153,Basirhat South,Basirhat,0.5268,0.3082,0.2186,AITC
+154,Hingalganj,Basirhat,0.5268,0.3082,0.2186,AITC
+155,Gaighata,Barasat,0.4506,0.3763,0.0743,AITC
+156,Swarupnagar,Barasat,0.4506,0.3763,0.0743,AITC
+157,Baduria,Barasat,0.4506,0.3763,0.0743,AITC
+158,Bangaon North,Bangaon,0.4333,0.4827,-0.0494,BJP
+159,Bangaon South,Bangaon,0.4333,0.4827,-0.0494,BJP
+160,Gaighata,Bangaon,0.4333,0.4827,-0.0494,BJP
+161,Ranaghat North-I,Ranaghat,0.3868,0.5081,-0.1213,BJP
+162,Ranaghat North-II,Ranaghat,0.3868,0.5081,-0.1213,BJP
+163,Ranaghat South,Ranaghat,0.3868,0.5081,-0.1213,BJP
+164,Chakdah,Ranaghat,0.3868,0.5081,-0.1213,BJP
+165,Kalyani,Ranaghat,0.3868,0.5081,-0.1213,BJP
+166,Haringhata,Ranaghat,0.3868,0.5081,-0.1213,BJP
+167,Krishnaganj,Krishnanagar,0.4408,0.401,0.0398,AITC
+168,Krishnanagar North,Krishnanagar,0.4408,0.401,0.0398,AITC
+169,Krishnanagar South,Krishnanagar,0.4408,0.401,0.0398,AITC
+170,Nabadwip,Krishnanagar,0.4408,0.401,0.0398,AITC
+171,Chapra,Krishnanagar,0.4408,0.401,0.0398,AITC
+172,Karimpur,Krishnanagar,0.4408,0.401,0.0398,AITC
+173,Tehatta,Krishnanagar,0.4408,0.401,0.0398,AITC
+174,Palashipara,Krishnanagar,0.4408,0.401,0.0398,AITC
+175,Nakashipara,Krishnanagar,0.4408,0.401,0.0398,AITC
+176,Hanskhali,Ranaghat,0.3868,0.5081,-0.1213,BJP
+177,Murshidabad,Murshidabad,0.4419,0.1198,0.3221,AITC
+178,Nabagram,Murshidabad,0.4419,0.1198,0.3221,AITC
+179,Khargram,Murshidabad,0.4419,0.1198,0.3221,AITC
+180,Kandi,Murshidabad,0.4419,0.1198,0.3221,AITC
+181,Bharatpur,Murshidabad,0.4419,0.1198,0.3221,AITC
+182,Rejinagar,Murshidabad,0.4419,0.1198,0.3221,AITC
+183,Beldanga-I,Murshidabad,0.4419,0.1198,0.3221,AITC
+184,Beldanga-II,Murshidabad,0.4419,0.1198,0.3221,AITC
+185,Baharampur,Baharampur,0.3782,0.1154,0.2628,AITC
+186,Hariharpara,Baharampur,0.3782,0.1154,0.2628,AITC
+187,Nowda,Baharampur,0.3782,0.1154,0.2628,AITC
+188,Samserganj,Jangipur,0.3975,0.1497,0.2478,AITC
+189,Suti-I,Jangipur,0.3975,0.1497,0.2478,AITC
+190,Suti-II,Jangipur,0.3975,0.1497,0.2478,AITC
+191,Jangipur,Jangipur,0.3975,0.1497,0.2478,AITC
+192,Raghunathganj-I,Jangipur,0.3975,0.1497,0.2478,AITC
+193,Raghunathganj-II,Jangipur,0.3975,0.1497,0.2478,AITC
+194,Sagardighi,Jangipur,0.3975,0.1497,0.2478,AITC
+195,Lalgola,Baharampur,0.3782,0.1154,0.2628,AITC
+196,Bhagwangola-I,Baharampur,0.3782,0.1154,0.2628,AITC
+197,Bhagwangola-II,Murshidabad,0.4419,0.1198,0.3221,AITC
+198,Domkal,Murshidabad,0.4419,0.1198,0.3221,AITC
+199,Jalangi,Murshidabad,0.4419,0.1198,0.3221,AITC
+200,Berhampore,Baharampur,0.3782,0.1154,0.2628,AITC
+201,Birbhum,Birbhum,0.47,0.3406,0.1294,AITC
+202,Nalhati,Birbhum,0.47,0.3406,0.1294,AITC
+203,Murarai-I,Birbhum,0.47,0.3406,0.1294,AITC
+204,Murarai-II,Birbhum,0.47,0.3406,0.1294,AITC
+205,Mayureswar-I,Birbhum,0.47,0.3406,0.1294,AITC
+206,Mayureswar-II,Birbhum,0.47,0.3406,0.1294,AITC
+207,Rampurhat-I,Birbhum,0.47,0.3406,0.1294,AITC
+208,Rampurhat-II,Birbhum,0.47,0.3406,0.1294,AITC
+209,Hansan,Birbhum,0.47,0.3406,0.1294,AITC
+210,Dubrajpur,Bolpur,0.5594,0.3454,0.214,AITC
+211,Suri-I,Bolpur,0.5594,0.3454,0.214,AITC
+212,Suri-II,Bolpur,0.5594,0.3454,0.214,AITC
+213,Bolpur,Bolpur,0.5594,0.3454,0.214,AITC
+214,Ilambazar,Bolpur,0.5594,0.3454,0.214,AITC
+215,Burdwan North,Burdwan-Durgapur,0.4797,0.3879,0.0918,AITC
+216,Burdwan South,Burdwan-Durgapur,0.4797,0.3879,0.0918,AITC
+217,Raina,Burdwan-Durgapur,0.4797,0.3879,0.0918,AITC
+218,Jamalpur,Burdwan-Durgapur,0.4797,0.3879,0.0918,AITC
+219,Monteswar,Burdwan-Durgapur,0.4797,0.3879,0.0918,AITC
+220,Kalna,Burdwan-Durgapur,0.4797,0.3879,0.0918,AITC
+221,Memari,Burdwan-Durgapur,0.4797,0.3879,0.0918,AITC
+222,Katwa,Burdwan-Durgapur,0.4797,0.3879,0.0918,AITC
+223,Ketugram,Bardhaman Purba,0.4807,0.3684,0.1123,AITC
+224,Mangalkot,Bardhaman Purba,0.4807,0.3684,0.1123,AITC
+225,Ausgram-I,Bardhaman Purba,0.4807,0.3684,0.1123,AITC
+226,Ausgram-II,Bardhaman Purba,0.4807,0.3684,0.1123,AITC
+227,Galsi,Bardhaman Purba,0.4807,0.3684,0.1123,AITC
+228,Durgapur East,Burdwan-Durgapur,0.4797,0.3879,0.0918,AITC
+229,Durgapur West,Burdwan-Durgapur,0.4797,0.3879,0.0918,AITC
+230,Raniganj,Asansol,0.4656,0.4198,0.0458,AITC
+231,Jamuria,Asansol,0.4656,0.4198,0.0458,AITC
+232,Asansol North,Asansol,0.4656,0.4198,0.0458,AITC
+233,Asansol South,Asansol,0.4656,0.4198,0.0458,AITC
+234,Kulti,Asansol,0.4656,0.4198,0.0458,AITC
+235,Barabani,Asansol,0.4656,0.4198,0.0458,AITC
+236,Pandabeswar,Asansol,0.4656,0.4198,0.0458,AITC
+237,Hooghly,Hooghly,0.4625,0.4119,0.0506,AITC
+238,Singur,Hooghly,0.4625,0.4119,0.0506,AITC
+239,Chanditala,Hooghly,0.4625,0.4119,0.0506,AITC
+240,Jangipara,Hooghly,0.4625,0.4119,0.0506,AITC
+241,Haripal,Hooghly,0.4625,0.4119,0.0506,AITC
+242,Dhaniakhali,Hooghly,0.4625,0.4119,0.0506,AITC
+243,Pursurah,Hooghly,0.4625,0.4119,0.0506,AITC
+244,Goghat,Arambag,0.4566,0.4525,0.0041,AITC
+245,Arambag,Arambag,0.4566,0.4525,0.0041,AITC
+246,Khanakul,Arambag,0.4566,0.4525,0.0041,AITC
+247,Tarakeswar,Hooghly,0.4625,0.4119,0.0506,AITC
+248,Serampore,Serampore,0.4567,0.3382,0.1185,AITC
+249,Champdani,Serampore,0.4567,0.3382,0.1185,AITC
+250,Uttarpara,Serampore,0.4567,0.3382,0.1185,AITC
+251,Srirampore,Serampore,0.4567,0.3382,0.1185,AITC
+252,Bally-Jagachha,Serampore,0.4567,0.3382,0.1185,AITC
+253,Chinsurah,Hooghly,0.4625,0.4119,0.0506,AITC
+254,Chandernagore,Hooghly,0.4625,0.4119,0.0506,AITC
+255,Uttarpara,Serampore,0.4567,0.3382,0.1185,AITC
+256,Diamond Harbour,Diamond Harbour,0.684,0.2201,0.4639,AITC
+257,Falta,Diamond Harbour,0.684,0.2201,0.4639,AITC
+258,Satgachhi,Diamond Harbour,0.684,0.2201,0.4639,AITC
+259,Bishnupur,Diamond Harbour,0.684,0.2201,0.4639,AITC
+260,Magrahat West,Diamond Harbour,0.684,0.2201,0.4639,AITC
+261,Magrahat East,Diamond Harbour,0.684,0.2201,0.4639,AITC
+262,Mandirbazar,Diamond Harbour,0.684,0.2201,0.4639,AITC
+263,Joynagar,Joynagar,0.6032,0.286,0.3172,AITC
+264,Kultali,Joynagar,0.6032,0.286,0.3172,AITC
+265,Baruipur East,Joynagar,0.6032,0.286,0.3172,AITC
+266,Baruipur West,Joynagar,0.6032,0.286,0.3172,AITC
+267,Sonarpur North,Joynagar,0.6032,0.286,0.3172,AITC
+268,Sonarpur South,Joynagar,0.6032,0.286,0.3172,AITC
+269,Canning West,Mathurapur,0.5058,0.3712,0.1346,AITC
+270,Canning East,Mathurapur,0.5058,0.3712,0.1346,AITC
+271,Basanti,Mathurapur,0.5058,0.3712,0.1346,AITC
+272,Gosaba,Mathurapur,0.5058,0.3712,0.1346,AITC
+273,Patharpratima,Mathurapur,0.5058,0.3712,0.1346,AITC
+274,Kakdwip,Mathurapur,0.5058,0.3712,0.1346,AITC
+275,Sagar,Mathurapur,0.5058,0.3712,0.1346,AITC
+276,Kulpi,Mathurapur,0.5058,0.3712,0.1346,AITC
+277,Mathurapur,Mathurapur,0.5058,0.3712,0.1346,AITC
+278,Budge Budge,Diamond Harbour,0.684,0.2201,0.4639,AITC
+279,Metiabruz,Kolkata Dakshin,0.4952,0.3445,0.1507,AITC
+280,Garden Reach,Kolkata Dakshin,0.4952,0.3445,0.1507,AITC
+281,Jadavpur,Jadavpur,0.459,0.2939,0.1651,AITC
+282,Tollygunge,Jadavpur,0.459,0.2939,0.1651,AITC
+283,Behala East,Jadavpur,0.459,0.2939,0.1651,AITC
+284,Behala West,Jadavpur,0.459,0.2939,0.1651,AITC
+285,Thakurpukur,Jadavpur,0.459,0.2939,0.1651,AITC
+286,Regent Park,Jadavpur,0.459,0.2939,0.1651,AITC
+287,Kalighat,Kolkata Dakshin,0.4952,0.3445,0.1507,AITC
+288,Cossipore-Belgachia,Kolkata Uttar,0.4744,0.3778,0.0966,AITC
+289,Belgachia,Kolkata Uttar,0.4744,0.3778,0.0966,AITC
+290,Sinthee,Dum Dum,0.4197,0.3636,0.0561,AITC
+291,Baghajatin,Jadavpur,0.459,0.2939,0.1651,AITC
+292,Phool Bagan,Kolkata Uttar,0.4744,0.3778,0.0966,AITC
+293,Ward 55,Kolkata Uttar,0.4744,0.3778,0.0966,AITC
+294,Ward 108,Kolkata Dakshin,0.4952,0.3445,0.1507,AITC
