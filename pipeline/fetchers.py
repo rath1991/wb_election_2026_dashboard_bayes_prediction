@@ -314,6 +314,155 @@ def fetch_youtube_comments(channel_ids: list[str], max_per_channel: int = 20) ->
         return []
 
 
+# ── ECI Voter Turnout + Phase 1 seed data ────────────────────────────────────
+
+# Phase 1 post-scrutiny district turnout — sourced from newsonair.gov.in + ECI press notes
+# April 23, 2026 polling. Updated after RO scrutiny.
+PHASE1_DISTRICT_TURNOUT_SEED = [
+    # (district, region, post_scrutiny_pct, turnout_2021_est, notes)
+    ("Cooch Behar",    "north_bengal",       96.2, 83.0, "Highest in Phase 1; BJP-competitive Matua/Rajvanshi belt"),
+    ("Alipurduar",     "north_bengal",       94.1, 82.0, "Forest belt; BJP stronghold"),
+    ("Jalpaiguri",     "north_bengal",       93.8, 81.5, "Tea garden seats; swing territory"),
+    ("Darjeeling",     "north_bengal",       89.2, 78.0, "Hill + plains split; GJM factor"),
+    ("Kalimpong",      "north_bengal",       83.0, 74.0, "Lowest in Phase 1; GJM stronghold, GNLF competition"),
+    ("Malda",          "north_bengal",       92.5, 80.5, "High Muslim concentration; TMC vs Congress fight"),
+    ("Murshidabad",    "south_bengal_rural", 93.5, 81.0, "Muslim-majority; TMC vs Congress/ISF fight"),
+    ("Uttar Dinajpur", "north_bengal",       91.8, 79.5, "High Muslim share; BJP non-competitive here"),
+    ("Dakshin Dinajpur","north_bengal",      93.1, 80.0, "Mixed; BJP has presence in Hindu seats"),
+    ("Birbhum",        "south_bengal_rural", 93.6, 81.5, "TMC stronghold; Anubrata Mondal territory"),
+    ("Paschim Burdwan","jangalmahal",        92.4, 80.0, "Asansol; coal belt; BJP industrial vote"),
+    ("Bankura",        "jangalmahal",        94.0, 82.0, "Tribal belt; BJP competitive"),
+    ("Purulia",        "jangalmahal",        93.2, 81.0, "BJP stronghold; SC/ST concentration"),
+    ("Jhargram",       "jangalmahal",        93.8, 82.5, "Jangalmahal heartland; BJP held 2021"),
+]
+
+# 2026 Phase 1 overall: 93.19% post-scrutiny (newsonair.gov.in)
+PHASE1_OVERALL_TURNOUT = 93.19
+# 2021 WB overall turnout: ~76.9% (ECI)
+WB_2021_OVERALL_TURNOUT = 76.9
+
+
+def fetch_eci_vtr(phase: int = 1) -> list[dict]:
+    """
+    Fetch AC-wise turnout from ECI Voter Turnout App.
+    Falls back gracefully if API is unavailable — uses seed data.
+    ECI VTR API: non-statutory, gives approximate 2-hourly trends.
+    After scrutiny, RO/ARO updates booth-wise counts.
+    """
+    rows = []
+
+    # Try ECI resultsapi endpoint (structure may change)
+    try:
+        url = f"https://resultsapi.eci.gov.in/ResultWebService/TurnoutResult?StateCode=S24&Phase={phase}"
+        resp = requests.get(url, timeout=15,
+                            headers={"User-Agent": "Mozilla/5.0 WB-Election-Dashboard/1.0"})
+        if resp.status_code == 200:
+            data = resp.json()
+            for item in data.get("lstTurnout", []):
+                rows.append({
+                    "phase": phase,
+                    "district": item.get("districtName", ""),
+                    "ac_no": item.get("acNo"),
+                    "ac_name": item.get("acName", ""),
+                    "region": _infer_region(item.get("districtName", "")),
+                    "total_electors": item.get("totalElectors"),
+                    "initial_turnout_percent": item.get("turnoutPercent"),
+                    "votes_polled": item.get("totalVotesCast"),
+                    "male_turnout_percent": item.get("maleTurnout"),
+                    "female_turnout_percent": item.get("femaleTurnout"),
+                    "source": "ECI_VTR_API",
+                    "source_type": "official_vtr",
+                    "confidence_score": 0.85,
+                })
+            print(f"  ECI VTR API: {len(rows)} AC records for Phase {phase}")
+            return rows
+    except Exception as e:
+        print(f"  ECI VTR API unavailable: {e} — using seed data")
+
+    # Fallback: use seed data (post-scrutiny district-level)
+    for district, region, pct, t2021, notes in PHASE1_DISTRICT_TURNOUT_SEED:
+        rows.append({
+            "phase": phase,
+            "district": district,
+            "ac_no": None,
+            "ac_name": district,  # district-level entry when AC not available
+            "region": region,
+            "total_electors": None,
+            "initial_turnout_percent": None,
+            "post_scrutiny_turnout_percent": pct,
+            "votes_polled": None,
+            "turnout_2021": t2021,
+            "source": "newsonair/ECI_press_note",
+            "source_type": "official_scrutiny",
+            "confidence_score": 0.92,
+            "notes": notes,
+        })
+    print(f"  Phase {phase} seed data: {len(rows)} district records loaded")
+    return rows
+
+
+def _infer_region(district: str) -> str:
+    d = district.lower()
+    if any(x in d for x in ["cooch", "alipurduar", "jalpaiguri", "darjeeling",
+                              "kalimpong", "malda", "dinajpur", "siliguri"]):
+        return "north_bengal"
+    if any(x in d for x in ["purulia", "bankura", "jhargram", "paschim burdwan", "birbhum"]):
+        return "jangalmahal"
+    if any(x in d for x in ["medinipur", "midnapore", "purba burdwan"]):
+        return "medinipur"
+    if any(x in d for x in ["kolkata", "howrah", "hooghly"]):
+        return "urban_kolkata"
+    return "south_bengal_rural"
+
+
+def compute_turnout_regional_signals(turnout_rows: list[dict]) -> dict:
+    """
+    Convert phase turnout into regional signals for the Bayesian update.
+
+    Signal logic:
+    - turnout_swing_vs_2021 > 0 in BJP-competitive area → positive bjp signal
+    - turnout_swing_vs_2021 > 0 in TMC stronghold → positive tmc signal
+    - Very high swing (>15pp) suggests strong mobilization on one side
+
+    Returns: {region: {"turnout_signal": float ∈ [-1,+1], "avg_swing": float, "district_count": int}}
+    """
+    from collections import defaultdict
+    accum = defaultdict(list)
+
+    BJP_COMPETITIVE = {"north_bengal", "jangalmahal"}
+    TMC_STRONGHOLD  = {"urban_kolkata", "south_bengal_rural", "medinipur"}
+
+    for r in turnout_rows:
+        region = r.get("region")
+        swing  = r.get("turnout_swing_vs_2021")
+        if not region or swing is None:
+            continue
+        accum[region].append(swing)
+
+    signals = {}
+    for region, swings in accum.items():
+        avg_swing = sum(swings) / len(swings)
+        # Normalise: 15pp swing = strong signal (±1.0)
+        raw = avg_swing / 15.0
+        raw = max(-1.0, min(1.0, raw))
+
+        if region in BJP_COMPETITIVE:
+            # Higher turnout in BJP belts = BJP enthusiasm (or ECI-driven mobilisation)
+            signal = raw * 0.6   # BJP +ve, muted (could also be counter-TMC)
+        elif region in TMC_STRONGHOLD:
+            # Higher turnout in TMC belts = TMC counter-mobilisation from SIR anger
+            signal = raw * (-0.4)  # Slightly TMC -ve (more TMC voters = less BJP gain)
+        else:
+            signal = 0.0
+
+        signals[region] = {
+            "turnout_signal": round(signal, 3),
+            "avg_swing_vs_2021": round(avg_swing, 2),
+            "district_count": len(swings),
+        }
+    return signals
+
+
 def fetch_all(days_back: int = 2) -> list[dict]:
     """
     Full fetch across all source tiers.

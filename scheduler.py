@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from pipeline.fetchers import fetch_all
+from pipeline.fetchers import fetch_all, fetch_eci_vtr, compute_turnout_regional_signals
 from pipeline.filter_extract import filter_and_extract, aggregate_regional_signals, extract_bjp_conditions
 from pipeline.bayesian import run_full_pipeline
 from pipeline.db import (
@@ -21,6 +21,7 @@ from pipeline.db import (
     upsert_regional_signals,
     upsert_bjp_conditions,
     get_latest_forecast,
+    upsert_phase_turnout,
 )
 
 
@@ -30,6 +31,14 @@ def run_pipeline():
     print(f"{'='*50}")
 
     client = get_conn()
+
+    # 0. Phase turnout — fetch/update ECI VTR data (idempotent, never deletes)
+    print("\n[0/5] Updating Phase turnout data from ECI VTR...")
+    for phase in [1, 2]:
+        turnout_rows = fetch_eci_vtr(phase=phase)
+        if turnout_rows:
+            upsert_phase_turnout(client, turnout_rows)
+            print(f"      Phase {phase}: {len(turnout_rows)} records upserted")
 
     # 1. Fetch
     print("\n[1/5] Fetching news and social data...")
@@ -67,6 +76,29 @@ def run_pipeline():
     print("\n[5/5] Running Bayesian model...")
     prev = get_latest_forecast(client)
     prev_tmc_p50 = prev["tmc_p50"] if prev else None
+
+    # Merge turnout signals into news signals (turnout is Tier 1 — high weight)
+    from pipeline.db import get_phase_turnout
+    pt_df = get_phase_turnout(client)
+    if not pt_df.empty:
+        pt_rows = pt_df.to_dict("records")
+        turnout_sigs = compute_turnout_regional_signals(pt_rows)
+        for region, tsig in turnout_sigs.items():
+            if region in signals:
+                # Blend: turnout signal adjusts the news signal (avg_source_tier=1 for ECI)
+                existing = signals[region].get("signal_strength", 0.0)
+                signals[region]["signal_strength"] = round(
+                    0.7 * existing + 0.3 * tsig["turnout_signal"], 4
+                )
+                signals[region]["turnout_signal_overlay"] = tsig
+            else:
+                signals[region] = {
+                    "signal_strength": tsig["turnout_signal"],
+                    "article_count": 0,
+                    "avg_source_tier": 1.0,
+                    "turnout_signal_overlay": tsig,
+                }
+        print(f"      Turnout signals merged for {len(turnout_sigs)} regions")
 
     forecast, _ = run_full_pipeline(signals)
     forecast["prev_tmc_p50"] = prev_tmc_p50

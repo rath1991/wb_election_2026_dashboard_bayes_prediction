@@ -673,6 +673,120 @@ elif page == "Regional Tracker":
             st.metric("Today signal", f"{latest_signal:+.2f}", delta_color=color)
             st.caption(ls["note"])
 
+    st.divider()
+
+    # ── Phase Intelligence ────────────────────────────────────────────────────
+    st.subheader("Phase Turnout Intelligence")
+    st.caption(
+        "Official ECI VTR + post-scrutiny turnout. "
+        "Phase 1 (April 23) covers North Bengal, Malda-Murshidabad belt, Jangalmahal. "
+        "Phase 2 (April 29) covers South Bengal, Urban Kolkata, Medinipur."
+    )
+
+    @st.cache_data(ttl=300)
+    def _phase_turnout_data():
+        conn = _db()
+        from pipeline.db import get_phase_turnout, get_booth_turnout
+        pt = get_phase_turnout(conn)
+        bt = get_booth_turnout(conn)
+        return pt, bt
+
+    pt_df, bt_df = _phase_turnout_data()
+
+    if pt_df.empty:
+        st.info("No phase turnout data yet. Run the pipeline (seeds Phase 1 district data automatically) or enter manually via Manual Input → Phase Turnout Data Entry.")
+    else:
+        tab_ph1, tab_ph2, tab_booth = st.tabs(["Phase 1 Turnout", "Phase 2 Turnout", "Booth-level (Form 17C)"])
+
+        with tab_ph1:
+            ph1 = pt_df[pt_df["phase"] == 1].copy() if "phase" in pt_df.columns else pd.DataFrame()
+            if ph1.empty:
+                st.info("No Phase 1 data yet.")
+            else:
+                # Turnout swing chart
+                ph1_sorted = ph1.dropna(subset=["turnout_swing_vs_2021"]).sort_values("turnout_swing_vs_2021", ascending=True)
+                if not ph1_sorted.empty:
+                    colors = ["#22c55e" if v > 0 else "#ef4444" for v in ph1_sorted["turnout_swing_vs_2021"]]
+                    fig_t = go.Figure(go.Bar(
+                        x=ph1_sorted["turnout_swing_vs_2021"],
+                        y=ph1_sorted["ac_name"],
+                        orientation="h",
+                        marker_color=colors,
+                        text=[f"{v:+.1f}pp" for v in ph1_sorted["turnout_swing_vs_2021"]],
+                        textposition="outside",
+                        hovertemplate="%{y}: %{x:+.1f}pp vs 2021<extra></extra>",
+                    ))
+                    fig_t.update_layout(
+                        title="Turnout swing vs 2021 (Phase 1)",
+                        height=max(300, 35 * len(ph1_sorted)),
+                        xaxis_title="Swing (pp)", yaxis_title="",
+                        paper_bgcolor="#0e1117", font={"color": "#f8fafc"},
+                        margin=dict(t=40, b=20, l=160, r=60),
+                    )
+                    st.plotly_chart(fig_t, use_container_width=True, key="ph1_swing_chart")
+
+                # Summary metrics
+                avg_post = ph1["post_scrutiny_turnout_percent"].dropna().mean()
+                avg_swing = ph1["turnout_swing_vs_2021"].dropna().mean()
+                highest = ph1.loc[ph1["post_scrutiny_turnout_percent"].idxmax()] if not ph1["post_scrutiny_turnout_percent"].dropna().empty else None
+                lowest = ph1.loc[ph1["post_scrutiny_turnout_percent"].idxmin()] if not ph1["post_scrutiny_turnout_percent"].dropna().empty else None
+
+                m1, m2, m3, m4 = st.columns(4)
+                m1.metric("Phase 1 avg turnout", f"{avg_post:.1f}%" if avg_post else "—")
+                m2.metric("Avg swing vs 2021", f"{avg_swing:+.1f}pp" if avg_swing else "—")
+                if highest is not None:
+                    m3.metric("Highest", f"{highest['ac_name']} {highest['post_scrutiny_turnout_percent']:.1f}%")
+                if lowest is not None:
+                    m4.metric("Lowest", f"{lowest['ac_name']} {lowest['post_scrutiny_turnout_percent']:.1f}%")
+
+                st.info(
+                    "📌 **Interpretation:** High turnout in BJP-competitive areas (Cooch Behar, Alipurduar) "
+                    "may signal BJP enthusiasm. High turnout in TMC/Muslim-majority areas (Murshidabad) "
+                    "may signal counter-mobilisation from SIR anger. Treat swing >+10pp in BJP belts as a "
+                    "BJP signal; swing >+10pp in minority belts as a TMC counter-mobilisation signal."
+                )
+
+                st.dataframe(
+                    ph1[["district","ac_name","region","post_scrutiny_turnout_percent","initial_turnout_percent",
+                          "turnout_2021","turnout_swing_vs_2021","source_type","confidence_score","notes"]].rename(columns={
+                        "post_scrutiny_turnout_percent": "Post-scrutiny %",
+                        "initial_turnout_percent": "Initial VTR %",
+                        "turnout_2021": "2021 %",
+                        "turnout_swing_vs_2021": "Swing vs 2021",
+                        "source_type": "Source",
+                        "confidence_score": "Confidence",
+                    }),
+                    use_container_width=True, hide_index=True
+                )
+
+        with tab_ph2:
+            ph2 = pt_df[pt_df["phase"] == 2] if "phase" in pt_df.columns else pd.DataFrame()
+            if ph2.empty:
+                st.info("Phase 2 data will appear here after April 29 polling. Enter via Manual Input → Phase Turnout Data Entry.")
+            else:
+                st.dataframe(ph2, use_container_width=True, hide_index=True)
+
+        with tab_booth:
+            if bt_df.empty:
+                st.info(
+                    "No booth-level data yet. Sources:\n"
+                    "- **Form 17C** from party booth agents (handed at poll close)\n"
+                    "- ECI VTR app booth-level update (post-scrutiny)\n\n"
+                    "Enter via **Manual Input → Form 17C Booth Entry**."
+                )
+            else:
+                st.caption(f"{len(bt_df)} booth entries | "
+                           f"Sources: {', '.join(bt_df['source_type'].unique())}")
+                conf_filter = st.slider("Min confidence score", 0.0, 1.0, 0.5, 0.05, key="booth_conf_filter")
+                st.dataframe(
+                    bt_df[bt_df["confidence_score"] >= conf_filter][[
+                        "ac_name","booth_no","polling_station_name","total_electors",
+                        "votes_polled","turnout_percent","turnout_vs_2021",
+                        "source_type","source_party","confidence_score","notes"
+                    ]].sort_values(["ac_name","booth_no"]),
+                    use_container_width=True, hide_index=True,
+                )
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PAGE 3: BJP PATHWAY SCORECARD
@@ -1861,3 +1975,103 @@ elif page == "Manual Input":
                 st.cache_data.clear()
             st.success("Saved. All dashboard pages now reflect your manual input.")
             st.rerun()
+
+    st.divider()
+
+    # ── Phase Turnout Entry ─────────────────────────────────────────────────
+    st.header("Phase Turnout Data Entry")
+    st.caption(
+        "Enter AC-wise or district-wise turnout from ECI VTR app, CEO WB, or post-scrutiny press notes. "
+        "**Data is never deleted** — new entries update existing rows. "
+        "Source type determines confidence: official_scrutiny > official_vtr > media > manual."
+    )
+
+    with st.expander("📊 Enter district/AC turnout", expanded=False):
+        col_t1, col_t2, col_t3 = st.columns(3)
+        with col_t1:
+            t_phase    = st.selectbox("Phase", [1, 2], key="t_phase")
+            t_district = st.text_input("District", key="t_district", placeholder="Cooch Behar")
+            t_ac_name  = st.text_input("AC Name (or district if AC unavailable)", key="t_ac_name", placeholder="Cooch Behar")
+            t_ac_no    = st.number_input("AC No (optional)", min_value=0, value=0, key="t_ac_no")
+        with col_t2:
+            t_region   = st.selectbox("Region", ["north_bengal","jangalmahal","medinipur","urban_kolkata","south_bengal_rural"], key="t_region")
+            t_initial  = st.number_input("Initial turnout % (VTR app)", min_value=0.0, max_value=100.0, value=0.0, step=0.1, key="t_initial")
+            t_scrutiny = st.number_input("Post-scrutiny turnout % (RO revised)", min_value=0.0, max_value=100.0, value=0.0, step=0.1, key="t_scrutiny")
+            t_2021     = st.number_input("2021 turnout % (historical)", min_value=0.0, max_value=100.0, value=0.0, step=0.1, key="t_2021")
+        with col_t3:
+            t_male_pct = st.number_input("Male turnout %", min_value=0.0, max_value=100.0, value=0.0, step=0.1, key="t_male")
+            t_fem_pct  = st.number_input("Female turnout %", min_value=0.0, max_value=100.0, value=0.0, step=0.1, key="t_female")
+            t_src_type = st.selectbox("Source type", ["official_scrutiny","official_vtr","media","manual"], key="t_src_type")
+            t_src      = st.text_input("Source name", key="t_src", placeholder="newsonair / ECI press note")
+            t_notes    = st.text_input("Notes", key="t_notes", placeholder="optional context")
+
+        if st.button("💾 Save Turnout Entry", key="save_turnout"):
+            from pipeline.db import upsert_phase_turnout
+            row = {
+                "phase": t_phase, "district": t_district, "ac_no": t_ac_no or None,
+                "ac_name": t_ac_name, "region": t_region,
+                "initial_turnout_percent": t_initial or None,
+                "post_scrutiny_turnout_percent": t_scrutiny or None,
+                "turnout_2021": t_2021 or None,
+                "male_turnout_percent": t_male_pct or None,
+                "female_turnout_percent": t_fem_pct or None,
+                "source": t_src or "manual", "source_type": t_src_type,
+                "confidence_score": {"official_scrutiny": 0.95, "official_vtr": 0.85, "media": 0.70, "manual": 0.60}[t_src_type],
+                "notes": t_notes or None,
+            }
+            conn2 = _db()
+            upsert_phase_turnout(conn2, [row])
+            st.success(f"Saved: {t_ac_name} Phase {t_phase} turnout.")
+            st.cache_data.clear()
+
+    # ── Form 17C Booth Entry ─────────────────────────────────────────────────
+    st.header("Form 17C — Booth-level Votes Polled")
+    st.caption(
+        "Enter booth-level data from Form 17C Part I (votes recorded in EVM, handed to polling agents at close of poll). "
+        "If from a single party agent, set Source Party and confidence will be capped at 0.65 pending cross-check."
+    )
+    with st.expander("🗳️ Enter Form 17C booth data", expanded=False):
+        col_b1, col_b2, col_b3 = st.columns(3)
+        with col_b1:
+            b_phase   = st.selectbox("Phase", [1, 2], key="b_phase")
+            b_ac_name = st.text_input("AC Name", key="b_ac_name", placeholder="Cooch Behar")
+            b_ac_no   = st.number_input("AC No", min_value=0, value=0, key="b_ac_no")
+            b_booth   = st.number_input("Booth No", min_value=1, value=1, key="b_booth")
+            b_ps_name = st.text_input("Polling Station Name", key="b_ps_name")
+        with col_b2:
+            b_electors = st.number_input("Total electors on roll", min_value=0, value=0, key="b_electors")
+            b_polled   = st.number_input("Total votes polled (Form 17C)", min_value=0, value=0, key="b_polled")
+            b_male     = st.number_input("Male votes", min_value=0, value=0, key="b_male")
+            b_female   = st.number_input("Female votes", min_value=0, value=0, key="b_female")
+        with col_b3:
+            b_src_type = st.selectbox("Source type", ["form17c","official_vtr","party_agent","media"], key="b_src_type")
+            b_party    = st.selectbox("Source party", ["official","TMC","BJP","INC","CPM","other"], key="b_party")
+            b_t2021    = st.number_input("2021 turnout % at this booth (if known)", min_value=0.0, max_value=100.0, value=0.0, step=0.1, key="b_t2021")
+            b_notes    = st.text_input("Notes", key="b_notes")
+
+        st.warning(
+            "⚠️ Form 17C from a single party should be treated as unverified (confidence 0.5–0.65) "
+            "until cross-checked against another party's or official figures."
+        )
+
+        if st.button("💾 Save Form 17C Entry", key="save_form17c"):
+            from pipeline.db import upsert_booth_turnout
+            polled = b_polled or None
+            electors = b_electors or None
+            turnout_pct = round(100.0 * b_polled / b_electors, 2) if b_electors and b_polled else None
+            conf = 0.90 if b_party == "official" else 0.65 if b_src_type == "form17c" else 0.50
+            row = {
+                "phase": b_phase, "ac_no": b_ac_no or None, "ac_name": b_ac_name,
+                "booth_no": b_booth, "polling_station_name": b_ps_name,
+                "total_electors": electors, "votes_polled": polled,
+                "male_votes": b_male or None, "female_votes": b_female or None,
+                "turnout_percent": turnout_pct,
+                "turnout_vs_2021": round(turnout_pct - b_t2021, 2) if turnout_pct and b_t2021 else None,
+                "source": f"Form 17C ({b_party})", "source_type": b_src_type,
+                "source_party": b_party, "confidence_score": conf,
+                "notes": b_notes or None,
+            }
+            conn3 = _db()
+            upsert_booth_turnout(conn3, [row])
+            st.success(f"Saved: {b_ac_name} Booth {b_booth} — {turnout_pct:.1f}% turnout" if turnout_pct else "Saved.")
+            st.cache_data.clear()

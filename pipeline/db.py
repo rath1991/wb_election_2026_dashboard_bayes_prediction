@@ -111,6 +111,94 @@ def _ensure_schema(conn: duckdb.DuckDBPyConnection):  # noqa: C901
     """)
     conn.execute("CREATE SEQUENCE IF NOT EXISTS turnout_live_seq START 1")
 
+    # ── Phase turnout (official VTR + post-scrutiny) ─────────────────────────
+    # Stores both initial VTR-app estimates and post-scrutiny revised figures.
+    # NEVER truncated — new rows upserted by (phase, ac_name).
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS phase_turnout (
+            id INTEGER PRIMARY KEY,
+            phase INTEGER,
+            district VARCHAR,
+            ac_no INTEGER,
+            ac_name VARCHAR,
+            region VARCHAR,
+            total_electors BIGINT,
+            initial_turnout_percent DOUBLE,
+            post_scrutiny_turnout_percent DOUBLE,
+            votes_polled BIGINT,
+            male_turnout_percent DOUBLE,
+            female_turnout_percent DOUBLE,
+            turnout_2021 DOUBLE,
+            turnout_2024ls DOUBLE,
+            turnout_swing_vs_2021 DOUBLE,
+            source VARCHAR,
+            source_type VARCHAR,
+            confidence_score DOUBLE DEFAULT 0.9,
+            notes VARCHAR,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE (phase, ac_name)
+        )
+    """)
+    conn.execute("CREATE SEQUENCE IF NOT EXISTS phase_turnout_seq START 1")
+
+    # ── Booth-level turnout (Form 17C from agents / VTR booth data) ──────────
+    # source_type: 'official_vtr' | 'form17c' | 'party_agent' | 'media'
+    # source_party: 'TMC' | 'BJP' | 'INC' | 'CPM' | 'official' | 'media'
+    # Cross-check: single-party Form 17C treated as confidence_score 0.5 until verified.
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS booth_turnout (
+            id INTEGER PRIMARY KEY,
+            phase INTEGER,
+            ac_no INTEGER,
+            ac_name VARCHAR,
+            booth_no INTEGER,
+            polling_station_name VARCHAR,
+            total_electors INTEGER,
+            votes_polled INTEGER,
+            male_votes INTEGER,
+            female_votes INTEGER,
+            other_votes INTEGER,
+            turnout_percent DOUBLE,
+            turnout_vs_2021 DOUBLE,
+            source VARCHAR,
+            source_type VARCHAR,
+            source_party VARCHAR,
+            confidence_score DOUBLE DEFAULT 0.5,
+            notes VARCHAR,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE (phase, ac_name, booth_no)
+        )
+    """)
+    conn.execute("CREATE SEQUENCE IF NOT EXISTS booth_turnout_seq START 1")
+
+    # ── Booth master (static enriched reference table) ───────────────────────
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS booth_master (
+            id INTEGER PRIMARY KEY,
+            district VARCHAR,
+            ac_no INTEGER,
+            ac_name VARCHAR,
+            region VARCHAR,
+            booth_no INTEGER,
+            polling_station_name VARCHAR,
+            polling_station_location VARCHAR,
+            urban_rural VARCHAR,
+            total_electors INTEGER,
+            male_electors INTEGER,
+            female_electors INTEGER,
+            third_gender_electors INTEGER,
+            sir_deleted_count INTEGER,
+            minority_flag BOOLEAN DEFAULT FALSE,
+            sc_st_flag BOOLEAN DEFAULT FALSE,
+            matua_flag BOOLEAN DEFAULT FALSE,
+            border_flag BOOLEAN DEFAULT FALSE,
+            sensitive_flag BOOLEAN DEFAULT FALSE,
+            violence_history_flag BOOLEAN DEFAULT FALSE,
+            UNIQUE (ac_no, booth_no)
+        )
+    """)
+    conn.execute("CREATE SEQUENCE IF NOT EXISTS booth_master_seq START 1")
+
     # Migration: add source_tier to articles if missing
     try:
         cols_df = conn.execute("SELECT column_name FROM information_schema.columns WHERE table_name='articles'").fetchdf()
@@ -275,6 +363,139 @@ def get_latest_market_data(conn: duckdb.DuckDBPyConnection) -> dict | None:
     row = result.iloc[0].to_dict()
     row["date"] = str(row["date"])
     return row
+
+
+# ── phase_turnout ────────────────────────────────────────────────────────────
+
+def upsert_phase_turnout(conn: duckdb.DuckDBPyConnection, rows: list[dict]):
+    """Upsert AC/district-level turnout. Safe to call repeatedly — no deletes."""
+    for r in rows:
+        swing = None
+        if r.get("post_scrutiny_turnout_percent") and r.get("turnout_2021"):
+            swing = round(r["post_scrutiny_turnout_percent"] - r["turnout_2021"], 2)
+        elif r.get("initial_turnout_percent") and r.get("turnout_2021"):
+            swing = round(r["initial_turnout_percent"] - r["turnout_2021"], 2)
+        conn.execute("""
+            INSERT INTO phase_turnout
+                (id, phase, district, ac_no, ac_name, region, total_electors,
+                 initial_turnout_percent, post_scrutiny_turnout_percent, votes_polled,
+                 male_turnout_percent, female_turnout_percent,
+                 turnout_2021, turnout_2024ls, turnout_swing_vs_2021,
+                 source, source_type, confidence_score, notes, updated_at)
+            VALUES (nextval('phase_turnout_seq'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT (phase, ac_name) DO UPDATE SET
+                post_scrutiny_turnout_percent = COALESCE(excluded.post_scrutiny_turnout_percent, post_scrutiny_turnout_percent),
+                initial_turnout_percent       = COALESCE(excluded.initial_turnout_percent, initial_turnout_percent),
+                turnout_swing_vs_2021         = COALESCE(excluded.turnout_swing_vs_2021, turnout_swing_vs_2021),
+                votes_polled                  = COALESCE(excluded.votes_polled, votes_polled),
+                male_turnout_percent          = COALESCE(excluded.male_turnout_percent, male_turnout_percent),
+                female_turnout_percent        = COALESCE(excluded.female_turnout_percent, female_turnout_percent),
+                source                        = excluded.source,
+                confidence_score              = excluded.confidence_score,
+                notes                         = COALESCE(excluded.notes, notes),
+                updated_at                    = CURRENT_TIMESTAMP
+        """, [
+            r.get("phase"), r.get("district"), r.get("ac_no"), r.get("ac_name"),
+            r.get("region"), r.get("total_electors"),
+            r.get("initial_turnout_percent"), r.get("post_scrutiny_turnout_percent"),
+            r.get("votes_polled"),
+            r.get("male_turnout_percent"), r.get("female_turnout_percent"),
+            r.get("turnout_2021"), r.get("turnout_2024ls"), swing,
+            r.get("source", "manual"), r.get("source_type", "manual"),
+            r.get("confidence_score", 0.9), r.get("notes"),
+        ])
+
+
+def get_phase_turnout(conn: duckdb.DuckDBPyConnection, phase: int | None = None) -> pd.DataFrame:
+    if phase is not None:
+        return conn.execute(
+            "SELECT * FROM phase_turnout WHERE phase = ? ORDER BY district, ac_name", [phase]
+        ).fetchdf()
+    return conn.execute("SELECT * FROM phase_turnout ORDER BY phase, district, ac_name").fetchdf()
+
+
+def get_phase_turnout_summary(conn: duckdb.DuckDBPyConnection) -> pd.DataFrame:
+    """District-level summary grouped for dashboard display."""
+    return conn.execute("""
+        SELECT phase, district, region,
+               AVG(post_scrutiny_turnout_percent) AS avg_post_scrutiny,
+               AVG(initial_turnout_percent)        AS avg_initial,
+               AVG(turnout_2021)                   AS avg_2021,
+               AVG(turnout_swing_vs_2021)           AS avg_swing,
+               COUNT(*) AS ac_count
+        FROM phase_turnout
+        GROUP BY phase, district, region
+        ORDER BY phase, avg_swing DESC NULLS LAST
+    """).fetchdf()
+
+
+# ── booth_turnout ─────────────────────────────────────────────────────────────
+
+def upsert_booth_turnout(conn: duckdb.DuckDBPyConnection, rows: list[dict]):
+    """Upsert Form 17C or VTR booth-level data. Never deletes existing rows."""
+    for r in rows:
+        conn.execute("""
+            INSERT INTO booth_turnout
+                (id, phase, ac_no, ac_name, booth_no, polling_station_name,
+                 total_electors, votes_polled, male_votes, female_votes, other_votes,
+                 turnout_percent, turnout_vs_2021,
+                 source, source_type, source_party, confidence_score, notes)
+            VALUES (nextval('booth_turnout_seq'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (phase, ac_name, booth_no) DO UPDATE SET
+                votes_polled     = COALESCE(excluded.votes_polled, votes_polled),
+                turnout_percent  = COALESCE(excluded.turnout_percent, turnout_percent),
+                source_type      = excluded.source_type,
+                source_party     = excluded.source_party,
+                confidence_score = GREATEST(excluded.confidence_score, confidence_score),
+                notes            = COALESCE(excluded.notes, notes)
+        """, [
+            r.get("phase"), r.get("ac_no"), r.get("ac_name"), r.get("booth_no"),
+            r.get("polling_station_name"),
+            r.get("total_electors"), r.get("votes_polled"),
+            r.get("male_votes"), r.get("female_votes"), r.get("other_votes"),
+            r.get("turnout_percent"), r.get("turnout_vs_2021"),
+            r.get("source"), r.get("source_type", "manual"),
+            r.get("source_party", "unknown"),
+            r.get("confidence_score", 0.5), r.get("notes"),
+        ])
+
+
+def get_booth_turnout(conn: duckdb.DuckDBPyConnection, ac_name: str | None = None) -> pd.DataFrame:
+    if ac_name:
+        return conn.execute(
+            "SELECT * FROM booth_turnout WHERE ac_name = ? ORDER BY booth_no", [ac_name]
+        ).fetchdf()
+    return conn.execute("SELECT * FROM booth_turnout ORDER BY phase, ac_name, booth_no").fetchdf()
+
+
+# ── booth_master ──────────────────────────────────────────────────────────────
+
+def upsert_booth_master(conn: duckdb.DuckDBPyConnection, rows: list[dict]):
+    for r in rows:
+        conn.execute("""
+            INSERT INTO booth_master
+                (id, district, ac_no, ac_name, region, booth_no,
+                 polling_station_name, polling_station_location, urban_rural,
+                 total_electors, male_electors, female_electors, third_gender_electors,
+                 sir_deleted_count, minority_flag, sc_st_flag, matua_flag,
+                 border_flag, sensitive_flag, violence_history_flag)
+            VALUES (nextval('booth_master_seq'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (ac_no, booth_no) DO UPDATE SET
+                sir_deleted_count    = COALESCE(excluded.sir_deleted_count, sir_deleted_count),
+                sensitive_flag       = excluded.sensitive_flag,
+                violence_history_flag = excluded.violence_history_flag
+        """, [
+            r.get("district"), r.get("ac_no"), r.get("ac_name"), r.get("region"),
+            r.get("booth_no"), r.get("polling_station_name"), r.get("polling_station_location"),
+            r.get("urban_rural"), r.get("total_electors"),
+            r.get("male_electors"), r.get("female_electors"), r.get("third_gender_electors"),
+            r.get("sir_deleted_count"),
+            bool(r.get("minority_flag")), bool(r.get("sc_st_flag")),
+            bool(r.get("matua_flag")), bool(r.get("border_flag")),
+            bool(r.get("sensitive_flag")), bool(r.get("violence_history_flag")),
+        ])
 
 
 def insert_articles(conn: duckdb.DuckDBPyConnection, articles: list[dict]):
