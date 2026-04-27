@@ -1432,6 +1432,16 @@ costing **~$0.08 per full pipeline run** (down from ~$1.75 before this optimizat
 - **Available now (public):** ECI VTR app, CEO WB elector data, post-scrutiny press notes
 - **Available only to candidates/agents:** Form 17C Part I (booth-level votes — enter via Manual Input)
 - **Available only after counting:** Form 20 (booth-wise result — use to backtest model post-May 4)
+
+**What is NOT in the model yet — and why it matters:**
+
+| Missing data | Why it matters | Status |
+|---|---|---|
+| **Booth-level presence (panna pramukh)** | BJP is reportedly manning all 44,376 booths with panna pramukhs (30–60 voters each). This is one of their strongest ground advantages. Currently captured only qualitatively via the RSS mobilization regional delta — not from actual booth data. | No structured dataset available publicly |
+| **Form 17C** (statutory booth vote counts) | Given to party agents at poll close — the most granular real vote data before counting. Could sharply tighten the seat range for Phase 1 ACs. | Framework built in DB; manual entry available in Manual Input page |
+| **2024 LS assembly-segment breakdowns** | We use LS seat-level totals (e.g. Ranaghat BJP +186k). The actual split across the 7 assembly segments within each LS seat would make constituency-level priors far more precise. | Available in ECI PDFs — not yet parsed |
+| **Candidate-level quality scores** | In swing seats a strong local candidate can move a result by 3–5%. Not modelled. | No structured source |
+| **Phase 2 turnout** | 142 seats covering N24P, Nadia, S24P — the highest SIR-risk districts. Most important single input before counting day. | Available evening of April 29 |
 """)
 
     st.divider()
