@@ -1161,6 +1161,147 @@ elif page == "Scenario Analysis":
         with col_y:
             st.metric("If rolls fully restored", f"~{base + 20}", delta="+20", help="+15–25 seats if courts act")
 
+    st.markdown("---")
+    st.subheader("SIR High-Risk Seat Register")
+    st.caption(
+        "Seats where deletion count is large relative to historical margins. "
+        "Risk factor = weighted score of LS24 pressure index, 2021 margin sensitivity, and deletion rate. "
+        "**Direction depends on booth-level skew** — high risk ≠ bad for TMC in bjp_lean seats."
+    )
+
+    # Build risk table from data files
+    try:
+        _sir_raw  = pd.read_csv("data/sir_deletions.csv")[["constituency_id","name","district","deletion_count","deletion_rate","minority_share","sir_severity"]]
+        _ls24_m   = pd.read_csv("data/sir_ls24_margins.csv")[["constituency_id","ls24_margin","ls24_leader","booth_skew"]]
+        _e2021    = pd.read_csv("data/ecidata_2021.csv")[["constituency_id","tmc_minus_bjp_margin","winner"]]
+
+        _risk = _sir_raw.merge(_ls24_m, on="constituency_id", how="left")
+        _risk = _risk.merge(_e2021, on="constituency_id", how="left")
+
+        # Pressure index vs 2024 LS margin
+        _risk["ls24_pressure"] = np.where(
+            _risk["ls24_margin"].notna() & (_risk["ls24_margin"] > 0),
+            (_risk["deletion_count"] / _risk["ls24_margin"]).round(1),
+            np.nan,
+        )
+
+        # 2021 margin absolute value
+        _risk["margin_2021"] = _risk["tmc_minus_bjp_margin"].abs() * 220000  # rough avg electorate
+        # Override known 2021 margins with real values from TOI reporting
+        known_2021 = {
+            40: 57,    # Dinhata
+            27: 941,   # Jalpaiguri
+            58: 423,   # Balarampur
+            103: 793,  # Tamluk
+            234: 679,  # Kulti
+            159: 2004, # Bangaon South
+            165: 2000, # Kalyani
+            296: 623,  # Dantan
+            297: 966,  # Ghatal
+        }
+        for cid, m in known_2021.items():
+            _risk.loc[_risk["constituency_id"] == cid, "margin_2021"] = m
+
+        # Risk score: composite
+        # LS24 pressure dominates; 2021 margin adds for seats without LS24 data
+        def _risk_score(row):
+            score = 0
+            if pd.notna(row["ls24_pressure"]):
+                score += min(row["ls24_pressure"] * 3, 150)
+            if pd.notna(row["margin_2021"]) and row["margin_2021"] < 20000:
+                score += max(0, (20000 - row["margin_2021"]) / 200)
+            score += row["deletion_rate"] * 50
+            return round(score, 1)
+
+        _risk["risk_score"] = _risk.apply(_risk_score, axis=1)
+
+        def _risk_label(row):
+            pi = row["ls24_pressure"]
+            m21 = row["margin_2021"] if pd.notna(row["margin_2021"]) else 999999
+            dr = row["deletion_rate"]
+            if (pd.notna(pi) and pi >= 5) or (m21 < 1000 and dr > 0.05):
+                return "🔴 Extreme"
+            if (pd.notna(pi) and pi >= 2) or (m21 < 5000 and dr > 0.05):
+                return "🟠 Very High"
+            if (pd.notna(pi) and pi >= 1) or (m21 < 15000 and dr > 0.05) or dr >= 0.15:
+                return "🟡 High"
+            if dr >= 0.07 or (pd.notna(pi) and pi >= 0.5):
+                return "🟡 High"
+            return None
+
+        _risk["risk_label"] = _risk.apply(_risk_label, axis=1)
+        _risk_display = _risk[_risk["risk_label"].notna()].copy()
+        _risk_display = _risk_display.sort_values("risk_score", ascending=False)
+
+        def _skew_label(s):
+            if s == "tmc_lean":  return "⬇ TMC hurt"
+            if s == "bjp_lean":  return "⬆ BJP hurt"
+            if s == "mixed":     return "↕ Mixed"
+            return "? Unknown"
+
+        _risk_display["Booth Skew"] = _risk_display["booth_skew"].fillna("unknown").map(lambda x: _skew_label(x))
+        _risk_display["2024 LS Pressure"] = _risk_display["ls24_pressure"].apply(
+            lambda x: f"{x}x" if pd.notna(x) else "—"
+        )
+        _risk_display["2021 Margin"] = _risk_display["margin_2021"].apply(
+            lambda x: f"{int(x):,}" if pd.notna(x) and x < 50000 else "—"
+        )
+        _risk_display["Deletions"] = _risk_display["deletion_count"].apply(lambda x: f"{int(x):,}")
+        _risk_display["Del Rate"] = _risk_display["deletion_rate"].apply(lambda x: f"{x:.1%}")
+        _risk_display["Min Share"] = _risk_display["minority_share"].apply(lambda x: f"{x:.0%}")
+        _risk_display["2024 Leader"] = _risk_display["ls24_leader"].fillna("—")
+
+        _out = _risk_display[[
+            "risk_label", "name", "district", "Deletions", "Del Rate",
+            "2024 LS Pressure", "2021 Margin", "2024 Leader", "Min Share", "Booth Skew"
+        ]].rename(columns={
+            "risk_label": "Risk",
+            "name": "AC",
+            "district": "District",
+        })
+
+        # Color rows by risk
+        def _color_row(row):
+            if "Extreme" in row["Risk"]:
+                bg = "background-color: rgba(239,68,68,0.20)"
+            elif "Very High" in row["Risk"]:
+                bg = "background-color: rgba(249,115,22,0.18)"
+            elif "High" in row["Risk"]:
+                bg = "background-color: rgba(245,158,11,0.15)"
+            else:
+                bg = ""
+            return [bg] * len(row)
+
+        n_extreme  = (_out["Risk"].str.contains("Extreme")).sum()
+        n_veryhigh = (_out["Risk"].str.contains("Very High")).sum()
+        n_high     = (_out["Risk"].str.contains("High") & ~_out["Risk"].str.contains("Very")).sum()
+
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("🔴 Extreme risk seats", n_extreme)
+        c2.metric("🟠 Very high risk seats", n_veryhigh)
+        c3.metric("🟡 High risk seats", n_high)
+        c4.metric("Total flagged", n_extreme + n_veryhigh + n_high)
+
+        st.markdown(
+            "**Are these factored into the model?** "
+            f"Yes — all {n_extreme + n_veryhigh + n_high} seats have real `deletion_count` and `deletion_rate` in the model. "
+            "Seats with a known 2024 LS margin also get a `sir_pressure_index`-scaled sigma (wider uncertainty). "
+            "**However**, the point estimate (p50) shifts are small because `bjp_competitive_factor` floors at 0.25 in "
+            "Muslim-majority seats (Congress fight, not BJP), and `booth_skew` already corrects direction. "
+            "The main model effect is **wider confidence bands** for high-pressure seats, not a large median shift."
+        )
+
+        styled = _out.style.apply(_color_row, axis=1)
+        st.dataframe(styled, use_container_width=True, hide_index=True, height=600)
+
+        st.caption(
+            "Sources: Indian Express (AC deletion counts, Apr 2026) · The Wire (booth-level skew: Mothabari/Nakashipara/Habra) · "
+            "TOI (Bhabanipur, low-margin seats) · Wikipedia (2024 LS AC-segment margins) · "
+            "ECI/tecoholic (2021 assembly margins)"
+        )
+    except Exception as e:
+        st.warning(f"Could not load SIR risk table: {e}")
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PAGE 5: NEWS FEED
