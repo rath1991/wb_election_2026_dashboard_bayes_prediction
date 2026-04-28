@@ -833,9 +833,9 @@ elif page == "BJP Pathway":
             "label": "Minority vote fragmentation",
             "desc": "Multi-party fragmentation in Muslim-majority seats splits the anti-BJP vote. "
                     "Ground reports (Apr 2026) confirm this is happening: CPM winning Domkal and "
-                    "Karandighi; SDPI projected to win Sagardighi; Congress ahead in Baharampur "
-                    "and Malda seats; Naushad faction contesting Bhangar and Canning East. "
-                    "CRITICAL NUANCE: these seats go to Congress/CPM/SDPI — NOT to BJP. "
+                    "Karandighi; smaller parties contesting Sagardighi; Congress ahead in Baharampur "
+                    "and Malda seats; independent factions contesting Bhangar and Canning East. "
+                    "CRITICAL NUANCE: these seats go to Congress/CPM — NOT to BJP. "
                     "BJP benefits only where fragmentation creates a Jalanghi-type three-way fight "
                     "where BJP sneaks through with 35–38% while TMC and Others split the remainder.",
             "ls2024": "Minority consolidation held for TMC in 2024 LS — fragmentation did NOT occur. "
@@ -1005,7 +1005,7 @@ elif page == "Scenario Analysis":
             "sir": "SIR rolls partially/fully restored by court order",
             "conditions": [
                 "Court orders restore significant voter names before Phase 2",
-                "Minority consolidation >85% behind TMC despite fragmentation pressure from CPM/SDPI/Congress",
+                "Minority consolidation >85% behind TMC despite fragmentation pressure from CPM/Congress",
                 "IPAC shutdown absorbed by TMC state machinery; booth-level operations hold",
                 "TMC holds urban Kolkata seats against CPM revival (Uttarpara, Dum Dum North)",
                 "North Bengal partial recovery — Cooch Behar trend sustains; Farakka goes TMC",
@@ -1020,9 +1020,9 @@ elif page == "Scenario Analysis":
             "prob": "45–55%",
             "sir": "SIR as-is — 12.9L deletions in 142 seats, contested in court",
             "conditions": [
-                "SIR deletions in Muslim-majority seats redirect to Congress/CPM/SDPI — not BJP",
+                "SIR deletions in Muslim-majority seats redirect to Congress/CPM — not BJP",
                 "IPAC shutdown hurts TMC operations but Mamata brand holds in swing seats",
-                "Fragmentation in Murshidabad/Malda belt (CPM, SDPI, Congress) inflates Others; "
+                "Fragmentation in Murshidabad/Malda belt (CPM, Congress) inflates Others; "
                 "TMC loses some Muslim-majority seats but BJP is not the beneficiary",
                 "BJP holds North Bengal + Jangalmahal base; Farakka/Baishnabnagar go BJP",
                 "CPM urban revival (Uttarpara, Dum Dum North) cuts TMC margin but stays within range",
@@ -1040,7 +1040,7 @@ elif page == "Scenario Analysis":
                 "IPAC shutdown compounds TMC booth collapse — ground operation visibly weaker",
                 "North Bengal sweep: BJP wins 33–35+ seats including Farakka (BJP vs Congress fight)",
                 "Jangalmahal hold: 18+ of 25 seats",
-                "Jalanghi-type FPTP splits in 10–15 seats: Congress/CPM/SDPI takes 25–30%, BJP sneaks "
+                "Jalanghi-type FPTP splits in 10–15 seats: Congress/CPM takes 25–30%, BJP sneaks "
                 "through with 36–38% while TMC is pushed to third — NOT a Murshidabad Muslim-seat story",
                 "Broad anti-incumbency wave — economic stagnation + youth unemployment overrides Mamata brand",
             ],
@@ -1150,7 +1150,7 @@ elif page == "Scenario Analysis":
 | **Full roll restoration** | **+15 to +25** | Bhabanipur, Samserganj, Lalgola, Raghunathganj, Goalpokhar — deleted minorities re-enfranchised |
 | **Partial restoration (50%)** | **+8 to +12** | Partial court relief; high-pressure seats partially restored |
 | **As-is** *(baseline)* | **0** (reference) | 91L deleted voters absent — confirmed at AC level (Indian Express, Apr 2026) |
-| **As-is + fragmentation** | **−10 to −18** | Left/Congress/SDPI splits in Murshidabad on top of deletions; BJP FPTP sneak in mixed seats |
+| **As-is + fragmentation** | **−10 to −18** | Left/Congress splits in Murshidabad on top of deletions; BJP FPTP sneak in mixed seats |
 | **SIR hits BJP voters too** | **+3 to +8** | Habra, Gaighata, Ranaghat — Wire analysis shows deletions in BJP-favourable Hindu booths; Dinhata/Balarampur/Jalpaiguri (57/423/941 vote 2021 margins) at extreme risk |
 
 *SIR pressure index (deletions ÷ 2024 LS margin) — confirmed seats above 3x: Goalpokhar (47x), Raghunathganj (12x), Jangipur (11x), Bhabanipur (6x), Samserganj (5x), Lalgola (4x). Direction uncertain — see Methodology.*
@@ -1506,14 +1506,14 @@ win_prior    =  p_tmc_raw × (1 − p_others)
 2021 assembly (0.25 weight) captures constituency-level structure that LS aggregates miss.
 σ = 7pp: at a 7pp TMC lead, win probability = 73%. At 14pp lead = 88%. At 0pp = 50%.
 
-**Three-way competition (Congress/Left/SDPI):**
+**Three-way competition (Congress/Left):**
 
-In Muslim-majority seats (Murshidabad, Malda), the contest is TMC vs Congress/CPM/SDPI — not BJP.
+In Muslim-majority seats (Murshidabad, Malda), the contest is TMC vs Congress/CPM — not BJP.
 p_others rises with minority_share: high-minority seats frequently go to Others,
 removing them from the TMC vs BJP pool before either can claim them.
 
 Ground intelligence (Apr 2026) confirms multi-party fragmentation:
-CPM projected to win Domkal and Karandighi; SDPI projected in Sagardighi; Congress ahead in
+CPM projected to win Domkal and Karandighi; Congress ahead in
 Baharampur and Malda belt seats. **These seats go into the Others bucket — BJP is not the
 beneficiary.** BJP's fragmentation path runs through Jalanghi-type FPTP splits in mixed seats,
 which the model captures imperfectly (see Limitations).
@@ -1526,7 +1526,7 @@ which the model captures imperfectly (see Limitations).
         {"Region": "Jangalmahal", "Seats": "~28", "TMC Win Prior": "~65%", "p_others": "~9%", "Basis": "TMC won back many seats in 2021; 2024 LS mixed"},
         {"Region": "Medinipur", "Seats": "~50", "TMC Win Prior": "~47%", "p_others": "~1%", "Basis": "Close — Tamluk/Contai BJP-leaning; Ghatal TMC"},
         {"Region": "Urban Kolkata", "Seats": "~65", "TMC Win Prior": "~74%", "p_others": "~4%", "Basis": "TMC stronghold; CPM revival in some seats (Uttarpara, Dum Dum North)"},
-        {"Region": "South Bengal Rural", "Seats": "~97", "TMC Win Prior": "~62%", "p_others": "~16%", "Basis": "Murshidabad Congress + CPM + SDPI fragmentation; Bhangar/Canning (Naushad faction)"},
+        {"Region": "South Bengal Rural", "Seats": "~97", "TMC Win Prior": "~62%", "p_others": "~16%", "Basis": "Murshidabad Congress + CPM fragmentation; Bhangar/Canning (smaller parties)"},
     ])
     st.dataframe(prior_df, use_container_width=True, hide_index=True)
 
@@ -1968,7 +1968,7 @@ This is why the 90% CI spans 93–272 seats even though the median is stable at 
 | SIR Hindu lean | 45% | If 50% lean → TMC median ~+8–12 seats (Hindus become neutral) |
 | Global swing σ | 0.65 logit | If lower → CI narrows; if higher → CI widens |
 | News observation noise τ | 1.20 | If lower → news gets more daily weight |
-| Others median (Congress+CPM+SDPI) | ~32 | If fragmentation deeper → Others rises, BJP may gain via FPTP splits |
+| Others median (Congress+CPM+Others) | ~32 | If fragmentation deeper → Others rises, BJP may gain via FPTP splits |
 | 2024 LS weight on prior | 40% | Assembly elections often diverge from LS trends |
 | No reliable polls available | — | If credible polls emerge, they should replace the prior |
 """)
@@ -1980,11 +1980,11 @@ This is why the 90% CI spans 93–272 seats even though the median is stable at 
 - Account for TMC's ground operation quality (historically superior booth management)
 - Replace actual polling data if and when it becomes available
 - Model tactical voting between Left and Congress in minority-heavy seats
-- Resolve **FPTP triangular-contest dynamics**: when Congress/CPM/SDPI draws 25–30% in a seat,
+- Resolve **FPTP triangular-contest dynamics**: when Congress/CPM draws 25–30% in a seat,
   the model draws Others first then runs a TMC-BJP binary. It cannot fully model the case where
   BJP sneaks through with 36% while TMC (38%) and Others (26%) split — a known structural gap
   in seats like Jalanghi, Chakulia, and parts of the Malda-Murshidabad belt
-- Distinguish between CPM, Congress, SDPI, and Naushad faction in the Others bucket — all are
+- Distinguish between CPM, Congress, and smaller parties in the Others bucket — all are
   pooled into p_others per constituency. Ground intelligence (Apr 2026) shows each party winning
   in different Muslim-majority seats; the model captures total Others probability but not which party
 
