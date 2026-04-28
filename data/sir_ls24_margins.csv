@@ -1,0 +1,26 @@
+constituency_id,name,ls24_margin,ls24_leader,ls24_runner_up,booth_skew,source
+9,Goalpokhar-I,333,TMC,INC,tmc_lean,Wikipedia/IndianExpress
+10,Goalpokhar-II,333,TMC,INC,tmc_lean,Wikipedia/IndianExpress
+15,Karandighi,21572,BJP,TMC,tmc_lean,Wikipedia/IndianExpress
+48,Ratua-I,16930,INC,TMC,tmc_lean,Wikipedia/IndianExpress
+49,Ratua-II,16929,INC,TMC,tmc_lean,Wikipedia/IndianExpress
+53,Mothabari,34134,INC,BJP,tmc_lean,Wikipedia/TheWire
+108,Bhabanipur,8297,TMC,BJP,mixed,Telegraph/TOI/SabarInstitute
+136,Rajarhat-Newtown,28417,TMC,BJP,unknown,Wikipedia/IndianExpress
+144,Habra,19933,BJP,TMC,bjp_lean,TheWire
+155,Gaighata,27005,BJP,TMC,bjp_lean,Wikipedia/IndianExpress
+160,Gaighata,27005,BJP,TMC,bjp_lean,Wikipedia/IndianExpress
+162,Ranaghat North-II,39399,BJP,TMC,bjp_lean,Wikipedia/IndianExpress
+163,Ranaghat South,36936,BJP,TMC,bjp_lean,Wikipedia/IndianExpress
+175,Nakashipara,6099,TMC,BJP,tmc_lean,TheWire
+188,Samserganj,13814,INC,TMC,tmc_lean,Wikipedia/IndianExpress
+189,Suti-I,9962,TMC,INC,tmc_lean,Wikipedia/IndianExpress
+190,Suti-II,9961,TMC,INC,tmc_lean,Wikipedia/IndianExpress
+191,Jangipur,3266,BJP,TMC,tmc_lean,Wikipedia/TheWire
+192,Raghunathganj-I,1879,TMC,INC,tmc_lean,Wikipedia/IndianExpress
+193,Raghunathganj-II,1878,TMC,INC,tmc_lean,Wikipedia/IndianExpress
+195,Lalgola,14138,INC,TMC,tmc_lean,Wikipedia/IndianExpress
+196,Bhagwangola-I,11888,TMC,CPIM,tmc_lean,Wikipedia/IndianExpress
+197,Bhagwangola-II,11888,TMC,CPIM,tmc_lean,Wikipedia/IndianExpress
+279,Metiabruz,115740,TMC,BJP,unknown,Wikipedia/IndianExpress
+295,Farakka,40533,INC,BJP,tmc_lean,Wikipedia/IndianExpress

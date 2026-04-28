@@ -1303,7 +1303,7 @@ digraph pipeline {
         style=filled color="#1e1e2e" fontcolor="#94a3b8" fontsize=12
         ECI  [label="2021 Assembly Results\\nReal ECI data — 292/294 ACs\\ntecoholic/Election2021 GitHub\\nTMC%, BJP%, Left%, Cong% per AC" shape=cylinder fillcolor="#2d2d4e" fontcolor="#f8fafc"]
         LS24 [label="2024 Lok Sabha — all 42 WB seats\\nReal ECI results hardcoded\\nTMC vs BJP margin per LS seat\\nMapped to each of 294 ACs" shape=cylinder fillcolor="#2d2d4e" fontcolor="#f8fafc"]
-        SIR  [label="SIR Deletion Data\\nReal district totals (TOI/IE)\\nN24P 3.25L · S24P 2.23L\\nNadia 2.09L · Purba Bdm 2.09L\\nSpecific ACs: Rajarhat-NT 65k" shape=cylinder fillcolor="#2d2d4e" fontcolor="#f8fafc"]
+        SIR  [label="SIR Deletion Data\\nAC-level: Indian Express (EC data, Apr 2026)\\nBooth-level skew: The Wire (Mothabari/Nakashipara/Habra)\\nBhabanipur community breakdown: TOI + Telegraph + Sabar Institute\\n2024 LS AC-segment margins: Wikipedia (all 42 WB seats)" shape=cylinder fillcolor="#2d2d4e" fontcolor="#f8fafc"]
     }
 
     subgraph cluster_prior {
@@ -1644,10 +1644,43 @@ competitive margin. Direction still uncertain; index measures scale of risk only
     st.dataframe(sir_pressure_df, use_container_width=True, hide_index=True)
 
     st.markdown("""
-**The Habra / Matua belt reversal (The Wire booth-level analysis):**
-Unlike Murshidabad, deletions in Habra were concentrated in **Hindu-majority, BJP-favourable booths**.
-This means SIR in Habra may not help BJP — it may have removed BJP's own voters. Minority share
-for Habra updated to 0.12 in model (from 0.32 district average), reflecting this.
+**Booth-level skew — who was deleted matters as much as how many.**
+
+The model now incorporates a `booth_skew` directional factor sourced from The Wire's booth-level
+analysis (April 2026), which downloaded and cross-referenced polling-station-level deletion lists.
+
+| Booth skew | Model factor | Confirmed seats | Source |
+|------------|-------------|-----------------|--------|
+| `tmc_lean` | ×1.00 | Mothabari, Nakashipara, Murshidabad/Malda belt | The Wire, Apr 2026 |
+| `bjp_lean` | ×−0.30 | Habra, Ranaghat Uttar Purba, Ranaghat Dakshin, Gaighata | The Wire, Apr 2026 |
+| `mixed` | ×0.60 | Bhabanipur (23.3% Muslim bulk, but 40.1% Muslim in post-adjudication supplementary deletions) | TOI, Telegraph, Sabar Institute |
+| `unknown` | ×1.00 | All other seats — default conservative assumption | — |
+
+**The Habra reversal (The Wire, April 2026):**
+Deletions in Habra were concentrated in **Hindu-majority, BJP/Matua-favourable booths** — the opposite
+of Murshidabad. SIR in Habra may have removed BJP's own voters. `minority_share` corrected to 0.12
+(from 0.32 district average). `booth_skew = bjp_lean`. Result: near-zero net SIR effect on TMC here.
+*(Source: The Wire — "Three Constituencies, Over 1.2 Lakh Deleted Voters: Realities of the Bengal SIR")*
+
+**Bhabanipur — red-alert seat (TMC's own CM constituency):**
+
+| Metric | Number | Source |
+|--------|--------|--------|
+| Pre-SIR electorate | ~2.06 lakh | TOI |
+| SIR deletions | 51,004 (24.7% of electorate) | TOI, April 2026 |
+| 2024 LS AC-segment lead | TMC over BJP by **8,297** | Telegraph India |
+| SIR pressure index | **6.15x** | deletion ÷ margin |
+| 2021 bypoll margin | Mamata over BJP by 58,832 | ECI |
+| Overall deletion composition | 23.3% Muslim, 76.7% non-Muslim | TOI |
+| Post-adjudication supplementary | 40.1% Muslim (vs 20% Muslim population) | Sabar Institute via Scroll / Telegraph |
+| BJP booth advantage | Led in 149 of 269 booths in 2024 LS | Telegraph India |
+
+Bhabanipur is not "safe" by 2024 arithmetic. The bypoll margin is historical; the 2024 LS
+AC-segment margin collapsed to 8,297 — while 51,004 voters were deleted. `booth_skew = mixed`
+because the overall composition is non-Muslim-majority but post-adjudication deletions
+disproportionately hit Muslim names (40.1% despite 20% Muslim population).
+*(Sources: TOI "1 out of 4 voters out of roll" Apr 2026; Telegraph India "Over 40% Muslims among those
+removed in Mamata's Bhabanipur"; Sabar Institute analysis via Scroll)*
 
 **2021 low-margin seats where deletion scale exceeds previous winning margin:**
 
@@ -1666,8 +1699,31 @@ for Habra updated to 0.12 in model (from 0.32 district average), reflecting this
 *(Source: Times of India — "Netas on edge in low-margin seats", April 2026)*
 
 Most of these were BJP-won in 2021. The SIR direction in these seats depends on local
-minority_share: in Hindu-majority Jangalmahal/Cooch Behar seats, excess_lean is near-zero
-so the net SIR effect on TMC is small — but the uncertainty band widens significantly.
+`minority_share`: in Hindu-majority Jangalmahal/Cooch Behar seats, `excess_lean` is near-zero
+so the net SIR effect on TMC is small — but `sigma` widens significantly via pressure index.
+
+**2024 LS segment leader breakdown in top-10 deletion seats:**
+
+| 2024 LS leader in seat | Count (top 10 deletion seats) | Implication |
+|------------------------|-------------------------------|-------------|
+| INC | 5 (Samserganj, Lalgola, Mothabari, Ratua, Farakka) | Deletions pressure INC-TMC race, not BJP |
+| TMC | 4 (Bhagabangola, Raghunathganj, Suti, Goalpokhar) | Deletions directly threaten TMC leads |
+| BJP | 1 (Jangipur) | Wire confirms minority booths hit here — SIR hurts TMC in BJP-led seat |
+
+*(Source: Wikipedia — "2024 Indian general election in West Bengal", AC-wise segment table)*
+
+**SIR pressure index — how it affects sigma (model uncertainty):**
+
+Where a real 2024 LS AC-margin is available, `sigma_sir_logit` is scaled by:
+```
+pressure_scale = 1.0 + log(1 + pressure_index) × 0.20
+
+pressure_index = 1x  → +14% wider sigma
+pressure_index = 5x  → +36% wider sigma   (Samserganj, Bhabanipur)
+pressure_index = 12x → +50% wider sigma   (Raghunathganj, Jangipur)
+pressure_index = 47x → +73% wider sigma   (Goalpokhar)
+```
+For the ~270 seats without a real LS margin, falls back to `deletion_rate`-based scaling.
 """)
 
     st.divider()
@@ -1993,8 +2049,25 @@ This is a probabilistic forecast tool for analytical purposes only. Election out
 inherently uncertain. A **76% TMC win probability means BJP wins in roughly 1 in 4 simulated
 elections** — not that BJP winning is impossible. Treat ranges as plausible scenarios, not predictions.
 
-*Data sources: ECI historical results, 2024 Lok Sabha regional data, SIR deletion estimates
-from ECI/The Wire reporting, daily news via GDELT + NewsAPI + YouTube.*
+#### Data sources & citations
+
+| Data | Source | Used for |
+|------|--------|----------|
+| 2021 assembly AC-level results | tecoholic/Election2021 GitHub (ECI candidate data) | Prior construction per constituency |
+| 2024 LS results (all 42 WB seats) | ECI official / Wikipedia "2024 Indian general election in West Bengal" | Prior recency weight (0.45) + AC-segment margins for pressure index |
+| SIR statewide deletion totals | Indian Express, April 2026 ("Over 27 lakh out: EC releases first data") | 89L total roll fall, 27.16L post-adjudication |
+| SIR AC-level deletion counts (25 ACs) | Indian Express ("30% of voters in a Murshidabad seat removed") | deletion_count, deletion_rate per constituency |
+| Booth-level skew — Mothabari, Nakashipara, Habra | The Wire ("Three Constituencies, Over 1.2 Lakh Deleted Voters") | booth_skew directional factor in SIR model |
+| Bhabanipur deletion detail | TOI ("1 out of 4 voters out of roll as Bhowanipore loses 51,000 electors") | 51,004 deletions, 14,154 under adjudication, 3,875 supplementary |
+| Bhabanipur community breakdown | Sabar Institute analysis via Scroll / Telegraph India | 23.3% Muslim bulk, 40.1% Muslim in post-adjudication supplementary |
+| Bhabanipur 2024 LS booth leads | Telegraph India ("Over 40% Muslims among those removed in Mamata's Bhabanipur") | BJP led 149/269 booths; TMC 8,297 margin |
+| 2021 low-margin seats | Times of India ("Netas on edge in low-margin seats", April 2026) | Dinhata, Jalpaiguri, Balarampur, etc. |
+| RSS mobilization data | India Today / The Print (2024) | shakha count, meeting volume |
+| IPAC shutdown | The Red Mic (April 2026), India Today, The Wire | IPAC organizational shutdown mid-election |
+| BJP CM-face vacuum | Indian Express 2024, Anandabazar Patrika 2025 | Suvendu vs Sukanta rivalry |
+| Ground intelligence (Murshidabad, Nadia) | Abdul Matin (field operative, April 2026) | qualitative scenario conditions; not parametrized in model |
+| Phase 1 turnout | ECI VTR App / CEO West Bengal (April 23, 2026) | Turnout signal (Tier 1, 30% blend) |
+| Daily news | GDELT, NewsAPI, Google News RSS, YouTube | Bayesian signal update (Tier 2–6) |
 """)
 
 
@@ -2099,12 +2172,38 @@ elif page == "Manual Input":
 
     st.divider()
 
-    col_run1, col_run2, _ = st.columns([1, 1, 2])
+    col_run1, col_run2, col_run3 = st.columns([1, 1, 1])
     with col_run1:
         run_btn = st.button("▶ Run Forecast with Manual Signals", type="primary", use_container_width=True)
     with col_run2:
         save_btn = st.button("💾 Save & Update Dashboard", use_container_width=True,
                              help="Saves manual signals to DB and updates all pages")
+    with col_run3:
+        with st.expander("🔐 Full Pipeline (Admin)", expanded=False):
+            st.caption("Fetches live news → Claude filter → Bayesian model → saves to DB. Equivalent to scheduler.py.")
+            admin_pw = st.text_input("Admin password", type="password", key="admin_pw_pipeline")
+            pipeline_btn = st.button("🚀 Run Full Pipeline", use_container_width=True, key="run_full_pipeline_btn")
+
+    # Admin full pipeline
+    ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+    if pipeline_btn:
+        if not ADMIN_PASSWORD:
+            st.error("ADMIN_PASSWORD env var not set on this deployment.")
+        elif admin_pw != ADMIN_PASSWORD:
+            st.error("Incorrect password.")
+        else:
+            with st.spinner("Running full pipeline (fetch → filter → model → save)... this takes ~2–3 minutes"):
+                try:
+                    import sys, importlib
+                    if "scheduler" in sys.modules:
+                        importlib.reload(sys.modules["scheduler"])
+                    import scheduler as _sched
+                    _sched.run_pipeline()
+                    st.cache_data.clear()
+                    st.success("Full pipeline complete. All dashboard pages updated.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Pipeline failed: {e}")
 
     if run_btn or save_btn:
         from pipeline.bayesian import run_full_pipeline

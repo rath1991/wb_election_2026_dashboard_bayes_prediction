@@ -155,6 +155,22 @@ SIR_BJP_COMPETITIVE_THRESHOLD = 0.20  # above this, start scaling down
 SIR_BJP_COMPETITIVE_RATE = 1.25       # rate of scale-down per unit of minority_share
 SIR_BJP_COMPETITIVE_FLOOR = 0.25      # minimum factor even in fully Muslim-majority seats
 
+# Booth-skew directional factors (source: The Wire booth-level analysis, Apr 2026).
+# The direction of SIR impact depends on WHICH booths were hit, not just aggregate deletion rate.
+#   tmc_lean:  deletions concentrated in minority/TMC-supporting booths → hurts TMC (factor=+1.0)
+#   bjp_lean:  deletions concentrated in Hindu/Matua/BJP booths → may help TMC slightly (factor=-0.30)
+#              (negative = TMC win prob increases slightly; magnitude small due to uncertainty)
+#   mixed:     both communities hit; directional effect partially cancels (factor=+0.60)
+#   unknown:   default conservative assumption: treat as tmc_lean (factor=+1.0)
+# Confirmed bjp_lean seats: Habra (The Wire), Ranaghat Uttar Purba, Ranaghat Dakshin, Gaighata
+# Confirmed tmc_lean seats: Mothabari, Nakashipara, entire Murshidabad-Malda belt
+BOOTH_SKEW_FACTORS: dict[str, float] = {
+    "tmc_lean": 1.00,
+    "bjp_lean": -0.30,
+    "mixed":     0.60,
+    "unknown":   1.00,
+}
+
 # Fixed Left/Others/Congress seats — raised from 15 to 20.
 # Congress wins several Malda/Murshidabad seats (Muslim-majority) where competition
 # is Congress vs TMC, not BJP. SIR-conditioning reduces BJP attribution there, but
@@ -317,7 +333,24 @@ def apply_sir_adjustment(priors: pd.DataFrame, data_dir: Path = DATA_DIR) -> pd.
     sir = pd.read_csv(data_dir / "sir_deletions.csv")[["constituency_id", "deletion_count", "deletion_rate", "minority_share", "sir_severity"]]
     df = priors.merge(sir, on="constituency_id", how="left")
     df["deletion_rate"] = df["deletion_rate"].fillna(0.04)
+    df["deletion_count"] = df["deletion_count"].fillna(0)
     df["minority_share"] = df["minority_share"].fillna(0.12)
+
+    # Merge 2024 LS AC-segment margin data (known seats only).
+    # Source: Wikipedia AC-wise LS 2024 results + The Wire booth-level analysis (Apr 2026).
+    # sir_pressure_index = deletion_count / ls24_margin — the key electoral sensitivity metric.
+    # Goalpokhar: 47x | Raghunathganj: 12.3x | Jangipur: 11.2x | Samserganj: 5.4x | Bhabanipur: 6.15x
+    ls24 = pd.read_csv(data_dir / "sir_ls24_margins.csv")[["constituency_id", "ls24_margin", "ls24_leader", "booth_skew"]]
+    df = df.merge(ls24, on="constituency_id", how="left")
+
+    # SIR pressure index: how many times the deleted voters exceed the 2024 LS segment margin.
+    # High pressure → small errors in lean assumptions can flip the seat → wider sigma.
+    # Use real margin where available; leave NaN for unknown (handled in sigma scaling below).
+    df["sir_pressure_index"] = np.where(
+        df["ls24_margin"].notna() & (df["ls24_margin"] > 0),
+        df["deletion_count"] / df["ls24_margin"],
+        np.nan,
+    )
 
     # Blended TMC lean across Hindu + Muslim deleted voters
     tmc_lean = TMC_LEAN_MAJORITY + df["minority_share"] * (TMC_LEAN_MINORITY - TMC_LEAN_MAJORITY)
@@ -328,9 +361,14 @@ def apply_sir_adjustment(priors: pd.DataFrame, data_dir: Path = DATA_DIR) -> pd.
         1.0 - (df["minority_share"] - SIR_BJP_COMPETITIVE_THRESHOLD).clip(lower=0.0) * SIR_BJP_COMPETITIVE_RATE
     ).clip(lower=SIR_BJP_COMPETITIVE_FLOOR, upper=1.0)
 
+    # Booth-skew directional factor: which booths were deleted matters as much as how many.
+    # bjp_lean seats (Habra, Ranaghat belt): deletions in BJP/Matua booths → slight TMC benefit.
+    # tmc_lean seats (Murshidabad/Malda belt, Nakashipara): deletions in minority booths → hurts TMC.
+    booth_skew_factor = df["booth_skew"].map(BOOTH_SKEW_FACTORS).fillna(1.0)
+
     # Adjust in probability space (exact), then convert to logit
     win_p = expit(df["mu_logit"])
-    delta_p = df["deletion_rate"] * excess_lean * bjp_competitive_factor
+    delta_p = df["deletion_rate"] * excess_lean * bjp_competitive_factor * booth_skew_factor
     win_adj_p = (win_p - delta_p).clip(0.02, 0.98)
     df["delta_p"] = delta_p
     df["mu_adj"] = _safe_logit(win_adj_p)
@@ -340,12 +378,19 @@ def apply_sir_adjustment(priors: pd.DataFrame, data_dir: Path = DATA_DIR) -> pd.
     sigma_sir_p = df["deletion_rate"] * SIR_LEAN_SIGMA_FACTOR
     sigma_sir_logit = sigma_sir_p / (win_adj_p * (1 - win_adj_p))
 
-    # SIR pressure scaling: high deletion_rate → additional uncertainty beyond lean uncertainty.
-    # In seats where deletions >> competitive margin (Samserganj 29.6%, Lalgola 22%, Bhabanipur 25%),
-    # small errors in lean assumptions compound. Scale sigma up proportionally.
-    # Source: real AC-level data (Indian Express Apr 2026) confirms deletion/margin ratios of 5–47x.
-    # At deletion_rate=0.10: +25% sigma. At deletion_rate≥0.20: +50% sigma (capped).
-    pressure_scale = 1.0 + (df["deletion_rate"] / 0.10).clip(upper=2.0) * 0.25
+    # SIR pressure scaling: deletions >> margin → tiny lean errors can flip seats → wide sigma.
+    # Where we have real 2024 LS margin data: use log-scale of pressure index.
+    #   pressure_index=1x  → +14% sigma
+    #   pressure_index=5x  (Samserganj, Bhabanipur) → +36% sigma
+    #   pressure_index=12x (Raghunathganj, Jangipur) → +50% sigma
+    #   pressure_index=47x (Goalpokhar) → +73% sigma
+    # Where margin is unknown: fall back to deletion_rate-based scaling (old method).
+    has_pressure = df["sir_pressure_index"].notna()
+    pressure_scale = np.where(
+        has_pressure,
+        1.0 + np.log1p(df["sir_pressure_index"].fillna(0.0).clip(upper=100.0)) * 0.20,
+        1.0 + (df["deletion_rate"] / 0.10).clip(upper=2.0) * 0.25,
+    )
     sigma_sir_logit = sigma_sir_logit * pressure_scale
     df["sigma_sir_logit"] = sigma_sir_logit
 
@@ -356,7 +401,14 @@ def apply_sir_adjustment(priors: pd.DataFrame, data_dir: Path = DATA_DIR) -> pd.
     )
     df["win_adj"] = expit(df["mu_adj"])
 
-    return df
+    return df[[c for c in df.columns if c in [
+        "constituency_id", "name", "region",
+        "base_margin", "p_tmc_raw", "p_others_adj",
+        "win_prior", "mu_logit", "sigma_logit",
+        "deletion_count", "deletion_rate", "minority_share", "sir_severity",
+        "ls24_margin", "ls24_leader", "booth_skew", "sir_pressure_index",
+        "delta_p", "mu_adj", "delta_logit", "sigma_sir_logit", "sigma_adj", "win_adj",
+    ]]]
 
 
 def apply_organizational_factors(adj_priors: pd.DataFrame) -> pd.DataFrame:
