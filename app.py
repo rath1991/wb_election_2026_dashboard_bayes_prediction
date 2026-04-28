@@ -342,65 +342,116 @@ if page == "Headline Forecast":
 
     st.markdown("")
 
-    # ── Gauge + Probability donut ────────────────────────────────────────────
-    col_gauge, col_donut = st.columns([3, 2])
+    # ── Scenario probability bar — the main visual ───────────────────────────
+    tmc_mid = forecast["tmc_p50"]
+    p25 = forecast.get("tmc_p25", forecast["tmc_p5"])
+    p75 = forecast.get("tmc_p75", forecast["tmc_p95"])
 
-    with col_gauge:
-        tmc_mid = forecast["tmc_p50"]
-        ref = int(prev) if prev else tmc_mid
-        fig = go.Figure(go.Indicator(
-            mode="gauge+number+delta",
-            value=tmc_mid,
-            delta={"reference": ref, "increasing": {"color": "#22c55e"}, "decreasing": {"color": "#ef4444"}},
-            title={"text": "TMC Seats (median)", "font": {"size": 16}},
-            number={"font": {"size": 48}},
-            gauge={
-                "axis": {"range": [50, 250], "tickwidth": 1},
-                "bar": {"color": "#22c55e", "thickness": 0.25},
-                "bgcolor": "#1e1e2e",
-                "borderwidth": 0,
-                "steps": [
-                    {"range": [50, 120],  "color": "rgba(239,68,68,0.08)"},
-                    {"range": [120, 148], "color": "rgba(245,158,11,0.08)"},
-                    {"range": [148, 250], "color": "rgba(34,197,94,0.08)"},
-                ],
-                "threshold": {
-                    "line": {"color": "#f8fafc", "width": 2},
-                    "thickness": 0.8,
-                    "value": 148,
-                },
-            },
+    SCENARIOS_VIZ = [
+        {"name": "BJP Surge",   "low": 108, "high": 145, "mid": 126, "prob": 20,
+         "color": "#ef4444", "fill": "rgba(239,68,68,0.18)",
+         "note": "SIR holds · IPAC collapse · FPTP splits in 15+ mixed seats"},
+        {"name": "Status Quo",  "low": 148, "high": 195, "mid": 168, "prob": 50,
+         "color": "#f59e0b", "fill": "rgba(245,158,11,0.18)",
+         "note": "SIR as-is · Mamata brand holds · BJP base stable"},
+        {"name": "TMC Wave",    "low": 185, "high": 220, "mid": 200, "prob": 25,
+         "color": "#22c55e", "fill": "rgba(34,197,94,0.18)",
+         "note": "Court restores rolls · minority consolidation · IPAC gap absorbed"},
+    ]
+
+    fig_scen = go.Figure()
+
+    # Scenario bands (horizontal bars)
+    for s in SCENARIOS_VIZ:
+        fig_scen.add_trace(go.Bar(
+            x=[s["high"] - s["low"]],
+            y=[s["name"]],
+            base=[s["low"]],
+            orientation="h",
+            marker_color=s["fill"],
+            marker_line_color=s["color"],
+            marker_line_width=2,
+            showlegend=False,
+            hovertemplate=f"<b>{s['name']}</b><br>TMC seats: {s['low']}–{s['high']}<br>Probability: ~{s['prob']}%<br>{s['note']}<extra></extra>",
         ))
-        p25 = forecast.get("tmc_p25", forecast["tmc_p5"])
-        p75 = forecast.get("tmc_p75", forecast["tmc_p95"])
-        fig.add_annotation(
-            text=f"Likely range: {p25}–{p75}  ·  90% CI: {forecast['tmc_p5']}–{forecast['tmc_p95']}",
-            xref="paper", yref="paper", x=0.5, y=-0.05,
-            showarrow=False, font={"size": 12, "color": "#94a3b8"},
+        # Probability label inside bar
+        fig_scen.add_annotation(
+            x=(s["low"] + s["high"]) / 2, y=s["name"],
+            text=f"<b>~{s['prob']}%</b><br>{s['low']}–{s['high']} seats",
+            showarrow=False,
+            font=dict(size=14, color=s["color"]),
+            bgcolor="rgba(14,17,23,0.7)",
+            bordercolor=s["color"], borderwidth=1, borderpad=4,
         )
-        fig.update_layout(height=320, margin=dict(t=30, b=40, l=20, r=20),
-                          paper_bgcolor="#0e1117", font={"color": "#f8fafc"})
-        st.plotly_chart(fig, use_container_width=True, key="gauge_tmc")
+        # Mid-point diamond
+        fig_scen.add_trace(go.Scatter(
+            x=[s["mid"]], y=[s["name"]],
+            mode="markers",
+            marker=dict(symbol="diamond", size=14, color=s["color"],
+                        line=dict(color="#f8fafc", width=1)),
+            showlegend=False,
+            hovertemplate=f"Median: {s['mid']} seats<extra></extra>",
+        ))
 
-    with col_donut:
-        probs = [
-            forecast["p_tmc_win"] * 100,
-            forecast["p_hung"] * 100,
-            forecast["p_bjp_win"] * 100,
-        ]
+    # Current model median line
+    fig_scen.add_vline(
+        x=tmc_mid, line_dash="solid", line_color="#f8fafc", line_width=2,
+        annotation_text=f"<b>Model today: {tmc_mid}</b>",
+        annotation_position="top", annotation_font_color="#f8fafc", annotation_font_size=13,
+    )
+    # Majority threshold
+    fig_scen.add_vline(
+        x=148, line_dash="dot", line_color="#94a3b8", line_width=1.5,
+        annotation_text="Majority 148", annotation_position="bottom",
+        annotation_font_color="#94a3b8", annotation_font_size=11,
+    )
+    # Bhabanipur callout arrow
+    fig_scen.add_annotation(
+        x=126, y="BJP Surge",
+        ax=108, ay=0,
+        text="← Bhabanipur + 5 extreme-risk\nseats flip here",
+        showarrow=True, arrowhead=2, arrowcolor="#ef4444", arrowwidth=1.5,
+        font=dict(size=10, color="#ef4444"),
+        xanchor="left", yanchor="middle",
+        xshift=5,
+    )
+
+    fig_scen.update_layout(
+        height=300,
+        barmode="overlay",
+        xaxis=dict(title="TMC Seats", range=[90, 235], gridcolor="#2d2d4e",
+                   tickvals=[100, 120, 148, 168, 185, 200, 220],
+                   ticktext=["100", "120", "<b>148✦</b>", "168", "185", "200", "220"]),
+        yaxis=dict(tickfont=dict(size=13)),
+        plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
+        font=dict(color="#f8fafc"),
+        margin=dict(t=50, b=40, l=110, r=30),
+    )
+    st.plotly_chart(fig_scen, use_container_width=True, key="scenario_prob_bar")
+
+    # Bhabanipur + probability callout row
+    bh_col, prob_col = st.columns([3, 2])
+    with bh_col:
+        st.markdown(
+            "**🚨 Bhabanipur watch:** 51,004 deletions against a 2024 LS margin of 8,297 — "
+            "**6.15× pressure index.** BJP led in 149 of 269 booths in 2024. "
+            "If this seat flips, it is not just 1 seat — it signals the BJP Surge scenario is live. "
+            "Direction unclear: 40% of post-adjudication deletions were Muslim names "
+            "despite 20% Muslim population *(Sabar Institute / Telegraph)*."
+        )
+    with prob_col:
+        probs = [forecast["p_tmc_win"]*100, forecast["p_hung"]*100, forecast["p_bjp_win"]*100]
         labels = ["TMC Majority", "Hung Assembly", "BJP Majority"]
-        colors = ["#22c55e", "#f59e0b", "#ef4444"]
+        colors_d = ["#22c55e", "#f59e0b", "#ef4444"]
         fig2 = go.Figure(go.Pie(
             labels=labels, values=probs, hole=0.60,
-            marker={"colors": colors, "line": {"color": "#0e1117", "width": 2}},
-            textinfo="label+percent",
-            textfont={"size": 12},
-            rotation=90,
+            marker={"colors": colors_d, "line": {"color": "#0e1117", "width": 2}},
+            textinfo="label+percent", textfont={"size": 12}, rotation=90,
         ))
         fig2.update_layout(
-            title={"text": "Win Probability", "font": {"size": 14}},
-            height=320, showlegend=False,
-            margin=dict(t=40, b=10, l=10, r=10),
+            title={"text": "Win Probability", "font": {"size": 13}},
+            height=240, showlegend=False,
+            margin=dict(t=35, b=5, l=5, r=5),
             paper_bgcolor="#0e1117", font={"color": "#f8fafc"},
         )
         st.plotly_chart(fig2, use_container_width=True, key="donut_probs")
