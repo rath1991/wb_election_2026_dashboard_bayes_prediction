@@ -897,9 +897,10 @@ elif page == "BJP Pathway":
             "desc": "91 lakh deleted voters (63L Hindu, 28L Muslim) cannot vote. "
                     "Real AC-level data (Indian Express, April 2026) shows extreme concentration: "
                     "Samserganj 74,775 deleted (30% of electorate), Lalgola 55,420 (22%), "
-                    "Bhabanipur 51,004 (25%), Jangipur 36,581, Raghunathganj 46,100. "
-                    "SIR pressure index (deletions ÷ 2024 LS margin) exceeds 5x in Goalpokhar, "
-                    "Raghunathganj, Jangipur, Bhabanipur, Samserganj. "
+                    "Bhabanipur 51,004 (24.7%, pressure 6.15x), Jangipur 36,581 (BJP-led, 11.2x), Raghunathganj 46,100 (12.3x). "
+                    "Balarampur: 19,526 deletions vs only 1,150 LS margin = 17x. "
+                    "SIR pressure index (deletions ÷ 2024 LS margin) above 5x: Goalpokhar (47x), Balarampur (17x), "
+                    "Raghunathganj (12x), Jangipur (11x), Bhabanipur (6x), Samserganj (5x). "
                     "CRITICAL: direction is uncertain. Habra deletions were in BJP-favourable "
                     "Hindu booths (The Wire). Muslim-majority seat deletions go to Congress/CPM, not BJP. "
                     "BJP benefits only in mixed/Hindu-majority seats with high deletion rates. "
@@ -1204,7 +1205,7 @@ elif page == "Scenario Analysis":
 | **As-is + fragmentation** | **−10 to −18** | Left/Congress splits in Murshidabad on top of deletions; BJP FPTP sneak in mixed seats |
 | **SIR hits BJP voters too** | **+3 to +8** | Habra, Gaighata, Ranaghat — Wire analysis shows deletions in BJP-favourable Hindu booths; Dinhata/Balarampur/Jalpaiguri (57/423/941 vote 2021 margins) at extreme risk |
 
-*SIR pressure index (deletions ÷ 2024 LS margin) — confirmed seats above 3x: Goalpokhar (47x), Raghunathganj (12x), Jangipur (11x), Bhabanipur (6x), Samserganj (5x), Lalgola (4x). Direction uncertain — see Methodology.*
+*SIR pressure index (deletions ÷ 2024 LS margin) — seats above 3x: Goalpokhar (47x), Balarampur (17x), Raghunathganj (12x), Jangipur (11x, BJP-led), Bhabanipur (6x), Samserganj (5x), Lalgola (4x), Nakashipara (3.6x). Kulti (2.58x) and Ghatal (2.6x) also extreme. Direction depends on booth-level skew — see Methodology.*
 """)
         col_x, col_y = st.columns(2)
         with col_x:
@@ -1890,22 +1891,28 @@ competitive margin. Direction still uncertain; index measures scale of risk only
 """)
 
     sir_pressure_df = pd.DataFrame([
-        {"AC": "Goalpokhar", "Deletions": "31,384", "2024 LS Margin": "666", "Pressure Index": "47x", "2024 Leader": "TMC", "District": "Uttar Dinajpur"},
-        {"AC": "Raghunathganj", "Deletions": "46,100", "2024 LS Margin": "3,757", "Pressure Index": "12x", "2024 Leader": "TMC", "District": "Murshidabad"},
-        {"AC": "Jangipur", "Deletions": "36,581", "2024 LS Margin": "3,266", "Pressure Index": "11x", "2024 Leader": "BJP", "District": "Murshidabad"},
-        {"AC": "Bhabanipur", "Deletions": "51,004", "2024 LS Margin": "8,297", "Pressure Index": "6x", "2024 Leader": "TMC", "District": "Kolkata"},
-        {"AC": "Samserganj", "Deletions": "74,775", "2024 LS Margin": "13,814", "Pressure Index": "5x", "2024 Leader": "INC", "District": "Murshidabad"},
-        {"AC": "Lalgola", "Deletions": "55,420", "2024 LS Margin": "14,138", "Pressure Index": "4x", "2024 Leader": "INC", "District": "Murshidabad"},
-        {"AC": "Nakashipara", "Deletions": "~21,890", "2024 LS Margin": "6,099", "Pressure Index": "3.6x", "2024 Leader": "TMC", "District": "Nadia"},
-        {"AC": "Bhagwangola", "Deletions": "47,493", "2024 LS Margin": "23,776", "Pressure Index": "2x", "2024 Leader": "TMC", "District": "Murshidabad"},
-        {"AC": "Suti", "Deletions": "37,965", "2024 LS Margin": "19,923", "Pressure Index": "1.9x", "2024 Leader": "TMC", "District": "Murshidabad"},
-        {"AC": "Karandighi", "Deletions": "31,562", "2024 LS Margin": "21,572", "Pressure Index": "1.5x", "2024 Leader": "BJP", "District": "Uttar Dinajpur"},
-        {"AC": "Mothabari", "Deletions": "37,255", "2024 LS Margin": "34,134", "Pressure Index": "1.1x", "2024 Leader": "INC", "District": "Malda"},
-        {"AC": "Ratua", "Deletions": "35,573", "2024 LS Margin": "33,859", "Pressure Index": "1.1x", "2024 Leader": "INC", "District": "Malda"},
-        {"AC": "Habra", "Deletions": "18,791", "2024 LS Margin": "19,933", "Pressure Index": "0.9x", "2024 Leader": "BJP", "District": "North 24P"},
-        {"AC": "Farakka", "Deletions": "38,222", "2024 LS Margin": "40,533", "Pressure Index": "0.9x", "2024 Leader": "INC", "District": "Murshidabad"},
-        {"AC": "Dantan", "Deletions": "8,609", "2024 LS Margin": "~est.", "Pressure Index": "—", "2024 Leader": "BJP", "District": "Paschim Medinipur"},
-        {"AC": "Ghatal", "Deletions": "11,452", "2024 LS Margin": "~est.", "Pressure Index": "—", "2024 Leader": "TMC", "District": "Paschim Medinipur"},
+        {"AC": "Goalpokhar",    "District": "Uttar Dinajpur", "Deletions": "31,384", "2024 LS Margin": "666",      "Pressure": "47.1x", "2024 Leader": "TMC",  "Contest": "TMC vs INC"},
+        {"AC": "Balarampur",    "District": "Purulia",        "Deletions": "19,526", "2024 LS Margin": "1,150",    "Pressure": "17.0x", "2024 Leader": "TMC",  "Contest": "TMC vs BJP"},
+        {"AC": "Raghunathganj", "District": "Murshidabad",    "Deletions": "46,100", "2024 LS Margin": "3,757",    "Pressure": "12.3x", "2024 Leader": "TMC",  "Contest": "TMC vs INC"},
+        {"AC": "Jangipur",      "District": "Murshidabad",    "Deletions": "36,581", "2024 LS Margin": "3,266",    "Pressure": "11.2x", "2024 Leader": "BJP",  "Contest": "TMC vs BJP"},
+        {"AC": "Bhabanipur",    "District": "Kolkata",        "Deletions": "51,004", "2024 LS Margin": "8,297",    "Pressure": "6.15x", "2024 Leader": "TMC",  "Contest": "TMC vs BJP"},
+        {"AC": "Samserganj",    "District": "Murshidabad",    "Deletions": "74,775", "2024 LS Margin": "13,814",   "Pressure": "5.4x",  "2024 Leader": "INC",  "Contest": "TMC vs INC"},
+        {"AC": "Lalgola",       "District": "Murshidabad",    "Deletions": "55,420", "2024 LS Margin": "14,138",   "Pressure": "3.9x",  "2024 Leader": "INC",  "Contest": "TMC vs INC"},
+        {"AC": "Nakashipara",   "District": "Nadia",          "Deletions": "~21,890","2024 LS Margin": "6,099",    "Pressure": "3.6x",  "2024 Leader": "TMC",  "Contest": "TMC vs BJP"},
+        {"AC": "Kulti",         "District": "Paschim Burdwan","Deletions": "38,832", "2024 LS Margin": "15,053",   "Pressure": "2.58x", "2024 Leader": "BJP",  "Contest": "TMC vs BJP"},
+        {"AC": "Ghatal",        "District": "Paschim Medinipur","Deletions": "11,452","2024 LS Margin": "4,405",   "Pressure": "2.6x",  "2024 Leader": "TMC",  "Contest": "TMC vs BJP"},
+        {"AC": "Bhagabangola",  "District": "Murshidabad",    "Deletions": "47,493", "2024 LS Margin": "23,776",   "Pressure": "2.0x",  "2024 Leader": "TMC",  "Contest": "TMC vs CPM"},
+        {"AC": "Suti",          "District": "Murshidabad",    "Deletions": "37,965", "2024 LS Margin": "19,923",   "Pressure": "1.9x",  "2024 Leader": "TMC",  "Contest": "TMC vs INC"},
+        {"AC": "Karandighi",    "District": "Uttar Dinajpur", "Deletions": "31,562", "2024 LS Margin": "21,572",   "Pressure": "1.5x",  "2024 Leader": "BJP",  "Contest": "TMC vs BJP"},
+        {"AC": "Mothabari",     "District": "Malda",          "Deletions": "37,255", "2024 LS Margin": "34,134",   "Pressure": "1.1x",  "2024 Leader": "INC",  "Contest": "TMC vs INC"},
+        {"AC": "Ratua",         "District": "Malda",          "Deletions": "35,573", "2024 LS Margin": "33,859",   "Pressure": "1.1x",  "2024 Leader": "INC",  "Contest": "TMC vs INC"},
+        {"AC": "Habra",         "District": "North 24P",      "Deletions": "18,791", "2024 LS Margin": "19,933",   "Pressure": "0.94x", "2024 Leader": "BJP",  "Contest": "TMC vs BJP"},
+        {"AC": "Farakka",       "District": "Murshidabad",    "Deletions": "38,222", "2024 LS Margin": "40,533",   "Pressure": "0.94x", "2024 Leader": "INC",  "Contest": "TMC vs INC"},
+        {"AC": "Dinhata",       "District": "Cooch Behar",    "Deletions": "15,460", "2024 LS Margin": "18,014",   "Pressure": "0.86x", "2024 Leader": "TMC",  "Contest": "TMC vs BJP"},
+        {"AC": "Rajarhat NT",   "District": "North 24P",      "Deletions": "24,132", "2024 LS Margin": "28,417",   "Pressure": "0.85x", "2024 Leader": "TMC",  "Contest": "TMC vs BJP"},
+        {"AC": "Gaighata",      "District": "North 24P",      "Deletions": "19,638", "2024 LS Margin": "27,005",   "Pressure": "0.73x", "2024 Leader": "BJP",  "Contest": "TMC vs BJP"},
+        {"AC": "Jalpaiguri",    "District": "Jalpaiguri",     "Deletions": "18,387", "2024 LS Margin": "25,534",   "Pressure": "0.72x", "2024 Leader": "BJP",  "Contest": "TMC vs BJP"},
+        {"AC": "Metiabruz",     "District": "Kolkata",        "Deletions": "39,579", "2024 LS Margin": "1,15,740", "Pressure": "0.34x", "2024 Leader": "TMC",  "Contest": "TMC vs BJP"},
     ])
     st.dataframe(sir_pressure_df, use_container_width=True, hide_index=True)
 
@@ -1973,8 +1980,8 @@ so the net SIR effect on TMC is small — but `sigma` widens significantly via p
 | 2024 LS leader in seat | Count (top 10 deletion seats) | Implication |
 |------------------------|-------------------------------|-------------|
 | INC | 5 (Samserganj, Lalgola, Mothabari, Ratua, Farakka) | Deletions pressure INC-TMC race, not BJP |
-| TMC | 4 (Bhagabangola, Raghunathganj, Suti, Goalpokhar) | Deletions directly threaten TMC leads |
-| BJP | 1 (Jangipur) | Wire confirms minority booths hit here — SIR hurts TMC in BJP-led seat |
+| TMC | 4 (Bhagabangola, Raghunathganj, Suti, Goalpokhar) | Deletions directly threaten TMC leads; Raghunathganj (12.3x) and Goalpokhar (47x) are extreme |
+| BJP | 2 (Jangipur 11.2x, Karandighi 1.5x) | BJP-led seats with high deletions; Wire confirms minority booths hit in Jangipur |
 
 *(Source: Wikipedia — "2024 Indian general election in West Bengal", AC-wise segment table)*
 
@@ -1985,8 +1992,9 @@ Where a real 2024 LS AC-margin is available, `sigma_sir_logit` is scaled by:
 pressure_scale = 1.0 + log(1 + pressure_index) × 0.20
 
 pressure_index = 1x  → +14% wider sigma
-pressure_index = 5x  → +36% wider sigma   (Samserganj, Bhabanipur)
+pressure_index = 5x  → +36% wider sigma   (Samserganj, Bhabanipur 6x)
 pressure_index = 12x → +50% wider sigma   (Raghunathganj, Jangipur)
+pressure_index = 17x → +57% wider sigma   (Balarampur — 19,526 deletions vs 1,150 LS margin)
 pressure_index = 47x → +73% wider sigma   (Goalpokhar)
 ```
 For the ~270 seats without a real LS margin, falls back to `deletion_rate`-based scaling.
