@@ -2,9 +2,12 @@ constituency_id,name,ls24_margin,ls24_leader,ls24_runner_up,booth_skew,source
 9,Goalpokhar-I,333,TMC,INC,tmc_lean,Wikipedia/IndianExpress
 10,Goalpokhar-II,333,TMC,INC,tmc_lean,Wikipedia/IndianExpress
 15,Karandighi,21572,BJP,TMC,tmc_lean,Wikipedia/IndianExpress
+27,Jalpaiguri,25534,BJP,TMC,unknown,Wikipedia/TOI
+40,Dinhata,18014,TMC,BJP,unknown,Wikipedia/TOI
 48,Ratua-I,16930,INC,TMC,tmc_lean,Wikipedia/IndianExpress
 49,Ratua-II,16929,INC,TMC,tmc_lean,Wikipedia/IndianExpress
 53,Mothabari,34134,INC,BJP,tmc_lean,Wikipedia/TheWire
+58,Balarampur,1150,TMC,BJP,unknown,Wikipedia/TOI
 108,Bhabanipur,8297,TMC,BJP,mixed,Telegraph/TOI/SabarInstitute
 136,Rajarhat-Newtown,28417,TMC,BJP,unknown,Wikipedia/IndianExpress
 144,Habra,19933,BJP,TMC,bjp_lean,TheWire
@@ -22,5 +25,7 @@ constituency_id,name,ls24_margin,ls24_leader,ls24_runner_up,booth_skew,source
 195,Lalgola,14138,INC,TMC,tmc_lean,Wikipedia/IndianExpress
 196,Bhagwangola-I,11888,TMC,CPIM,tmc_lean,Wikipedia/IndianExpress
 197,Bhagwangola-II,11888,TMC,CPIM,tmc_lean,Wikipedia/IndianExpress
+234,Kulti,15053,BJP,TMC,unknown,Wikipedia/TOI
 279,Metiabruz,115740,TMC,BJP,unknown,Wikipedia/IndianExpress
 295,Farakka,40533,INC,BJP,tmc_lean,Wikipedia/IndianExpress
+297,Ghatal,4405,TMC,BJP,unknown,Wikipedia/TOI

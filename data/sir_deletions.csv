@@ -277,7 +277,7 @@ constituency_id,name,district,deletion_count,deletion_rate,minority_share,sir_se
 276,Kulpi,South 24 Parganas,8574,0.039,0.3,low,district_average
 277,Mathurapur,South 24 Parganas,8574,0.039,0.35,low,district_average
 278,Budge Budge,South 24 Parganas,8574,0.039,0.3,low,district_average
-279,Metiabruz,South 24 Parganas,39579,0.1799,0.72,high,reported_ac_specific
+279,Metiabruz,South 24 Parganas,39579,0.1504,0.72,high,reported_ac_specific
 280,Garden Reach,South 24 Parganas,8574,0.039,0.65,low,district_average
 281,Jadavpur,South 24 Parganas,8574,0.039,0.18,low,district_average
 282,Tollygunge,Kolkata,2818,0.0128,0.15,low,district_average

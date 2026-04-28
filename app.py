@@ -1223,22 +1223,56 @@ elif page == "Scenario Analysis":
     # Build risk table from data files
     try:
         _sir_raw  = pd.read_csv("data/sir_deletions.csv")[["constituency_id","name","district","deletion_count","deletion_rate","minority_share","sir_severity"]]
-        _ls24_m   = pd.read_csv("data/sir_ls24_margins.csv")[["constituency_id","ls24_margin","ls24_leader","booth_skew"]]
+        _ls24_m   = pd.read_csv("data/sir_ls24_margins.csv")[["constituency_id","ls24_margin","ls24_leader","ls24_runner_up","booth_skew"]]
         _e2021    = pd.read_csv("data/ecidata_2021.csv")[["constituency_id","tmc_minus_bjp_margin","winner"]]
 
         _risk = _sir_raw.merge(_ls24_m, on="constituency_id", how="left")
         _risk = _risk.merge(_e2021, on="constituency_id", how="left")
 
-        # Pressure index vs 2024 LS margin
+        # ── Consolidate I/II pairs into single AC rows for display ────────────
+        # These are genuine separate Assembly seats in the model but are reported
+        # as a combined AC in media (Indian Express, Wikipedia LS segment tables).
+        # Combined deletion = sum; combined LS margin = sum of per-AC margins (= full segment margin).
+        PAIR_MAP = {
+            "Goalpokhar":    ([9,  10],  "Uttar Dinajpur", "TMC",  666,    "INC",  "tmc_lean"),
+            "Raghunathganj": ([192,193], "Murshidabad",    "TMC",  3757,   "INC",  "tmc_lean"),
+            "Suti":          ([189,190], "Murshidabad",    "TMC",  19923,  "INC",  "tmc_lean"),
+            "Bhagabangola":  ([196,197], "Murshidabad",    "TMC",  23776,  "CPIM", "tmc_lean"),
+            "Ratua":         ([48, 49],  "Malda",          "INC",  33859,  "TMC",  "tmc_lean"),
+        }
+        # Remove individual I/II rows; add consolidated rows
+        pair_ids = [cid for ids, *_ in PAIR_MAP.values() for cid in ids]
+        _risk_base = _risk[~_risk["constituency_id"].isin(pair_ids)].copy()
+        consolidated = []
+        for ac_name, (ids, district, leader, margin, runner_up, skew) in PAIR_MAP.items():
+            sub = _risk[_risk["constituency_id"].isin(ids)]
+            if sub.empty:
+                continue
+            consolidated.append({
+                "constituency_id": ids[0],
+                "name": ac_name,
+                "district": district,
+                "deletion_count": sub["deletion_count"].sum(),
+                "deletion_rate": sub["deletion_rate"].mean(),
+                "minority_share": sub["minority_share"].mean(),
+                "sir_severity": sub["sir_severity"].iloc[0],
+                "ls24_margin": margin,
+                "ls24_leader": leader,
+                "ls24_runner_up": runner_up,
+                "booth_skew": skew,
+                "tmc_minus_bjp_margin": sub["tmc_minus_bjp_margin"].mean(),
+                "winner": sub["winner"].iloc[0] if "winner" in sub.columns else None,
+            })
+        _risk = pd.concat([_risk_base, pd.DataFrame(consolidated)], ignore_index=True)
+
+        # Pressure index vs 2024 LS margin (combined for consolidated, per-AC for singles)
         _risk["ls24_pressure"] = np.where(
             _risk["ls24_margin"].notna() & (_risk["ls24_margin"] > 0),
             (_risk["deletion_count"] / _risk["ls24_margin"]).round(1),
             np.nan,
         )
 
-        # 2021 margin absolute value
-        _risk["margin_2021"] = _risk["tmc_minus_bjp_margin"].abs() * 220000  # rough avg electorate
-        # Override known 2021 margins with real values from TOI reporting
+        # 2021 margin — real values where known (TOI reporting), else derive from voteshare
         known_2021 = {
             40: 57,    # Dinhata
             27: 941,   # Jalpaiguri
@@ -1250,11 +1284,10 @@ elif page == "Scenario Analysis":
             296: 623,  # Dantan
             297: 966,  # Ghatal
         }
+        _risk["margin_2021"] = _risk["tmc_minus_bjp_margin"].abs() * 220000
         for cid, m in known_2021.items():
             _risk.loc[_risk["constituency_id"] == cid, "margin_2021"] = m
 
-        # Risk score: composite
-        # LS24 pressure dominates; 2021 margin adds for seats without LS24 data
         def _risk_score(row):
             score = 0
             if pd.notna(row["ls24_pressure"]):
@@ -1267,9 +1300,9 @@ elif page == "Scenario Analysis":
         _risk["risk_score"] = _risk.apply(_risk_score, axis=1)
 
         def _risk_label(row):
-            pi = row["ls24_pressure"]
-            m21 = row["margin_2021"] if pd.notna(row["margin_2021"]) else 999999
-            dr = row["deletion_rate"]
+            pi  = row["ls24_pressure"]
+            m21 = row["margin_2021"] if pd.notna(row.get("margin_2021")) else 999999
+            dr  = row["deletion_rate"]
             if (pd.notna(pi) and pi >= 5) or (m21 < 1000 and dr > 0.05):
                 return "🔴 Extreme"
             if (pd.notna(pi) and pi >= 2) or (m21 < 5000 and dr > 0.05):
@@ -1291,25 +1324,27 @@ elif page == "Scenario Analysis":
             return "? Unknown"
 
         def _contest_type(row):
-            leader = str(row.get("ls24_leader", "")).strip()
-            ms = row.get("minority_share", 0.12)
-            # INC leading or high minority share → TMC vs INC fight, not BJP
-            if leader == "INC" or ms >= 0.55:
+            # Priority: actual 2024 LS leader overrides minority_share inference.
+            # minority_share is only a fallback when leader data is absent.
+            leader   = str(row.get("ls24_leader", "")).strip()
+            runner   = str(row.get("ls24_runner_up", "")).strip()
+            ms       = row.get("minority_share", 0.12)
+            if leader == "INC":
                 return "🟣 TMC vs INC"
             if leader == "CPIM":
                 return "🔵 TMC vs CPM"
             if leader == "BJP":
                 return "🔴 TMC vs BJP"
             if leader == "TMC":
-                # TMC led in 2024 LS — check who is runner-up via minority share
-                if ms >= 0.40:
-                    return "🟣 TMC vs INC/CPM"
+                if runner == "INC":   return "🟣 TMC vs INC"
+                if runner == "CPIM":  return "🔵 TMC vs CPM"
+                if runner == "BJP":   return "🔴 TMC vs BJP"
+                # No runner data — infer from minority share only as fallback
+                if ms >= 0.50:        return "🟣 TMC vs INC"
                 return "🔴 TMC vs BJP"
-            # No LS data — infer from minority share
-            if ms >= 0.55:
-                return "🟣 TMC vs INC"
-            if ms >= 0.30:
-                return "🟣 TMC vs INC/BJP"
+            # No LS data at all — infer from minority share
+            if ms >= 0.55:  return "🟣 TMC vs INC"
+            if ms >= 0.30:  return "🟣 TMC vs INC/BJP"
             return "🔴 TMC vs BJP"
 
         _risk_display["Contest"] = _risk_display.apply(_contest_type, axis=1)
@@ -1318,17 +1353,16 @@ elif page == "Scenario Analysis":
             "CPM (not BJP)" if "CPM" in c else
             "BJP" if "BJP" in c else "?"
         )
-        _risk_display["Booth Skew"] = _risk_display["booth_skew"].fillna("unknown").map(lambda x: _skew_label(x))
+        _risk_display["Booth Skew"] = _risk_display["booth_skew"].fillna("unknown").map(_skew_label)
         _risk_display["2024 LS Pressure"] = _risk_display["ls24_pressure"].apply(
-            lambda x: f"{x}x" if pd.notna(x) else "—"
+            lambda x: f"{x:.1f}x" if pd.notna(x) else "—"
         )
         _risk_display["2021 Margin"] = _risk_display["margin_2021"].apply(
             lambda x: f"{int(x):,}" if pd.notna(x) and x < 50000 else "—"
         )
         _risk_display["Deletions"] = _risk_display["deletion_count"].apply(lambda x: f"{int(x):,}")
-        _risk_display["Del Rate"] = _risk_display["deletion_rate"].apply(lambda x: f"{x:.1%}")
+        _risk_display["Del Rate"]  = _risk_display["deletion_rate"].apply(lambda x: f"{x:.1%}")
         _risk_display["Min Share"] = _risk_display["minority_share"].apply(lambda x: f"{x:.0%}")
-        _risk_display["2024 Leader"] = _risk_display["ls24_leader"].fillna("—")
 
         _out = _risk_display[[
             "risk_label", "name", "district", "Deletions", "Del Rate",
