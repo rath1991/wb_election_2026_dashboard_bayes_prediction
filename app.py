@@ -1239,6 +1239,34 @@ elif page == "Scenario Analysis":
             if s == "mixed":     return "↕ Mixed"
             return "? Unknown"
 
+        def _contest_type(row):
+            leader = str(row.get("ls24_leader", "")).strip()
+            ms = row.get("minority_share", 0.12)
+            # INC leading or high minority share → TMC vs INC fight, not BJP
+            if leader == "INC" or ms >= 0.55:
+                return "🟣 TMC vs INC"
+            if leader == "CPIM":
+                return "🔵 TMC vs CPM"
+            if leader == "BJP":
+                return "🔴 TMC vs BJP"
+            if leader == "TMC":
+                # TMC led in 2024 LS — check who is runner-up via minority share
+                if ms >= 0.40:
+                    return "🟣 TMC vs INC/CPM"
+                return "🔴 TMC vs BJP"
+            # No LS data — infer from minority share
+            if ms >= 0.55:
+                return "🟣 TMC vs INC"
+            if ms >= 0.30:
+                return "🟣 TMC vs INC/BJP"
+            return "🔴 TMC vs BJP"
+
+        _risk_display["Contest"] = _risk_display.apply(_contest_type, axis=1)
+        _risk_display["SIR Flows To"] = _risk_display["Contest"].map(lambda c:
+            "INC (not BJP)" if "INC" in c else
+            "CPM (not BJP)" if "CPM" in c else
+            "BJP" if "BJP" in c else "?"
+        )
         _risk_display["Booth Skew"] = _risk_display["booth_skew"].fillna("unknown").map(lambda x: _skew_label(x))
         _risk_display["2024 LS Pressure"] = _risk_display["ls24_pressure"].apply(
             lambda x: f"{x}x" if pd.notna(x) else "—"
@@ -1253,11 +1281,12 @@ elif page == "Scenario Analysis":
 
         _out = _risk_display[[
             "risk_label", "name", "district", "Deletions", "Del Rate",
-            "2024 LS Pressure", "2021 Margin", "2024 Leader", "Min Share", "Booth Skew"
+            "2024 LS Pressure", "2021 Margin", "Contest", "SIR Flows To", "Min Share", "Booth Skew"
         ]].rename(columns={
             "risk_label": "Risk",
             "name": "AC",
             "district": "District",
+            "SIR Flows To": "SIR benefit →",
         })
 
         # Color rows by risk
@@ -1275,12 +1304,23 @@ elif page == "Scenario Analysis":
         n_extreme  = (_out["Risk"].str.contains("Extreme")).sum()
         n_veryhigh = (_out["Risk"].str.contains("Very High")).sum()
         n_high     = (_out["Risk"].str.contains("High") & ~_out["Risk"].str.contains("Very")).sum()
+        n_inc_fight = (_out["SIR benefit →"] == "INC (not BJP)").sum() if "SIR benefit →" in _out.columns else 0
 
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("🔴 Extreme risk seats", n_extreme)
-        c2.metric("🟠 Very high risk seats", n_veryhigh)
-        c3.metric("🟡 High risk seats", n_high)
+        c1, c2, c3, c4, c5 = st.columns(5)
+        c1.metric("🔴 Extreme risk", n_extreme)
+        c2.metric("🟠 Very high risk", n_veryhigh)
+        c3.metric("🟡 High risk", n_high)
         c4.metric("Total flagged", n_extreme + n_veryhigh + n_high)
+        c5.metric("🟣 TMC vs INC (not BJP)", n_inc_fight)
+
+        st.info(
+            f"**{n_inc_fight} of the flagged seats are TMC vs INC fights** (Murshidabad/Malda belt — "
+            "Samserganj, Lalgola, Mothabari, Ratua, Farakka, Raghunathganj, Suti, Bhagwangola). "
+            "In these seats, SIR deletions disadvantage TMC but **INC is the beneficiary, not BJP**. "
+            "The model's `bjp_competitive_factor` reduces BJP attribution to a floor of 0.25 in high-minority seats. "
+            "These seats feed into the Others bucket (Congress/Left) in the Monte Carlo — they are contested between TMC and INC, "
+            "and BJP is largely irrelevant regardless of SIR outcome."
+        )
 
         st.markdown(
             "**Are these factored into the model?** "
