@@ -802,8 +802,11 @@ elif page == "BJP Pathway":
         "north_bengal_sweep_35plus": {
             "label": "North Bengal sweep (35+ of ~54 seats)",
             "desc": "BJP's 2019 base. Must dominate border districts, Matua belt, hill seats. "
-                    "2024 LS: TMC recovered Cooch Behar — trend has reversed.",
-            "ls2024": "BJP lost ground. TMC won Cooch Behar (defeated Nisith Pramanik).",
+                    "2024 LS: TMC recovered Cooch Behar — trend has reversed. "
+                    "Ground reports (Apr 2026): Baishnabnagar still BJP-leaning; Farakka is a "
+                    "BJP vs Congress fight where TMC is third — BJP can gain here through FPTP split.",
+            "ls2024": "BJP lost ground. TMC won Cooch Behar (defeated Nisith Pramanik). "
+                      "Malda border seats remain competitive for BJP.",
         },
         "jangalmahal_hold_18plus": {
             "label": "Jangalmahal hold (18+ of ~25 seats)",
@@ -819,20 +822,40 @@ elif page == "BJP Pathway":
         "urban_kolkata_gain_10plus": {
             "label": "Urban Kolkata net +10 gain",
             "desc": "Governance/corruption narrative must convert Kolkata middle class. "
-                    "TMC historically dominant here.",
-            "ls2024": "TMC won all 4 Kolkata-area LS seats with increased margin.",
+                    "TMC historically dominant here. "
+                    "Ground reports (Apr 2026): CPM — not BJP — is the primary challenger in "
+                    "seats like Uttarpara (Minakshi) and Dum Dum North. BJP gains in urban Kolkata "
+                    "require CPM to split TMC votes AND BJP to consolidate Hindu swing — a harder two-step.",
+            "ls2024": "TMC won all 4 Kolkata-area LS seats with increased margin. "
+                      "Left urban revival in 2026 complicates BJP's urban calculus further.",
         },
         "minority_fragmentation": {
             "label": "Minority vote fragmentation",
-            "desc": "Left/ISF/Congress draws 15%+ in key Muslim-majority seats, "
-                    "splitting the anti-BJP vote. Without SIR, this is the only realistic path.",
-            "ls2024": "Minority consolidation held for TMC in 2024 LS — fragmentation did NOT occur.",
+            "desc": "Multi-party fragmentation in Muslim-majority seats splits the anti-BJP vote. "
+                    "Ground reports (Apr 2026) confirm this is happening: CPM winning Domkal and "
+                    "Karandighi; SDPI projected to win Sagardighi; Congress ahead in Baharampur "
+                    "and Malda seats; Naushad faction contesting Bhangar and Canning East. "
+                    "CRITICAL NUANCE: these seats go to Congress/CPM/SDPI — NOT to BJP. "
+                    "BJP benefits only where fragmentation creates a Jalanghi-type three-way fight "
+                    "where BJP sneaks through with 35–38% while TMC and Others split the remainder.",
+            "ls2024": "Minority consolidation held for TMC in 2024 LS — fragmentation did NOT occur. "
+                      "2026 ground reality has shifted materially from 2024.",
         },
         "sir_voter_suppression_effective": {
             "label": "SIR voter suppression effective",
-            "desc": "91 lakh deleted voters (heavily Muslim/minority) cannot vote. "
-                    "If courts intervene or voters find workarounds, this condition fails.",
-            "ls2024": "SIR implemented post-2024 LS. No 2024 baseline — pure 2026 structural factor.",
+            "desc": "91 lakh deleted voters (63L Hindu, 28L Muslim) cannot vote. "
+                    "Real AC-level data (Indian Express, April 2026) shows extreme concentration: "
+                    "Samserganj 74,775 deleted (30% of electorate), Lalgola 55,420 (22%), "
+                    "Bhabanipur 51,004 (25%), Jangipur 36,581, Raghunathganj 46,100. "
+                    "SIR pressure index (deletions ÷ 2024 LS margin) exceeds 5x in Goalpokhar, "
+                    "Raghunathganj, Jangipur, Bhabanipur, Samserganj. "
+                    "CRITICAL: direction is uncertain. Habra deletions were in BJP-favourable "
+                    "Hindu booths (The Wire). Muslim-majority seat deletions go to Congress/CPM, not BJP. "
+                    "BJP benefits only in mixed/Hindu-majority seats with high deletion rates. "
+                    "Low-margin 2021 BJP seats at risk: Dinhata (57-vote margin, 15,460 deleted), "
+                    "Balarampur (423 votes, 19,526 deleted), Jalpaiguri (941 votes, 18,387 deleted).",
+            "ls2024": "SIR implemented post-2024 LS. No 2024 baseline — pure 2026 structural factor. "
+                      "Scale now confirmed from EC data; direction per-seat still uncertain.",
         },
         "anti_incumbency_national": {
             "label": "National anti-incumbency wave",
@@ -968,7 +991,7 @@ elif page == "Scenario Analysis":
     forecast = _forecast_latest()
 
     # Scenarios use three-party accounting: TMC + BJP + Others = 294
-    # Others = Congress (Malda/Murshidabad) + Left + ISF + GJM/Hill parties
+    # Others = Congress (Malda/Murshidabad) + Left + GJM/Hill parties
     # Model baseline (real 2021+2024 data): TMC 168, BJP 94, Others ~32
     # Each scenario shifts Others too: SIR restoration → Congress seats shrink;
     # SIR full suppression → Congress/ISF gain more Muslim-majority seats.
@@ -982,9 +1005,10 @@ elif page == "Scenario Analysis":
             "sir": "SIR rolls partially/fully restored by court order",
             "conditions": [
                 "Court orders restore significant voter names before Phase 2",
-                "Minority consolidation >85% behind TMC (counter-mobilisation from SIR anger)",
-                "IPAC shutdown absorbed by TMC state machinery",
-                "North Bengal partial recovery by TMC",
+                "Minority consolidation >85% behind TMC despite fragmentation pressure from CPM/SDPI/Congress",
+                "IPAC shutdown absorbed by TMC state machinery; booth-level operations hold",
+                "TMC holds urban Kolkata seats against CPM revival (Uttarpara, Dum Dum North)",
+                "North Bengal partial recovery — Cooch Behar trend sustains; Farakka goes TMC",
                 "BJP booth management fails despite RSS groundwork",
             ],
         },
@@ -996,11 +1020,12 @@ elif page == "Scenario Analysis":
             "prob": "45–55%",
             "sir": "SIR as-is — 12.9L deletions in 142 seats, contested in court",
             "conditions": [
-                "SIR impact as-is — deletions in Muslim-majority seats flow to Congress/ISF, not BJP",
-                "IPAC shutdown hurts TMC operations but Mamata brand holds",
-                "Minority vote broadly consolidates for TMC despite SIR anger",
-                "BJP holds North Bengal + Jangalmahal base (RSS mobilisation effective)",
-                "No major new swing factor emerges before counting",
+                "SIR deletions in Muslim-majority seats redirect to Congress/CPM/SDPI — not BJP",
+                "IPAC shutdown hurts TMC operations but Mamata brand holds in swing seats",
+                "Fragmentation in Murshidabad/Malda belt (CPM, SDPI, Congress) inflates Others; "
+                "TMC loses some Muslim-majority seats but BJP is not the beneficiary",
+                "BJP holds North Bengal + Jangalmahal base; Farakka/Baishnabnagar go BJP",
+                "CPM urban revival (Uttarpara, Dum Dum North) cuts TMC margin but stays within range",
             ],
         },
         "BJP Surge": {
@@ -1009,14 +1034,15 @@ elif page == "Scenario Analysis":
             "bjp_low": 118, "bjp_high": 155, "bjp_mid": 139,
             "others_mid": 29,
             "prob": "15–25%",
-            "sir": "Full SIR suppression + minority fragmentation",
+            "sir": "Full SIR suppression + FPTP triangular split benefits BJP",
             "conditions": [
-                "SIR fully effective in Nadia/mixed seats; tactical Muslim vote absent",
-                "IPAC shutdown compounds TMC booth collapse in swing seats",
-                "North Bengal sweep: BJP wins 33–35+ seats",
+                "SIR fully effective in Nadia/Hooghly mixed seats; deleted voters cannot vote",
+                "IPAC shutdown compounds TMC booth collapse — ground operation visibly weaker",
+                "North Bengal sweep: BJP wins 33–35+ seats including Farakka (BJP vs Congress fight)",
                 "Jangalmahal hold: 18+ of 25 seats",
-                "Left/ISF draws 15%+ in key Muslim-plurality seats, splitting anti-BJP vote",
-                "Broad anti-incumbency wave driven by economic stagnation + youth unemployment",
+                "Jalanghi-type FPTP splits in 10–15 seats: Congress/CPM/SDPI takes 25–30%, BJP sneaks "
+                "through with 36–38% while TMC is pushed to third — NOT a Murshidabad Muslim-seat story",
+                "Broad anti-incumbency wave — economic stagnation + youth unemployment overrides Mamata brand",
             ],
         },
     }
@@ -1056,7 +1082,7 @@ elif page == "Scenario Analysis":
             st.markdown(
                 f"🟢 TMC: **{s['tmc_low']}–{s['tmc_high']}** (mid {s['tmc_mid']})  \n"
                 f"🔴 BJP: **{s['bjp_low']}–{s['bjp_high']}** (mid {s['bjp_mid']})  \n"
-                f"🔵 Others: **~{s['others_mid']}** (Congress/Left/ISF)"
+                f"🔵 Others: **~{s['others_mid']}** (Congress/Left/GJM)"
             )
             st.markdown("**Key requirements:**")
             for cond in s["conditions"]:
@@ -1119,12 +1145,15 @@ elif page == "Scenario Analysis":
         st.plotly_chart(fig_sir, use_container_width=True, key="sir_swing_chart")
 
         st.markdown("""
-| SIR Scenario | TMC Seat Impact | Mechanism |
+| SIR Scenario | TMC Seat Impact | Key seats in play |
 |---|---|---|
-| **Full roll restoration** | **+15 to +25** | Deleted minority voters re-enfranchised in Murshidabad, Malda, N24P, Kolkata |
-| **Partial restoration (50%)** | **+8 to +12** | Partial court relief, some constituencies restored |
-| **As-is** *(baseline)* | **0** (reference) | 91L deleted voters absent; our baseline assumes this |
-| **As-is + fragmentation** | **−10 to −18** | Left/ISF splits vote in Muslim-majority seats on top of deletions |
+| **Full roll restoration** | **+15 to +25** | Bhabanipur, Samserganj, Lalgola, Raghunathganj, Goalpokhar — deleted minorities re-enfranchised |
+| **Partial restoration (50%)** | **+8 to +12** | Partial court relief; high-pressure seats partially restored |
+| **As-is** *(baseline)* | **0** (reference) | 91L deleted voters absent — confirmed at AC level (Indian Express, Apr 2026) |
+| **As-is + fragmentation** | **−10 to −18** | Left/Congress/SDPI splits in Murshidabad on top of deletions; BJP FPTP sneak in mixed seats |
+| **SIR hits BJP voters too** | **+3 to +8** | Habra, Gaighata, Ranaghat — Wire analysis shows deletions in BJP-favourable Hindu booths; Dinhata/Balarampur/Jalpaiguri (57/423/941 vote 2021 margins) at extreme risk |
+
+*SIR pressure index (deletions ÷ 2024 LS margin) — confirmed seats above 3x: Goalpokhar (47x), Raghunathganj (12x), Jangipur (11x), Bhabanipur (6x), Samserganj (5x), Lalgola (4x). Direction uncertain — see Methodology.*
 """)
         col_x, col_y = st.columns(2)
         with col_x:
@@ -1281,7 +1310,7 @@ digraph pipeline {
         label="STEP 1 — BUILD PRIOR (reproducible margin formula)"
         style=filled color="#1a1a3e" fontcolor="#94a3b8" fontsize=12
         P1 [label="AC-level base margin (percentage points):\\nM = 0.45 × ls24_tmc_minus_bjp\\n    + 0.25 × assembly21_tmc_minus_bjp\\nWeights reflect recency (2024 > 2021)" shape=box fillcolor="#3b3b6e" fontcolor="#f8fafc"]
-        P2 [label="Others adjustment (Congress/ISF recovery):\\np_others = f(2021 cong+left share, minority_share)\\nHigh minority_share → Congress wins seat, not BJP\\nScales down both TMC and BJP probabilities" shape=box fillcolor="#3b3b6e" fontcolor="#f8fafc"]
+        P2 [label="Others adjustment (Congress recovery):\\np_others = f(2021 cong+left share, minority_share)\\nHigh minority_share → Congress wins seat, not BJP\\nScales down both TMC and BJP probabilities" shape=box fillcolor="#3b3b6e" fontcolor="#f8fafc"]
         P3 [label="Convert to probability + LOGIT space:\\np_tmc_raw = logistic(M / 7pp)  ← σ=7 percentage points\\nwin_prior = p_tmc_raw × (1 − p_others)\\nmu_logit  = logit(win_prior)" shape=box fillcolor="#4a4a7e" fontcolor="#f8fafc"]
     }
 
@@ -1322,8 +1351,8 @@ digraph pipeline {
         label="STEP 4 — MONTE CARLO (10,000 simulations)"
         style=filled color="#2a1a2a" fontcolor="#94a3b8" fontsize=12
         M1 [label="Draw GLOBAL SHOCK once per simulation\\nε_global ~ Normal(0, σ=0.65) ← in LOGIT space\\nNOT a probability — logit shift applied to all 294 seats\\n(models correlated election wave: 2019 BJP wave, 2021 TMC wave)" shape=box fillcolor="#5e2d5e" fontcolor="#f8fafc"]
-        M2 [label="THREE-WAY sampling per constituency:\\n1. if rand() < p_others_adj → Others wins (Congress/ISF/Left)\\n2. else: logit_i = mu_post_i + ε_global + Normal(0, σ=0.80)\\n         TMC wins if logit_i > 0 · BJP wins if logit_i ≤ 0\\np_others varies by AC — high in Murshidabad/Malda" shape=box fillcolor="#5e2d5e" fontcolor="#f8fafc"]
-        M3 [label="Count per simulation:\\nTMC seats + BJP seats + Others seats = 294\\nOthers: ~32 median (Congress Malda/Murshidabad + Left + ISF)\\nRepeat 10,000 times → full distribution" shape=box fillcolor="#6e3d6e" fontcolor="#f8fafc"]
+        M2 [label="THREE-WAY sampling per constituency:\\n1. if rand() < p_others_adj → Others wins (Congress/Left)\\n2. else: logit_i = mu_post_i + ε_global + Normal(0, σ=0.80)\\n         TMC wins if logit_i > 0 · BJP wins if logit_i ≤ 0\\np_others varies by AC — high in Murshidabad/Malda" shape=box fillcolor="#5e2d5e" fontcolor="#f8fafc"]
+        M3 [label="Count per simulation:\\nTMC seats + BJP seats + Others seats = 294\\nOthers: ~32 median (Congress Malda/Murshidabad + Left + GJM)\\nRepeat 10,000 times → full distribution" shape=box fillcolor="#6e3d6e" fontcolor="#f8fafc"]
     }
 
     subgraph cluster_out {
@@ -1461,7 +1490,7 @@ base_margin  =  0.45 × ls_2024_tmc_minus_bjp
 p_tmc_raw    =  logistic(base_margin / 7pp)   ← σ = 7 percentage points
 
 p_others     =  f(2021 congress+left share, minority_share)
-                (Congress/ISF recovery in Murshidabad/Malda)
+                (Congress recovery in Murshidabad/Malda)
 
 win_prior    =  p_tmc_raw × (1 − p_others)
 ```
@@ -1477,21 +1506,27 @@ win_prior    =  p_tmc_raw × (1 − p_others)
 2021 assembly (0.25 weight) captures constituency-level structure that LS aggregates miss.
 σ = 7pp: at a 7pp TMC lead, win probability = 73%. At 14pp lead = 88%. At 0pp = 50%.
 
-**Three-way competition (Congress/Left/ISF):**
+**Three-way competition (Congress/Left/SDPI):**
 
-In Muslim-majority seats (Murshidabad, Malda), the contest is TMC vs Congress — not BJP.
-p_others rises with minority_share: high-minority seats frequently go to Congress/ISF,
+In Muslim-majority seats (Murshidabad, Malda), the contest is TMC vs Congress/CPM/SDPI — not BJP.
+p_others rises with minority_share: high-minority seats frequently go to Others,
 removing them from the TMC vs BJP pool before either can claim them.
+
+Ground intelligence (Apr 2026) confirms multi-party fragmentation:
+CPM projected to win Domkal and Karandighi; SDPI projected in Sagardighi; Congress ahead in
+Baharampur and Malda belt seats. **These seats go into the Others bucket — BJP is not the
+beneficiary.** BJP's fragmentation path runs through Jalanghi-type FPTP splits in mixed seats,
+which the model captures imperfectly (see Limitations).
 
 **Regional baselines emerging from real data:**
 """)
 
     prior_df = pd.DataFrame([
-        {"Region": "North Bengal", "Seats": 54, "TMC Win Prior": "~44%", "p_others": "~13%", "Basis": "BJP competitive; Malda Congress seats pull Others up"},
+        {"Region": "North Bengal", "Seats": 54, "TMC Win Prior": "~44%", "p_others": "~13%", "Basis": "BJP competitive; Malda Congress seats + Farakka (BJP vs Congress) pull Others up"},
         {"Region": "Jangalmahal", "Seats": "~28", "TMC Win Prior": "~65%", "p_others": "~9%", "Basis": "TMC won back many seats in 2021; 2024 LS mixed"},
         {"Region": "Medinipur", "Seats": "~50", "TMC Win Prior": "~47%", "p_others": "~1%", "Basis": "Close — Tamluk/Contai BJP-leaning; Ghatal TMC"},
-        {"Region": "Urban Kolkata", "Seats": "~65", "TMC Win Prior": "~74%", "p_others": "~4%", "Basis": "TMC stronghold; all LS seats won with big margins"},
-        {"Region": "South Bengal Rural", "Seats": "~97", "TMC Win Prior": "~62%", "p_others": "~16%", "Basis": "Murshidabad Congress seats + ISF factor"},
+        {"Region": "Urban Kolkata", "Seats": "~65", "TMC Win Prior": "~74%", "p_others": "~4%", "Basis": "TMC stronghold; CPM revival in some seats (Uttarpara, Dum Dum North)"},
+        {"Region": "South Bengal Rural", "Seats": "~97", "TMC Win Prior": "~62%", "p_others": "~16%", "Basis": "Murshidabad Congress + CPM + SDPI fragmentation; Bhangar/Canning (Naushad faction)"},
     ])
     st.dataframe(prior_df, use_container_width=True, hide_index=True)
 
@@ -1506,8 +1541,10 @@ Prior uncertainty: **σ = 1.20 logit units** — reflecting genuine election-to-
     st.markdown("""
 **Accounting for the systematic effect of voter deletions — both Hindu and Muslim.**
 
-The previous version of this model incorrectly assumed only Muslim voters were deleted.
-The actual composition of 91 lakh deletions statewide: **63 lakh Hindu (~69%), 28 lakh Muslim (~31%)**.
+The actual composition of **~89–91 lakh deletions statewide** (EC data: ~89L total roll fall,
+11.62% of earlier electorate; 27.16L deleted after adjudication from 60.06L under adjudication pool):
+**~63 lakh Hindu (~69%), ~28 lakh Muslim (~31%)**.
+*(Source: Indian Express, April 2026 — EC first data release on SIR deletions after adjudication)*
 Both matter for the forecast, with different TMC lean:
 
 | Deleted voter group | Count | TMC lean | Reasoning |
@@ -1534,7 +1571,7 @@ excess_lean = tmc_lean − 0.50 = minority_share × 0.40 − 0.05
 **BJP competitiveness conditioning — new in this version:**
 
 SIR only helps BJP if BJP is actually competitive in that seat. In Muslim-majority seats
-(Malda, Murshidabad, Uttar Dinajpur), deleted Muslim votes shift to **Congress or ISF — not BJP**.
+(Malda, Murshidabad, Uttar Dinajpur), deleted Muslim votes shift to **Congress — not BJP**.
 BJP was never going to win those seats regardless. We scale down the SIR delta accordingly:
 
 ```
@@ -1546,7 +1583,7 @@ bjp_competitive_factor = (1 − (minority_share − 0.20).clip(0) × 1.25).clip(
 | 0.10 (Hindu-majority) | 1.00 | Full SIR benefit — BJP competitive |
 | 0.27 (WB average) | 0.91 | Slight reduction |
 | 0.50 (Nandagram-type, tactical voting) | 0.63 | Significant reduction |
-| 0.80 (Murshidabad) | 0.25 | Minimal BJP benefit — Congress/ISF fight |
+| 0.80 (Murshidabad) | 0.25 | Minimal BJP benefit — Congress fight |
 
 *(Source: Dr. Kartikeya Batra analysis, The Red Mic, April 2026)*
 
@@ -1572,6 +1609,65 @@ delta_p     = 0.25 × 0.33 × 0.25 = 0.021   → smaller drop (vs 0.083 in old m
 
 Without this conditioning, the old model overstated BJP's gain in Muslim-majority seats
 where Congress, not BJP, is the actual beneficiary.
+
+---
+
+**Real AC-level deletion data (April 2026) — now incorporated into model.**
+
+Sources: Indian Express (EC constituency-level deletion data), The Wire (booth-level analysis
+of Mothabari, Nakashipara, Habra), Times of India (Bhabanipur, low-margin seats), Telegraph India
+(Bhabanipur community breakdown), CEO West Bengal SIR portal.
+
+**SIR Pressure Index = deletion count ÷ 2024 LS AC-segment margin.**
+Seats where this ratio exceeds 1.0 are electorally sensitive — deletions are larger than the last
+competitive margin. Direction still uncertain; index measures scale of risk only.
+""")
+
+    sir_pressure_df = pd.DataFrame([
+        {"AC": "Goalpokhar", "Deletions": "31,384", "2024 LS Margin": "666", "Pressure Index": "47x", "2024 Leader": "TMC", "District": "Uttar Dinajpur"},
+        {"AC": "Raghunathganj", "Deletions": "46,100", "2024 LS Margin": "3,757", "Pressure Index": "12x", "2024 Leader": "TMC", "District": "Murshidabad"},
+        {"AC": "Jangipur", "Deletions": "36,581", "2024 LS Margin": "3,266", "Pressure Index": "11x", "2024 Leader": "BJP", "District": "Murshidabad"},
+        {"AC": "Bhabanipur", "Deletions": "51,004", "2024 LS Margin": "8,297", "Pressure Index": "6x", "2024 Leader": "TMC", "District": "Kolkata"},
+        {"AC": "Samserganj", "Deletions": "74,775", "2024 LS Margin": "13,814", "Pressure Index": "5x", "2024 Leader": "INC", "District": "Murshidabad"},
+        {"AC": "Lalgola", "Deletions": "55,420", "2024 LS Margin": "14,138", "Pressure Index": "4x", "2024 Leader": "INC", "District": "Murshidabad"},
+        {"AC": "Nakashipara", "Deletions": "~21,890", "2024 LS Margin": "6,099", "Pressure Index": "3.6x", "2024 Leader": "TMC", "District": "Nadia"},
+        {"AC": "Bhagwangola", "Deletions": "47,493", "2024 LS Margin": "23,776", "Pressure Index": "2x", "2024 Leader": "TMC", "District": "Murshidabad"},
+        {"AC": "Suti", "Deletions": "37,965", "2024 LS Margin": "19,923", "Pressure Index": "1.9x", "2024 Leader": "TMC", "District": "Murshidabad"},
+        {"AC": "Karandighi", "Deletions": "31,562", "2024 LS Margin": "21,572", "Pressure Index": "1.5x", "2024 Leader": "BJP", "District": "Uttar Dinajpur"},
+        {"AC": "Mothabari", "Deletions": "37,255", "2024 LS Margin": "34,134", "Pressure Index": "1.1x", "2024 Leader": "INC", "District": "Malda"},
+        {"AC": "Ratua", "Deletions": "35,573", "2024 LS Margin": "33,859", "Pressure Index": "1.1x", "2024 Leader": "INC", "District": "Malda"},
+        {"AC": "Habra", "Deletions": "18,791", "2024 LS Margin": "19,933", "Pressure Index": "0.9x", "2024 Leader": "BJP", "District": "North 24P"},
+        {"AC": "Farakka", "Deletions": "38,222", "2024 LS Margin": "40,533", "Pressure Index": "0.9x", "2024 Leader": "INC", "District": "Murshidabad"},
+        {"AC": "Dantan", "Deletions": "8,609", "2024 LS Margin": "~est.", "Pressure Index": "—", "2024 Leader": "BJP", "District": "Paschim Medinipur"},
+        {"AC": "Ghatal", "Deletions": "11,452", "2024 LS Margin": "~est.", "Pressure Index": "—", "2024 Leader": "TMC", "District": "Paschim Medinipur"},
+    ])
+    st.dataframe(sir_pressure_df, use_container_width=True, hide_index=True)
+
+    st.markdown("""
+**The Habra / Matua belt reversal (The Wire booth-level analysis):**
+Unlike Murshidabad, deletions in Habra were concentrated in **Hindu-majority, BJP-favourable booths**.
+This means SIR in Habra may not help BJP — it may have removed BJP's own voters. Minority share
+for Habra updated to 0.12 in model (from 0.32 district average), reflecting this.
+
+**2021 low-margin seats where deletion scale exceeds previous winning margin:**
+
+| AC | 2021 Margin | Deletions | Risk |
+|----|------------|-----------|------|
+| Dinhata | 57 votes | 15,460 | Extreme |
+| Balarampur | 423 votes | 19,526 | Extreme |
+| Jalpaiguri | 941 votes | 18,387 | Extreme |
+| Tamluk | 793 votes | 8,434 | Extreme |
+| Kulti | 679 votes | 38,832 | Extreme |
+| Kalyani | ~2,000 votes | 9,037 | High |
+| Bangaon South | 2,004 votes | 6,902 | High |
+| Dantan | 623 votes | 8,609 | Extreme |
+| Ghatal | 966 votes | 11,452 | Extreme |
+
+*(Source: Times of India — "Netas on edge in low-margin seats", April 2026)*
+
+Most of these were BJP-won in 2021. The SIR direction in these seats depends on local
+minority_share: in Hindu-majority Jangalmahal/Cooch Behar seats, excess_lean is near-zero
+so the net SIR effect on TMC is small — but the uncertainty band widens significantly.
 """)
 
     st.divider()
@@ -1872,7 +1968,7 @@ This is why the 90% CI spans 93–272 seats even though the median is stable at 
 | SIR Hindu lean | 45% | If 50% lean → TMC median ~+8–12 seats (Hindus become neutral) |
 | Global swing σ | 0.65 logit | If lower → CI narrows; if higher → CI widens |
 | News observation noise τ | 1.20 | If lower → news gets more daily weight |
-| Left + Others fixed seats | ~15 | If Left collapses → BJP gains; if Left surges → TMC loses |
+| Others median (Congress+CPM+SDPI) | ~32 | If fragmentation deeper → Others rises, BJP may gain via FPTP splits |
 | 2024 LS weight on prior | 40% | Assembly elections often diverge from LS trends |
 | No reliable polls available | — | If credible polls emerge, they should replace the prior |
 """)
@@ -1883,7 +1979,14 @@ This is why the 90% CI spans 93–272 seats even though the median is stable at 
 - Capture hyper-local caste dynamics within individual constituencies
 - Account for TMC's ground operation quality (historically superior booth management)
 - Replace actual polling data if and when it becomes available
-- Model tactical voting between Left, ISF, and Congress in minority-heavy seats
+- Model tactical voting between Left and Congress in minority-heavy seats
+- Resolve **FPTP triangular-contest dynamics**: when Congress/CPM/SDPI draws 25–30% in a seat,
+  the model draws Others first then runs a TMC-BJP binary. It cannot fully model the case where
+  BJP sneaks through with 36% while TMC (38%) and Others (26%) split — a known structural gap
+  in seats like Jalanghi, Chakulia, and parts of the Malda-Murshidabad belt
+- Distinguish between CPM, Congress, SDPI, and Naushad faction in the Others bucket — all are
+  pooled into p_others per constituency. Ground intelligence (Apr 2026) shows each party winning
+  in different Muslim-majority seats; the model captures total Others probability but not which party
 
 #### Disclaimer
 This is a probabilistic forecast tool for analytical purposes only. Election outcomes are

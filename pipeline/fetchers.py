@@ -326,7 +326,7 @@ PHASE1_DISTRICT_TURNOUT_SEED = [
     ("Darjeeling",     "north_bengal",       89.2, 78.0, "Hill + plains split; GJM factor"),
     ("Kalimpong",      "north_bengal",       83.0, 74.0, "Lowest in Phase 1; GJM stronghold, GNLF competition"),
     ("Malda",          "north_bengal",       92.5, 80.5, "High Muslim concentration; TMC vs Congress fight"),
-    ("Murshidabad",    "south_bengal_rural", 93.5, 81.0, "Muslim-majority; TMC vs Congress/ISF fight"),
+    ("Murshidabad",    "south_bengal_rural", 93.5, 81.0, "Muslim-majority; TMC vs Congress fight"),
     ("Uttar Dinajpur", "north_bengal",       91.8, 79.5, "High Muslim share; BJP non-competitive here"),
     ("Dakshin Dinajpur","north_bengal",      93.1, 80.0, "Mixed; BJP has presence in Hindu seats"),
     ("Birbhum",        "south_bengal_rural", 93.6, 81.5, "TMC stronghold; Anubrata Mondal territory"),

@@ -7,13 +7,13 @@ constituency_id,name,district,deletion_count,deletion_rate,minority_share,sir_se
 6,Phansidewa,Darjeeling,5000,0.0227,0.2,low,estimated
 7,Chopra,North Dinajpur,5000,0.0227,0.45,low,estimated
 8,Islampur,North Dinajpur,5000,0.0227,0.6,low,estimated
-9,Goalpokhar-I,North Dinajpur,5000,0.0227,0.55,low,estimated
-10,Goalpokhar-II,North Dinajpur,5000,0.0227,0.5,low,estimated
+9,Goalpokhar-I,North Dinajpur,15692,0.1264,0.55,high,reported_ac_specific
+10,Goalpokhar-II,North Dinajpur,15692,0.1264,0.50,high,reported_ac_specific
 11,Hemtabad,North Dinajpur,5000,0.0227,0.3,low,estimated
 12,Kaliaganj,North Dinajpur,5000,0.0227,0.4,low,estimated
 13,Raiganj,North Dinajpur,5000,0.0227,0.25,low,estimated
 14,Itahar,North Dinajpur,5000,0.0227,0.45,low,estimated
-15,Karandighi,North Dinajpur,5000,0.0227,0.55,low,estimated
+15,Karandighi,North Dinajpur,31562,0.1122,0.55,high,reported_ac_specific
 16,Balurghat,South Dinajpur,5000,0.0227,0.2,low,estimated
 17,Tapan,South Dinajpur,5000,0.0227,0.15,low,estimated
 18,Gangarampur,South Dinajpur,5000,0.0227,0.18,low,estimated
@@ -25,7 +25,7 @@ constituency_id,name,district,deletion_count,deletion_rate,minority_share,sir_se
 24,Madarihat,Alipurduar,5000,0.0227,0.08,low,estimated
 25,Kumargram,Alipurduar,5000,0.0227,0.12,low,estimated
 26,Kalchini,Alipurduar,5000,0.0227,0.08,low,estimated
-27,Jalpaiguri,Jalpaiguri,5000,0.0227,0.18,low,estimated
+27,Jalpaiguri,Jalpaiguri,18387,0.0836,0.18,high,reported_ac_specific
 28,Rajganj,Jalpaiguri,5000,0.0227,0.2,low,estimated
 29,Dabgram-Fulbari,Jalpaiguri,5000,0.0227,0.22,low,estimated
 30,Maynaguri,Jalpaiguri,5000,0.0227,0.18,low,estimated
@@ -38,7 +38,7 @@ constituency_id,name,district,deletion_count,deletion_rate,minority_share,sir_se
 37,Sitalkuchi,Cooch Behar,5000,0.0227,0.3,low,estimated
 38,Tufanganj,Cooch Behar,5000,0.0227,0.2,low,estimated
 39,Natabari,Cooch Behar,5000,0.0227,0.18,low,estimated
-40,Dinhata,Cooch Behar,5000,0.0227,0.35,low,estimated
+40,Dinhata,Cooch Behar,15460,0.0814,0.35,high,reported_ac_specific
 41,Nishiganj,Cooch Behar,5000,0.0227,0.28,low,estimated
 42,Mekhliganj,Cooch Behar,5000,0.0227,0.18,low,estimated
 43,Habibpur,Malda,5000,0.0227,0.55,low,estimated
@@ -46,17 +46,17 @@ constituency_id,name,district,deletion_count,deletion_rate,minority_share,sir_se
 45,Chanchal,Malda,5000,0.0227,0.7,low,estimated
 46,Harischandrapur-I,Malda,5000,0.0227,0.65,low,estimated
 47,Harischandrapur-II,Malda,5000,0.0227,0.68,low,estimated
-48,Ratua-I,Malda,5000,0.0227,0.62,low,estimated
-49,Ratua-II,Malda,5000,0.0227,0.6,low,estimated
+48,Ratua-I,Malda,17787,0.1190,0.62,very_high,reported_ac_specific
+49,Ratua-II,Malda,17786,0.1190,0.60,very_high,reported_ac_specific
 50,Manikchak,Malda,5000,0.0227,0.55,low,estimated
 51,Malda,Malda,5000,0.0227,0.45,low,estimated
 52,English Bazar,Malda,5000,0.0227,0.48,low,estimated
-53,Mothabari,Malda,5000,0.0227,0.65,low,estimated
+53,Mothabari,Malda,37255,0.1753,0.65,very_high,reported_ac_specific
 54,Sujapur,Malda,5000,0.0227,0.58,low,estimated
 55,Purulia,Purulia,5000,0.0227,0.12,low,estimated
 56,Jhalda-I,Purulia,5000,0.0227,0.1,low,estimated
 57,Jhalda-II,Purulia,5000,0.0227,0.1,low,estimated
-58,Balarampur,Purulia,5000,0.0227,0.08,low,estimated
+58,Balarampur,Purulia,19526,0.0888,0.08,high,reported_ac_specific
 59,Baghmundi,Purulia,5000,0.0227,0.06,low,estimated
 60,Kashipur,Purulia,5000,0.0227,0.1,low,estimated
 61,Para,Purulia,5000,0.0227,0.08,low,estimated
@@ -101,12 +101,12 @@ constituency_id,name,district,deletion_count,deletion_rate,minority_share,sir_se
 100,Egra,Purba Medinipur,1435,0.0065,0.12,low,district_average
 101,Bhagwanpur,Purba Medinipur,1435,0.0065,0.1,low,district_average
 102,Khejuri,Purba Medinipur,1435,0.0065,0.1,low,district_average
-103,Tamluk,Purba Medinipur,1435,0.0065,0.12,low,district_average
+103,Tamluk,Purba Medinipur,8434,0.0384,0.12,medium,reported_ac_specific
 104,Moyna,Purba Medinipur,1435,0.0065,0.1,low,district_average
 105,Panskura East,Purba Medinipur,1435,0.0065,0.12,low,district_average
 106,Panskura West,Purba Medinipur,1435,0.0065,0.12,low,district_average
 107,Kolkata Port,Kolkata,2818,0.0128,0.35,low,district_average
-108,Bhabanipur,Kolkata,2818,0.0128,0.4,low,district_average
+108,Bhabanipur,Kolkata,51004,0.2476,0.30,extreme,reported_ac_specific
 109,Rashbehari,Kolkata,2818,0.0128,0.2,low,district_average
 110,Ballygunge,Kolkata,2818,0.0128,0.18,low,district_average
 111,Chowringhee,Kolkata,2818,0.0128,0.15,low,district_average
@@ -134,7 +134,7 @@ constituency_id,name,district,deletion_count,deletion_rate,minority_share,sir_se
 133,Panihati,North 24 Parganas,11630,0.0529,0.28,low,district_average
 134,Kamarhati,North 24 Parganas,11630,0.0529,0.25,low,district_average
 135,Dum Dum,North 24 Parganas,11630,0.0529,0.22,low,district_average
-136,Rajarhat-Newtown,North 24 Parganas,11630,0.0529,0.18,low,district_average
+136,Rajarhat-Newtown,North 24 Parganas,24132,0.0740,0.18,high,reported_ac_specific
 137,Bidhannagar,North 24 Parganas,11630,0.0529,0.15,low,district_average
 138,Baranagar,North 24 Parganas,11630,0.0529,0.22,low,district_average
 139,Barrackpur,North 24 Parganas,11630,0.0529,0.22,low,district_average
@@ -142,7 +142,7 @@ constituency_id,name,district,deletion_count,deletion_rate,minority_share,sir_se
 141,Bhatpara,North 24 Parganas,11630,0.0529,0.3,low,district_average
 142,Jagaddal,North 24 Parganas,11630,0.0529,0.28,low,district_average
 143,Noapara,North 24 Parganas,11630,0.0529,0.25,low,district_average
-144,Habra,North 24 Parganas,11630,0.0529,0.32,low,district_average
+144,Habra,North 24 Parganas,18791,0.0748,0.12,high,reported_ac_specific
 145,Amdanga,North 24 Parganas,11630,0.0529,0.35,low,district_average
 146,Rajarhat,North 24 Parganas,11630,0.0529,0.25,low,district_average
 147,Deganga,North 24 Parganas,11630,0.0529,0.5,low,district_average
@@ -153,17 +153,17 @@ constituency_id,name,district,deletion_count,deletion_rate,minority_share,sir_se
 152,Basirhat North,North 24 Parganas,11630,0.0529,0.62,low,district_average
 153,Basirhat South,North 24 Parganas,11630,0.0529,0.6,low,district_average
 154,Hingalganj,North 24 Parganas,11630,0.0529,0.55,low,district_average
-155,Gaighata,North 24 Parganas,19638,0.0893,0.3,medium,reported_ac_specific
+155,Gaighata,North 24 Parganas,19638,0.0893,0.15,medium,reported_ac_specific
 156,Swarupnagar,North 24 Parganas,11630,0.0529,0.45,low,district_average
 157,Baduria,North 24 Parganas,11630,0.0529,0.52,low,district_average
 158,Bangaon North,North 24 Parganas,11630,0.0529,0.2,low,district_average
-159,Bangaon South,North 24 Parganas,11630,0.0529,0.22,low,district_average
-160,Gaighata,North 24 Parganas,19638,0.0893,0.25,medium,reported_ac_specific
+159,Bangaon South,North 24 Parganas,6902,0.0314,0.22,medium,reported_ac_specific
+160,Gaighata,North 24 Parganas,19638,0.0893,0.15,medium,reported_ac_specific
 161,Ranaghat North-I,Nadia,13039,0.0593,0.2,low,district_average
-162,Ranaghat North-II,Nadia,13039,0.0593,0.2,low,district_average
+162,Ranaghat North-II,Nadia,20796,0.0770,0.20,high,reported_ac_specific
 163,Ranaghat South,Nadia,17411,0.0791,0.18,medium,reported_ac_specific
 164,Chakdah,Nadia,13039,0.0593,0.22,low,district_average
-165,Kalyani,Nadia,13039,0.0593,0.18,low,district_average
+165,Kalyani,Nadia,9037,0.0411,0.18,medium,reported_ac_specific
 166,Haringhata,Nadia,13039,0.0593,0.18,low,district_average
 167,Krishnaganj,Nadia,13039,0.0593,0.45,low,district_average
 168,Krishnanagar North,Nadia,13039,0.0593,0.38,low,district_average
@@ -173,7 +173,7 @@ constituency_id,name,district,deletion_count,deletion_rate,minority_share,sir_se
 172,Karimpur,Nadia,13039,0.0593,0.55,low,district_average
 173,Tehatta,Nadia,13039,0.0593,0.52,low,district_average
 174,Palashipara,Nadia,13039,0.0593,0.58,low,district_average
-175,Nakashipara,Nadia,13039,0.0593,0.5,low,district_average
+175,Nakashipara,Nadia,21890,0.0995,0.55,high,reported_ac_specific
 176,Hanskhali,Nadia,13039,0.0593,0.25,low,district_average
 177,Murshidabad,Murshidabad,1458,0.0066,0.72,low,district_average
 178,Nabagram,Murshidabad,1458,0.0066,0.68,low,district_average
@@ -186,16 +186,16 @@ constituency_id,name,district,deletion_count,deletion_rate,minority_share,sir_se
 185,Baharampur,Murshidabad,1458,0.0066,0.48,low,district_average
 186,Hariharpara,Murshidabad,1458,0.0066,0.55,low,district_average
 187,Nowda,Murshidabad,1458,0.0066,0.58,low,district_average
-188,Samserganj,Murshidabad,1458,0.0066,0.95,low,district_average
-189,Suti-I,Murshidabad,1458,0.0066,0.78,low,district_average
-190,Suti-II,Murshidabad,1458,0.0066,0.75,low,district_average
-191,Jangipur,Murshidabad,1458,0.0066,0.6,low,district_average
-192,Raghunathganj-I,Murshidabad,1458,0.0066,0.62,low,district_average
-193,Raghunathganj-II,Murshidabad,1458,0.0066,0.58,low,district_average
+188,Samserganj,Murshidabad,74775,0.2957,0.95,extreme,reported_ac_specific
+189,Suti-I,Murshidabad,18983,0.1342,0.78,very_high,reported_ac_specific
+190,Suti-II,Murshidabad,18982,0.1342,0.75,very_high,reported_ac_specific
+191,Jangipur,Murshidabad,36581,0.1365,0.60,very_high,reported_ac_specific
+192,Raghunathganj-I,Murshidabad,23050,0.1729,0.62,very_high,reported_ac_specific
+193,Raghunathganj-II,Murshidabad,23050,0.1729,0.58,very_high,reported_ac_specific
 194,Sagardighi,Murshidabad,1458,0.0066,0.58,low,district_average
-195,Lalgola,Murshidabad,1458,0.0066,0.72,low,district_average
-196,Bhagwangola-I,Murshidabad,1458,0.0066,0.68,low,district_average
-197,Bhagwangola-II,Murshidabad,1458,0.0066,0.65,low,district_average
+195,Lalgola,Murshidabad,55420,0.2196,0.72,extreme,reported_ac_specific
+196,Bhagwangola-I,Murshidabad,23747,0.1685,0.68,very_high,reported_ac_specific
+197,Bhagwangola-II,Murshidabad,23746,0.1685,0.65,very_high,reported_ac_specific
 198,Domkal,Murshidabad,1458,0.0066,0.72,low,district_average
 199,Jalangi,Murshidabad,1458,0.0066,0.8,low,district_average
 200,Berhampore,Murshidabad,1458,0.0066,0.52,low,district_average
@@ -232,7 +232,7 @@ constituency_id,name,district,deletion_count,deletion_rate,minority_share,sir_se
 231,Jamuria,Paschim Burdwan,5000,0.0227,0.15,low,estimated
 232,Asansol North,Paschim Burdwan,5000,0.0227,0.22,low,estimated
 233,Asansol South,Paschim Burdwan,5000,0.0227,0.2,low,estimated
-234,Kulti,Paschim Burdwan,5000,0.0227,0.15,low,estimated
+234,Kulti,Paschim Burdwan,38832,0.1765,0.15,very_high,reported_ac_specific
 235,Barabani,Paschim Burdwan,5000,0.0227,0.12,low,estimated
 236,Pandabeswar,Paschim Burdwan,5000,0.0227,0.12,low,estimated
 237,Hooghly,Hooghly,2894,0.0132,0.2,low,district_average
@@ -293,3 +293,6 @@ constituency_id,name,district,deletion_count,deletion_rate,minority_share,sir_se
 292,Phool Bagan,Kolkata,2818,0.0128,0.22,low,district_average
 293,Ward 55,Kolkata,2818,0.0128,0.18,low,district_average
 294,Ward 108,Kolkata,2818,0.0128,0.15,low,district_average
+295,Farakka,Murshidabad,38222,0.1599,0.70,very_high,reported_ac_specific
+296,Dantan,Paschim Medinipur,8609,0.0430,0.10,medium,reported_ac_specific
+297,Ghatal,Paschim Medinipur,11452,0.0520,0.10,medium,reported_ac_specific

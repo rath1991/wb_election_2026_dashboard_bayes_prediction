@@ -144,13 +144,13 @@ IPAC_SIGMA_FACTOR = 0.40
 
 # Seat-type SIR conditioning: SIR benefits BJP ONLY in BJP-competitive seats.
 # SOURCE: In Malda-Murshidabad (Muslim-majority), competition is Congress vs TMC — not BJP.
-#   If Muslim votes are deleted there, Congress/ISF gains, not BJP. Nandagram (95% Muslim
+#   If Muslim votes are deleted there, Congress gains, not BJP. Nandagram (95% Muslim
 #   deletions) and Nadia are mixed seats where tactical Muslim vote matters for BJP competition.
 #   (Ref: Dr. Kartikeya Batra analysis, The Red Mic, April 2026)
 #
 # At minority_share=0.20: BJP fully competitive → full SIR delta applies (factor=1.0)
 # At minority_share=0.50: BJP partially competitive → factor ~0.63
-# At minority_share=0.80: BJP non-competitive (Congress/ISF fight) → factor=0.25 (floor)
+# At minority_share=0.80: BJP non-competitive (Congress fight) → factor=0.25 (floor)
 SIR_BJP_COMPETITIVE_THRESHOLD = 0.20  # above this, start scaling down
 SIR_BJP_COMPETITIVE_RATE = 1.25       # rate of scale-down per unit of minority_share
 SIR_BJP_COMPETITIVE_FLOOR = 0.25      # minimum factor even in fully Muslim-majority seats
@@ -158,8 +158,8 @@ SIR_BJP_COMPETITIVE_FLOOR = 0.25      # minimum factor even in fully Muslim-majo
 # Fixed Left/Others/Congress seats — raised from 15 to 20.
 # Congress wins several Malda/Murshidabad seats (Muslim-majority) where competition
 # is Congress vs TMC, not BJP. SIR-conditioning reduces BJP attribution there, but
-# the floor is captured here. (2021: Congress+Left+ISF won ~12 seats; 2026 baseline ~20
-# with ISF contesting separately and Congress recovering slightly in their belt.)
+# the floor is captured here. (2021: Congress+Left won ~12 seats; 2026 baseline ~20
+# with Congress recovering slightly in their belt.)
 LEFT_OTHERS_FIXED = 20
 MAJORITY = 148
 
@@ -232,7 +232,7 @@ def build_priors(data_dir: Path = DATA_DIR) -> pd.DataFrame:
     df["left_voteshare"] = df["left_voteshare"].fillna(0.06)
     df["cong_voteshare"] = df["cong_voteshare"].fillna(0.04)
 
-    # Load minority_share from SIR data — proxy for Congress/ISF recovery potential
+    # Load minority_share from SIR data — proxy for Congress recovery potential
     sir_min = pd.read_csv(data_dir / "sir_deletions.csv")[["constituency_id", "minority_share"]]
     df = df.merge(sir_min, on="constituency_id", how="left")
     df["minority_share"] = df["minority_share"].fillna(0.12)
@@ -248,13 +248,13 @@ def build_priors(data_dir: Path = DATA_DIR) -> pd.DataFrame:
     # (a) 2021 vote share — but Congress was wiped out in 2021 (won 0 seats),
     #     so this understates their 2026 recovery in Muslim-majority seats.
     # (b) Minority share proxy: in Muslim-majority areas (Murshidabad, Malda),
-    #     Congress/ISF are recovering in 2026 as they were suppressed in 2021.
-    #     High minority_share → higher Congress/ISF probability of winning the seat.
+    #     Congress is recovering in 2026 as they were suppressed in 2021.
+    #     High minority_share → higher Congress probability of winning the seat.
     df["others_2021"] = df["left_voteshare"] + df["cong_voteshare"]
     # Direct signal from 2021 data
     others_2021_signal = ((df["others_2021"] - 0.10).clip(lower=0.0) * 1.2).clip(upper=0.30)
     # Congress recovery signal from minority_share (Murshidabad/Malda effect)
-    # minority_share > 0.35 → significant Congress/ISF competition for the seat
+    # minority_share > 0.30 → significant Congress competition for the seat
     congress_recovery = ((df["minority_share"] - 0.30).clip(lower=0.0) * 1.5).clip(upper=0.40)
     df["p_others_adj"] = (others_2021_signal + congress_recovery).clip(upper=0.45)
 
@@ -279,7 +279,9 @@ def apply_sir_adjustment(priors: pd.DataFrame, data_dir: Path = DATA_DIR) -> pd.
     """
     SIR creates a systematic reduction in TMC's win probability.
 
-    Factual basis: 91 lakh voters deleted statewide — 63 lakh Hindu (~69%), 28 lakh Muslim (~31%).
+    Factual basis: ~89–91 lakh voters removed statewide (EC data: ~89L total roll fall at 11.62%;
+    27.16L deleted after adjudication from 60.06L under adjudication pool — Indian Express Apr 2026).
+    Composition: ~63 lakh Hindu (~69%), ~28 lakh Muslim (~31%).
     Both communities are affected, but with different TMC lean:
       - Muslim deleted voters: ~85% TMC lean  (TMC_LEAN_MINORITY)
       - Hindu deleted voters:  ~45% TMC lean  (TMC_LEAN_MAJORITY, slight BJP lean)
@@ -297,7 +299,7 @@ def apply_sir_adjustment(priors: pd.DataFrame, data_dir: Path = DATA_DIR) -> pd.
 
     BJP competitiveness conditioning (KEY: SIR only helps BJP in BJP-competitive seats):
       In Muslim-majority seats (Malda/Murshidabad), competition is Congress vs TMC — not BJP.
-      If Muslim votes are deleted there, Congress/ISF gains, not BJP. Seat-type factor:
+      If Muslim votes are deleted there, Congress gains, not BJP. Seat-type factor:
         bjp_competitive_factor = (1 - (minority_share - 0.20).clip(0) × 1.25).clip(0.25, 1.0)
       This scales the delta down in Muslim-majority seats, preventing over-attribution to BJP.
       (Source: Dr. Kartikeya Batra, The Red Mic, April 2026)
@@ -312,7 +314,7 @@ def apply_sir_adjustment(priors: pd.DataFrame, data_dir: Path = DATA_DIR) -> pd.
     Uncertainty (in logit space via delta method):
       sigma_sir ≈ deletion_rate × SIR_LEAN_SIGMA_FACTOR / (win_adj × (1 - win_adj))
     """
-    sir = pd.read_csv(data_dir / "sir_deletions.csv")[["constituency_id", "deletion_rate", "minority_share"]]
+    sir = pd.read_csv(data_dir / "sir_deletions.csv")[["constituency_id", "deletion_count", "deletion_rate", "minority_share", "sir_severity"]]
     df = priors.merge(sir, on="constituency_id", how="left")
     df["deletion_rate"] = df["deletion_rate"].fillna(0.04)
     df["minority_share"] = df["minority_share"].fillna(0.12)
@@ -337,6 +339,14 @@ def apply_sir_adjustment(priors: pd.DataFrame, data_dir: Path = DATA_DIR) -> pd.
     # SIR uncertainty in logit space via delta method: σ_logit ≈ σ_p / (p(1-p))
     sigma_sir_p = df["deletion_rate"] * SIR_LEAN_SIGMA_FACTOR
     sigma_sir_logit = sigma_sir_p / (win_adj_p * (1 - win_adj_p))
+
+    # SIR pressure scaling: high deletion_rate → additional uncertainty beyond lean uncertainty.
+    # In seats where deletions >> competitive margin (Samserganj 29.6%, Lalgola 22%, Bhabanipur 25%),
+    # small errors in lean assumptions compound. Scale sigma up proportionally.
+    # Source: real AC-level data (Indian Express Apr 2026) confirms deletion/margin ratios of 5–47x.
+    # At deletion_rate=0.10: +25% sigma. At deletion_rate≥0.20: +50% sigma (capped).
+    pressure_scale = 1.0 + (df["deletion_rate"] / 0.10).clip(upper=2.0) * 0.25
+    sigma_sir_logit = sigma_sir_logit * pressure_scale
     df["sigma_sir_logit"] = sigma_sir_logit
 
     df["sigma_adj"] = np.sqrt(
