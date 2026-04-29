@@ -395,9 +395,9 @@ if page == "Headline Forecast":
             font={"size": 10, "color": "#94a3b8"}, align="center",
         )
         for i, (txt, col) in enumerate([
-            ("● Surge ~20%",   "#ef4444"),
-            ("● Status Quo ~50%", "#f59e0b"),
-            ("● Wave ~25%",    "#22c55e"),
+            ("● Surge ~32%",   "#ef4444"),
+            ("● Status Quo ~41%", "#f59e0b"),
+            ("● Wave ~27%",    "#22c55e"),
         ]):
             fig2.add_annotation(
                 text=txt, x=0.5, y=0.51 - i * 0.11,
@@ -416,13 +416,13 @@ if page == "Headline Forecast":
     st.markdown("#### What the model is really saying — three scenarios")
     sc1, sc2, sc3 = st.columns(3)
     SCENARIOS_VIZ = [
-        {"col": sc3, "name": "🔴 BJP Surge",  "prob": "~20%", "seats": "108–145", "mid": 126,
+        {"col": sc3, "name": "🔴 BJP Surge",  "prob": "~32%", "seats": "108–145", "mid": 126,
          "color": "#ef4444",
          "drivers": "SIR fully effective · IPAC collapse · FPTP splits 15+ mixed seats · North Bengal sweep"},
-        {"col": sc2, "name": "🟡 Status Quo", "prob": "~50%", "seats": "148–195", "mid": 168,
+        {"col": sc2, "name": "🟡 Status Quo", "prob": "~41%", "seats": "148–195", "mid": 168,
          "color": "#f59e0b",
          "drivers": "SIR as-is · Mamata brand holds · BJP base stable · Congress gains Murshidabad"},
-        {"col": sc1, "name": "🟢 TMC Wave",   "prob": "~25%", "seats": "185–220", "mid": 200,
+        {"col": sc1, "name": "🟢 TMC Wave",   "prob": "~27%", "seats": "185–220", "mid": 200,
          "color": "#22c55e",
          "drivers": "Court restores rolls · minority consolidation · IPAC gap absorbed by TMC cadre"},
     ]
@@ -1047,7 +1047,7 @@ elif page == "Scenario Analysis":
             "tmc_low": 185, "tmc_high": 220, "tmc_mid": 200,
             "bjp_low":  46, "bjp_high":  81, "bjp_mid":  68,
             "others_mid": 26,
-            "prob": "20–30%",
+            "prob": "23–31%",
             "sir": "SIR rolls partially/fully restored by court order",
             "conditions": [
                 "Court orders restore significant voter names before Phase 2",
@@ -1063,7 +1063,7 @@ elif page == "Scenario Analysis":
             "tmc_low": 148, "tmc_high": 195, "tmc_mid": 168,
             "bjp_low":  67, "bjp_high": 114, "bjp_mid":  94,
             "others_mid": 32,
-            "prob": "45–55%",
+            "prob": "37–44%",
             "sir": "SIR as-is — 12.9L deletions in 142 seats, contested in court",
             "conditions": [
                 "SIR deletions in Muslim-majority seats redirect to Congress/CPM — not BJP",
@@ -1079,7 +1079,7 @@ elif page == "Scenario Analysis":
             "tmc_low": 108, "tmc_high": 145, "tmc_mid": 126,
             "bjp_low": 118, "bjp_high": 155, "bjp_mid": 139,
             "others_mid": 29,
-            "prob": "15–25%",
+            "prob": "28–36%",
             "sir": "Full SIR suppression + FPTP triangular split benefits BJP",
             "conditions": [
                 "SIR fully effective in Nadia/Hooghly mixed seats; deleted voters cannot vote",

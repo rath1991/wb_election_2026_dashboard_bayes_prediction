@@ -30,10 +30,18 @@ Chhattisgarh Assembly,2023,Assembly,Chhattisgarh,90,C-Voter,Congress,48,BJP,40,B
 Chhattisgarh Assembly,2023,Assembly,Chhattisgarh,90,Axis My India,Congress,50,BJP,37,BJP,54,Congress,35,direction_wrong,direction_wrong,NO,
 Telangana Assembly,2023,Assembly,Telangana,119,C-Voter,Congress,57,BRS,52,Congress,64,BRS,39,-7,+13,YES,Accurate for Congress
 Telangana Assembly,2023,Assembly,Telangana,119,Poll of Polls,Congress,59,BRS,50,Congress,64,BRS,39,-5,+11,YES,
-LS National,2024,Lok Sabha,National,543,Poll of Polls,NDA,361,INDIA,145,NDA,293,INDIA,234,+68,-89,YES,Direction correct; margin catastrophically wrong; 400 paar narrative
-LS National,2024,Lok Sabha,National,543,Today's Chanakya,NDA,400,INDIA,100,NDA,293,INDIA,234,+107,-134,YES,Worst prediction; pure propaganda
-LS National,2024,Lok Sabha,National,543,Axis My India,NDA,361,INDIA,182,NDA,293,INDIA,234,+68,-52,YES,
+LS National,2024,Lok Sabha,National,543,Poll of Polls (12 agencies),NDA,366,INDIA,144,NDA,293,INDIA,234,+73,-90,YES,Aggregate of 12 surveys; 400 paar narrative contamination
+LS National,2024,Lok Sabha,National,543,Today's Chanakya,NDA,400,INDIA,100,NDA,293,INDIA,234,+107,-134,YES,Worst call in Indian polling history
+LS National,2024,Lok Sabha,National,543,India TV CNX,NDA,381,INDIA,120,NDA,293,INDIA,234,+88,-114,YES,
+LS National,2024,Lok Sabha,National,543,Jan Ki Baat,NDA,362,INDIA,154,NDA,293,INDIA,234,+69,-80,YES,
+LS National,2024,Lok Sabha,National,543,Times Now ETG,NDA,358,INDIA,152,NDA,293,INDIA,234,+65,-82,YES,
+LS National,2024,Lok Sabha,National,543,News Nation,NDA,360,INDIA,150,NDA,293,INDIA,234,+67,-84,YES,
+LS National,2024,Lok Sabha,National,543,Republic P-MARQ,NDA,359,INDIA,154,NDA,293,INDIA,234,+66,-80,YES,
+LS National,2024,Lok Sabha,National,543,TV9 Polstrat,NDA,342,INDIA,162,NDA,293,INDIA,234,+49,-72,YES,Closest to actual; still overestimated NDA by 49
+LS National,2024,Lok Sabha,National,543,Axis My India,NDA,361,INDIA,182,NDA,293,INDIA,234,+68,-52,YES,Closest for INDIA bloc
 LS National,2024,Lok Sabha,National,543,C-Voter,NDA,353,INDIA,163,NDA,293,INDIA,234,+60,-71,YES,
+LS National,2024,Lok Sabha,National,543,Dainik Bhaskar,NDA,315,INDIA,195,NDA,293,INDIA,234,+22,-39,YES,Most cautious; closest overall NDA prediction
+LS National,2024,Lok Sabha,National,543,Republic Matrize,NDA,360,INDIA,150,NDA,293,INDIA,234,+67,-84,YES,
 Haryana Assembly,2024,Assembly,Haryana,90,Poll of Polls,Congress,55,BJP,25,BJP,48,Congress,37,direction_wrong,direction_wrong,NO,All polls predicted Congress win; BJP won
 Haryana Assembly,2024,Assembly,Haryana,90,Axis My India,Congress,59,BJP,23,BJP,48,Congress,37,direction_wrong,direction_wrong,NO,Axis got direction wrong
 Haryana Assembly,2024,Assembly,Haryana,90,C-Voter,Congress,55,BJP,22,BJP,48,Congress,37,direction_wrong,direction_wrong,NO,

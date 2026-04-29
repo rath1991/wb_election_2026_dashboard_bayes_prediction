@@ -1,32 +1,40 @@
 """
 Exit poll calibration layer for WB 2026.
 
-Methodology:
-1. Load full historical exit poll dataset across 2022-2025 state + national elections.
-2. Compute per-agency empirical accuracy (RMSE on seat error, direction accuracy).
-3. Derive WB-specific TMC bias distribution from WB assembly elections 2016 & 2021.
-4. Apply bias correction + agency reliability weighting to 2026 exit poll consensus.
-5. Return calibrated (TMC_mean, sigma) for injection into Bayesian update step.
+Two-tier bias model:
+  Tier A — WB-specific TMC bias (direct historical evidence, highest weight)
+  Tier B — Cross-state ruling-party underestimation bias (general pattern)
+  Tier C — Direction failure risk (3/12 non-LS elections got direction wrong)
 
-Key empirical findings from historical data:
-  WB Assembly 2016: polls underestimated TMC by +11 to +55 (mean +31)
-  WB Assembly 2021: polls underestimated TMC by +57 to +103 (mean +65)
-  WB LS 2024:       TMC underestimated by +12 to +17 LS seats (~+90 assembly-equiv)
-  → WB-specific grand mean bias: ~+55 seats (TMC always underestimated)
+Tier A (WB Assembly):
+  2016: polls underestimated TMC by +11 to +55 (mean +31)
+  2021: polls underestimated TMC by +57 to +103 (mean +65)
+  WB LS 2024: TMC underestimated by ~+14 LS seats (assembly-equiv discounted)
 
-  Non-WB pattern — incumbency surprise elections (exit polls got direction wrong):
-    Himachal 2022, Chhattisgarh 2023, Haryana 2024, Delhi 2025 (Axis only)
-  Ruling alliance underestimated elections:
-    Bihar 2025 NDA: -56 to -73 seats below actual
-    Maharashtra 2024 Mahayuti: -46 to -88 seats below actual
-    LS 2024 NDA overestimated by +60-107 (400 paar narrative contamination — opposite)
+Tier B (cross-state ruling party underestimation, as % of total seats):
+  Bihar 2025 (NDA ruling):       underestimated by 47–73 seats / 243 = 19–30%
+  Maharashtra 2024 (Mahayuti):   underestimated by 46–88 seats / 288 = 16–31%
+  Karnataka 2023 (Congress won): underestimated by  4–29 seats / 224 =  2–13%
+  MP 2023 (BJP won):             underestimated by 39–59 seats / 230 = 17–26%
+  UP 2022 (BJP ruling):          underestimated by ~14 seats  / 403 =  3%
+  Punjab 2022 (AAP won):         underestimated by ~12 seats  / 117 = 10%
+  Gujarat 2022 (BJP ruling):     underestimated by ~6  seats  / 182 =  3%
+  Cross-state mean: ~15% of seats underestimated → for WB (294): ~44 seats
 
-  Agency reliability (empirical, lower = better historical error):
-    Matrize/P-MARQ: best across Bihar, Maharashtra, Rajasthan
-    Axis My India:  accurate in Karnataka, UP 2022; failed Delhi 2025, Haryana, LS 2024
-    Today's Chanakya: worst LS 2024 (NDA+107); mediocre overall
-    People's Pulse:  good Maharashtra 2024; outlier this WB cycle
-    C-Voter:         consistent but conservative; underestimates landslides
+  LS 2024 national: EXCLUDED — BJP was overestimated (400-paar narrative is
+  the OPPOSITE direction; political propaganda inflated BJP prediction, not
+  the general ruling-party underestimation bias. Including it would cancel
+  legitimate bias signals. Treated separately as agency reliability penalty.)
+
+Tier C (direction failure risk):
+  5 direction failures out of 14 distinct election-contexts (36%):
+    Himachal 2022, Chhattisgarh 2023, Rajasthan 2023 (Axis), Haryana 2024, Delhi 2025 (Axis)
+  When direction fails: true bias could be opposite sign.
+  This dramatically widens σ_combined even if mean is unchanged.
+
+Final combined bias:
+  WB-specific (Tier A, 60% weight) + cross-state (Tier B, 40% weight)
+  Direction failure → extra variance term added to σ
 """
 
 import numpy as np
@@ -50,28 +58,61 @@ WB_ASSEMBLY_BIAS: list[dict] = [
     {"year": 2021, "agency": "Poll of Polls",   "bias": 215 - 156},   # +59
 ]
 
-# ── Recency weighting ──────────────────────────────────────────────────────
-# 2021 gets 4× weight: most recent WB assembly, most relevant context.
-# 2016 gets 1×: older political equilibrium, BJP not yet major force.
-# Rationale for heavy recency weighting: exit poll methodology has shifted
-# post-2022 — multiple direction failures (Haryana, Chhattisgarh, MP, Delhi)
-# and LS 2024 "400-paar" contamination suggest systematic pro-BJP bias is
-# growing, not stable. The 2021 WB data captures this era better.
-_weighted_biases = (
+# ── Tier A: WB-specific bias (recency-weighted) ───────────────────────────
+# 2021 gets 4×, 2016 gets 1×, WB LS 2024 gets 2× (discounted for LS dynamics)
+_tier_a = (
     [d["bias"] for d in WB_ASSEMBLY_BIAS if d["year"] == 2016] * 1
     + [d["bias"] for d in WB_ASSEMBLY_BIAS if d["year"] == 2021] * 4
+    + [59] * 2   # WB LS 2024: avg 14 LS seats × 294/42 × 0.60 discount = 59 seats
 )
+TIER_A_MEAN = float(np.mean(_tier_a))
+TIER_A_STD  = float(np.std(_tier_a))
 
-# Also fold in WB LS 2024 bias converted to assembly-equivalent seats.
-# LS 2024 WB: TMC underestimated by avg ~14 LS seats across agencies.
-# Assembly equivalent = 14 × (294/42) = 98 seats — but LS/assembly dynamics
-# differ, so we discount to 60% of face value → +59 assembly-equiv seats.
-# Weight: 2× (recent, WB-specific, different election type so discounted).
-_LS2024_WB_BIAS_ASSY_EQUIV = 59
-_weighted_biases += [_LS2024_WB_BIAS_ASSY_EQUIV] * 2
+# ── Tier B: Cross-state ruling-party underestimation (in WB seat equivalents) ─
+# Ruling/winning party underestimation as % of seats × 294 (WB total).
+# LS 2024 EXCLUDED: NDA was OVERESTIMATED (400-paar narrative = opposite direction).
+# Each tuple: (election, underestimation_seats, total_seats, weight)
+CROSS_STATE_BIAS = [
+    # Strong signal — large magnitude, clear ruling party
+    ("Bihar 2025",         60,  243, 2.0),   # NDA ruling, underestimated by avg 60 seats
+    ("Maharashtra 2024",   66,  288, 2.0),   # Mahayuti ruling, underestimated by avg 66 seats
+    ("MP 2023",            51,  230, 1.5),   # BJP won, underestimated by avg 51 seats
+    # Moderate signal
+    ("Karnataka 2023",     17,  224, 1.0),   # Congress won, underestimated by avg 17 seats
+    ("Punjab 2022",        12,  117, 1.0),   # AAP won, underestimated by 12 seats
+    # Weak signal — small magnitude
+    ("UP 2022",            14,  403, 0.5),   # BJP ruling, underestimated by 14 seats
+    ("Gujarat 2022",        6,  182, 0.5),   # BJP ruling, underestimated by 6 seats
+]
+# Convert to WB-seat-equivalent underestimation: (pct_underestimated × 294)
+_tier_b_values = []
+_tier_b_weights = []
+for _, seats, total, w in CROSS_STATE_BIAS:
+    pct = seats / total
+    wb_equiv = pct * 294
+    _tier_b_values.append(wb_equiv)
+    _tier_b_weights.append(w)
 
-BIAS_MEAN = float(np.mean(_weighted_biases))
-BIAS_STD  = float(np.std(_weighted_biases))
+TIER_B_MEAN = float(np.average(_tier_b_values, weights=_tier_b_weights))
+TIER_B_STD  = float(np.sqrt(np.average(
+    [(v - TIER_B_MEAN)**2 for v in _tier_b_values], weights=_tier_b_weights
+)))
+
+# ── Combined bias: 60% Tier A (WB-specific) + 40% Tier B (cross-state) ───────
+BIAS_MEAN = 0.60 * TIER_A_MEAN + 0.40 * TIER_B_MEAN
+# Combined std: quadrature combination weighted
+BIAS_STD  = float(np.sqrt(0.60**2 * TIER_A_STD**2 + 0.40**2 * TIER_B_STD**2))
+
+# ── Tier C: Direction failure variance ────────────────────────────────────────
+# 5 direction failures out of 14 election-contexts = 36% failure rate.
+# LS 2024 national added as a special "narrative contamination" failure
+# (direction technically correct but magnitude off by 107 seats for Chanakya).
+# When direction fails: bias could be negative (polls were right for wrong reasons).
+# Expected extra variance = P(failure) × (mean_bias - typical_failure_error)²
+DIRECTION_FAILURE_RATE = 0.30  # conservative: 30% chance polls partially right
+DIRECTION_FAILURE_ERROR = -40.0  # if direction fails, TMC overestimated by ~40 seats
+_extra_variance = DIRECTION_FAILURE_RATE * (DIRECTION_FAILURE_ERROR - BIAS_MEAN)**2
+BIAS_STD_WITH_FAILURE = float(np.sqrt(BIAS_STD**2 + _extra_variance))
 
 # ──────────────────────────────────────────────────────────────────────────────
 # 2. Empirical agency reliability scores
@@ -147,7 +188,7 @@ def raw_consensus_tmc(
     return w_mean, w_std
 
 
-def calibrated_tmc_estimate(exclude_outliers: bool = False) -> dict:
+def calibrated_tmc_estimate(exclude_outliers: bool = False, include_direction_failure: bool = True) -> dict:
     """
     Apply WB historical bias correction to 2026 exit poll consensus.
 
@@ -165,39 +206,69 @@ def calibrated_tmc_estimate(exclude_outliers: bool = False) -> dict:
     raw_mean, raw_spread = raw_consensus_tmc(df, exclude_outliers=exclude_outliers)
 
     calibrated_mean = raw_mean + BIAS_MEAN
-    calibrated_std  = float(np.sqrt(raw_spread ** 2 + BIAS_STD ** 2))
+    bias_std_used   = BIAS_STD_WITH_FAILURE if include_direction_failure else BIAS_STD
+    calibrated_std  = float(np.sqrt(raw_spread**2 + bias_std_used**2))
 
     return {
-        "raw_consensus":       round(raw_mean, 1),
-        "raw_spread_std":      round(raw_spread, 1),
-        "bias_mean_seats":     round(BIAS_MEAN, 1),
-        "bias_std_seats":      round(BIAS_STD, 1),
-        "calibrated_mean":     round(calibrated_mean, 1),
-        "calibrated_std":      round(calibrated_std, 1),
-        "as_voteshare_mu":     round(calibrated_mean / 294, 4),
-        "as_voteshare_sigma":  round(calibrated_std / 294, 4),
-        "n_agencies":          int(len(df.dropna(subset=["tmc_mid"]))),
-        "exclude_outliers":    exclude_outliers,
+        "raw_consensus":           round(raw_mean, 1),
+        "raw_spread_std":          round(raw_spread, 1),
+        "tier_a_mean":             round(TIER_A_MEAN, 1),
+        "tier_b_mean":             round(TIER_B_MEAN, 1),
+        "bias_mean_combined":      round(BIAS_MEAN, 1),
+        "bias_std_base":           round(BIAS_STD, 1),
+        "bias_std_with_failure":   round(BIAS_STD_WITH_FAILURE, 1),
+        "direction_failure_rate":  DIRECTION_FAILURE_RATE,
+        "calibrated_mean":         round(calibrated_mean, 1),
+        "calibrated_std":          round(calibrated_std, 1),
+        "as_voteshare_mu":         round(calibrated_mean / 294, 4),
+        "as_voteshare_sigma":      round(calibrated_std / 294, 4),
+        "n_agencies":              int(len(df.dropna(subset=["tmc_mid"]))),
+        "exclude_outliers":        exclude_outliers,
+        "include_direction_failure": include_direction_failure,
     }
 
 
-def exit_poll_regional_signals(prior_model_median: float = 170.0) -> dict[str, float]:
+def exit_poll_regional_signals(
+    prior_model_median: float = 170.0,
+    context_discount: float = 0.45,
+    exclude_outliers: bool = True,
+) -> dict[str, float]:
     """
-    Convert calibrated exit poll observation into regional signal strengths
-    compatible with the news-signal Bayesian update (range [-1, +1]).
+    Convert calibrated exit poll observation into regional signals for Bayesian update.
 
-    Positive = TMC-favourable, negative = BJP-favourable.
-    Scaled over ±50 seat range from the model's current prior median.
+    context_discount (0–1): fraction of historical bias to apply.
+      Default 0.45 → ~45% of the raw WB bias, reflecting that:
+        - 2021 had IPAC at full strength (now shut down)
+        - 2021 had no SIR deletions (now real and unresolved)
+        - 2026 BJP is more mature in WB than 2021
+        - 2016 is too old to be fully comparable
+      So we trust ~45% of the historical correction, not 100%.
+
+    The resulting signal is intentionally weak — it informs the prior
+    but does not dominate it. If MC still lands at ~170, that is valid.
     """
-    est = calibrated_tmc_estimate(exclude_outliers=False)
-    delta  = est["calibrated_mean"] - prior_model_median
-    signal = float(np.clip(delta / 50.0, -1.0, 1.0))
+    df = load_2026_polls()
+    raw_mean, _ = raw_consensus_tmc(df, exclude_outliers=exclude_outliers)
+
+    # Apply discounted bias correction
+    discounted_bias    = BIAS_MEAN * context_discount
+    calibrated_mean    = raw_mean + discounted_bias
+
+    delta  = calibrated_mean - prior_model_median
+    signal = float(np.clip(delta / 60.0, -1.0, 1.0))  # wider scale = gentler signal
 
     regions = [
         "north_bengal", "jangalmahal", "medinipur",
         "urban_kolkata", "south_bengal_rural",
     ]
-    return {r: round(signal, 4) for r in regions}
+    return {
+        "signals":           {r: round(signal, 4) for r in regions},
+        "raw_consensus":     round(raw_mean, 1),
+        "discounted_bias":   round(discounted_bias, 1),
+        "calibrated_mean":   round(calibrated_mean, 1),
+        "context_discount":  context_discount,
+        "signal_strength":   round(signal, 4),
+    }
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -271,5 +342,7 @@ if __name__ == "__main__":
         print(f"  {k:<28}: {v}")
 
     print("\n── Regional signals (vs model prior median 170) ──")
-    for r, s in exit_poll_regional_signals().items():
+    out = exit_poll_regional_signals()
+    for r, s in out["signals"].items():
         print(f"  {r:<28}: {s:+.4f}")
+    print(f"  calibrated_mean: {out['calibrated_mean']}, signal: {out['signal_strength']:+.4f}")
