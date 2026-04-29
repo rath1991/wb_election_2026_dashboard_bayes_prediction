@@ -1,0 +1,51 @@
+election,year,election_type,state,total_seats,agency,pred_party1,pred_p1_seats,pred_party2,pred_p2_seats,actual_party1,actual_p1_seats,actual_party2,actual_p2_seats,p1_error,p2_error,direction_correct,notes
+WB Assembly,2016,Assembly,West Bengal,294,C-Voter,TMC,156,Left+Cong,NA,TMC,211,Left+Cong,76,+55,NA,YES,
+WB Assembly,2016,Assembly,West Bengal,294,GFK Mode,TMC,200,Left+Cong,NA,TMC,211,Left+Cong,76,+11,NA,YES,
+WB Assembly,2016,Assembly,West Bengal,294,Poll of Polls,TMC,184,Left+Cong,NA,TMC,211,Left+Cong,76,+27,NA,YES,
+WB Assembly,2021,Assembly,West Bengal,294,Axis My India,TMC,143,BJP,147,TMC,215,BJP,77,+72,-70,YES,Range mid: TMC 130-156 BJP 134-160
+WB Assembly,2021,Assembly,West Bengal,294,C-Voter,TMC,158,BJP,115,TMC,215,BJP,77,+57,-38,YES,Range mid: TMC 152-164 BJP 109-121
+WB Assembly,2021,Assembly,West Bengal,294,Jan Ki Baat,TMC,112,BJP,173,TMC,215,BJP,77,+103,-96,YES,Range mid: TMC 104-121 BJP 162-185
+WB Assembly,2021,Assembly,West Bengal,294,Poll of Polls,TMC,156,BJP,121,TMC,215,BJP,77,+59,-44,YES,Aggregate of agencies
+WB LS,2024,Lok Sabha,West Bengal,42,Axis My India,TMC,12.5,BJP,28.5,TMC,29,BJP,12,+16.5,-16.5,YES,LS seats; range mid TMC 11-14 BJP 26-31
+WB LS,2024,Lok Sabha,West Bengal,42,India TV CNX,TMC,16,BJP,24,TMC,29,BJP,12,+13,-12,YES,
+WB LS,2024,Lok Sabha,West Bengal,42,Jan Ki Baat,TMC,17,BJP,23.5,TMC,29,BJP,12,+12,-11.5,YES,
+WB LS,2024,Lok Sabha,West Bengal,42,Poll of Polls,TMC,15,BJP,25,TMC,29,BJP,12,+14,-13,YES,Aggregate
+UP Assembly,2022,Assembly,Uttar Pradesh,403,Poll of Polls,BJP,241,SP,142,BJP,255,SP,111,-14,+31,YES,BJP underestimated; SP overestimated
+UP Assembly,2022,Assembly,Uttar Pradesh,403,Axis My India,BJP,255,SP,125,BJP,255,SP,111,0,+14,YES,Very accurate for BJP
+Punjab Assembly,2022,Assembly,Punjab,117,Poll of Polls,AAP,80,Congress,25,AAP,92,Congress,18,-12,+7,YES,AAP underestimated
+Gujarat Assembly,2022,Assembly,Gujarat,182,Axis My India,BJP,150,Congress,65,BJP,156,Congress,60,-6,+5,YES,Fairly accurate
+Himachal Assembly,2022,Assembly,Himachal Pradesh,68,Poll of Polls,BJP,36,Congress,30,Congress,40,BJP,25,direction_wrong,direction_wrong,NO,All polls predicted BJP win; Congress won
+Karnataka Assembly,2023,Assembly,Karnataka,224,Axis My India,Congress,131,BJP,71,Congress,135,BJP,66,-4,+5,YES,Range mid 122-140; most accurate
+Karnataka Assembly,2023,Assembly,Karnataka,224,C-Voter,Congress,106,BJP,89,Congress,135,BJP,66,-29,+23,YES,Underestimated Congress landslide
+Karnataka Assembly,2023,Assembly,Karnataka,224,Today's Chanakya,Congress,120,BJP,92,Congress,135,BJP,66,-15,+26,YES,
+Karnataka Assembly,2023,Assembly,Karnataka,224,India TV CNX,Congress,115,BJP,85,Congress,135,BJP,66,-20,+19,YES,
+MP Assembly,2023,Assembly,Madhya Pradesh,230,Poll of Polls,BJP,124,Congress,102,BJP,163,Congress,66,-39,+36,YES,BJP massively underestimated
+MP Assembly,2023,Assembly,Madhya Pradesh,230,C-Voter,BJP,104,Congress,115,BJP,163,Congress,66,-59,+49,YES,Predicted Congress win; BJP won
+MP Assembly,2023,Assembly,Madhya Pradesh,230,Axis My India,BJP,108,Congress,110,BJP,163,Congress,66,-55,+44,YES,Predicted Congress win; BJP won
+Rajasthan Assembly,2023,Assembly,Rajasthan,200,Poll of Polls,BJP,104,Congress,85,BJP,115,Congress,69,-11,+16,YES,
+Rajasthan Assembly,2023,Assembly,Rajasthan,200,P-MARQ,BJP,122,Congress,68,BJP,115,Congress,69,+7,-1,YES,Most accurate for Rajasthan
+Rajasthan Assembly,2023,Assembly,Rajasthan,200,Axis My India,Congress,100,BJP,88,BJP,115,Congress,69,direction_wrong,direction_wrong,NO,Predicted Congress win; BJP won
+Chhattisgarh Assembly,2023,Assembly,Chhattisgarh,90,Poll of Polls,Congress,52,BJP,38,BJP,54,Congress,35,direction_wrong,direction_wrong,NO,Predicted Congress win; BJP won with 54
+Chhattisgarh Assembly,2023,Assembly,Chhattisgarh,90,C-Voter,Congress,48,BJP,40,BJP,54,Congress,35,direction_wrong,direction_wrong,NO,
+Chhattisgarh Assembly,2023,Assembly,Chhattisgarh,90,Axis My India,Congress,50,BJP,37,BJP,54,Congress,35,direction_wrong,direction_wrong,NO,
+Telangana Assembly,2023,Assembly,Telangana,119,C-Voter,Congress,57,BRS,52,Congress,64,BRS,39,-7,+13,YES,Accurate for Congress
+Telangana Assembly,2023,Assembly,Telangana,119,Poll of Polls,Congress,59,BRS,50,Congress,64,BRS,39,-5,+11,YES,
+LS National,2024,Lok Sabha,National,543,Poll of Polls,NDA,361,INDIA,145,NDA,293,INDIA,234,+68,-89,YES,Direction correct; margin catastrophically wrong; 400 paar narrative
+LS National,2024,Lok Sabha,National,543,Today's Chanakya,NDA,400,INDIA,100,NDA,293,INDIA,234,+107,-134,YES,Worst prediction; pure propaganda
+LS National,2024,Lok Sabha,National,543,Axis My India,NDA,361,INDIA,182,NDA,293,INDIA,234,+68,-52,YES,
+LS National,2024,Lok Sabha,National,543,C-Voter,NDA,353,INDIA,163,NDA,293,INDIA,234,+60,-71,YES,
+Haryana Assembly,2024,Assembly,Haryana,90,Poll of Polls,Congress,55,BJP,25,BJP,48,Congress,37,direction_wrong,direction_wrong,NO,All polls predicted Congress win; BJP won
+Haryana Assembly,2024,Assembly,Haryana,90,Axis My India,Congress,59,BJP,23,BJP,48,Congress,37,direction_wrong,direction_wrong,NO,Axis got direction wrong
+Haryana Assembly,2024,Assembly,Haryana,90,C-Voter,Congress,55,BJP,22,BJP,48,Congress,37,direction_wrong,direction_wrong,NO,
+Maharashtra Assembly,2024,Assembly,Maharashtra,288,Axis My India,Mahayuti,189,MVA,92,Mahayuti,235,MVA,46,-46,+46,YES,Underestimated Mahayuti landslide
+Maharashtra Assembly,2024,Assembly,Maharashtra,288,Chanakya,Mahayuti,156,MVA,134,Mahayuti,235,MVA,46,-79,+88,YES,Predicted close fight; was landslide
+Maharashtra Assembly,2024,Assembly,Maharashtra,288,P-MARQ,Mahayuti,147,MVA,136,Mahayuti,235,MVA,46,-88,+90,YES,
+Maharashtra Assembly,2024,Assembly,Maharashtra,288,Peoples Pulse,Mahayuti,185,MVA,98,Mahayuti,235,MVA,46,-50,+52,YES,Closest prediction
+Delhi Assembly,2025,Assembly,Delhi,70,Axis My India,AAP,53,BJP,17,BJP,48,AAP,22,direction_wrong,direction_wrong,NO,Axis predicted AAP win; BJP won
+Delhi Assembly,2025,Assembly,Delhi,70,Peoples Pulse,BJP,55,AAP,15,BJP,48,AAP,22,+7,-7,YES,Most accurate overall
+Delhi Assembly,2025,Assembly,Delhi,70,Chanakya,BJP,42,AAP,27,BJP,48,AAP,22,-6,+5,YES,Fairly accurate
+Delhi Assembly,2025,Assembly,Delhi,70,P-MARQ,BJP,38,AAP,32,BJP,48,AAP,22,-10,+10,YES,
+Bihar Assembly,2025,Assembly,Bihar,243,Poll of Polls,NDA,148,MGB,87,NDA,204,MGB,35,-56,+52,YES,NDA massively underestimated
+Bihar Assembly,2025,Assembly,Bihar,243,Axis My India,NDA,131,MGB,108,NDA,204,MGB,35,-73,+73,YES,Worst underestimation
+Bihar Assembly,2025,Assembly,Bihar,243,Matrize,NDA,157,MGB,80,NDA,204,MGB,35,-47,+45,YES,Closest of the agencies
+Bihar Assembly,2025,Assembly,Bihar,243,Polstrat,NDA,140,MGB,94,NDA,204,MGB,35,-64,+59,YES,
