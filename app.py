@@ -450,6 +450,117 @@ if page == "Headline Forecast":
         unsafe_allow_html=True,
     )
 
+    # ── Exit Poll Calibration Panel ───────────────────────────────────────────
+    st.divider()
+    st.subheader("Exit Poll Calibration — April 29, 2026")
+    st.caption(
+        "Raw exit polls are systematically biased in West Bengal. "
+        "This module corrects for historical underestimation of TMC and overestimation of BJP "
+        "using a three-tier bias model: WB-specific (2016/2021/LS2024), cross-state ruling-party "
+        "patterns (Bihar/Maharashtra/MP/Karnataka 2022–2025), and direction-failure risk penalty."
+    )
+
+    _ep_col1, _ep_col2 = st.columns(2)
+
+    # Numbers
+    _raw_tmc   = 131.8
+    _cal_tmc   = 159.0
+    _raw_bjp   = 155.0    # weighted consensus excl. People's Pulse
+    _cal_bjp   = 127.0    # raw - 27.9 seat overestimation correction (same magnitude, opposite sign)
+    _model_tmc = forecast["tmc_p50"]
+    _model_bjp = forecast["bjp_p50"]
+    _bias_correction = 27.0   # discounted: +60 × 0.45
+
+    with _ep_col1:
+        _fig_ep = go.Figure()
+        _categories = ["Raw Exit Poll", "Bias-Corrected", "Structural Model"]
+        _tmc_vals = [_raw_tmc, _cal_tmc, _model_tmc]
+        _bjp_vals = [_raw_bjp, _cal_bjp, _model_bjp]
+
+        _fig_ep.add_trace(go.Bar(
+            name="TMC", x=_categories, y=_tmc_vals,
+            marker_color=["rgba(34,197,94,0.45)", "rgba(34,197,94,0.70)", "#22c55e"],
+            text=[f"{v:.0f}" for v in _tmc_vals], textposition="outside",
+        ))
+        _fig_ep.add_trace(go.Bar(
+            name="BJP", x=_categories, y=_bjp_vals,
+            marker_color=["rgba(239,68,68,0.45)", "rgba(239,68,68,0.70)", "#ef4444"],
+            text=[f"{v:.0f}" for v in _bjp_vals], textposition="outside",
+        ))
+        _fig_ep.add_hline(y=148, line_dash="dot", line_color="#f8fafc",
+                          annotation_text="Majority (148)", annotation_position="bottom right",
+                          annotation_font_color="#94a3b8")
+        _fig_ep.update_layout(
+            title="Exit Poll → Calibrated → Model",
+            barmode="group", height=320,
+            paper_bgcolor="#0e1117", plot_bgcolor="#0e1117",
+            font={"color": "#f8fafc"},
+            margin=dict(t=40, b=20, l=10, r=10),
+            legend=dict(orientation="h", y=1.12),
+            yaxis=dict(range=[0, 230], gridcolor="#1e1e2e"),
+        )
+        st.plotly_chart(_fig_ep, use_container_width=True, key="ep_bar")
+
+    with _ep_col2:
+        # Bias distribution across all historical elections
+        _bias_points = {
+            "WB 2016\nC-Voter": 55, "WB 2016\nGFK Mode": 11, "WB 2016\nPoP": 27,
+            "WB 2021\nAxis": 72, "WB 2021\nC-Voter": 57,
+            "WB 2021\nJan Ki Baat": 103, "WB 2021\nPoP": 59,
+            "Bihar 2025\n(NDA equiv)": 73, "Maha 2024\n(equiv)": 76,
+            "MP 2023\n(equiv)": 65, "Karnataka\n(equiv)": 22,
+            "Punjab 2022\n(equiv)": 29,
+        }
+        _bp_labels = list(_bias_points.keys())
+        _bp_values = list(_bias_points.values())
+        _colors_bp = ["#22c55e" if "WB" in l else "#f59e0b" for l in _bp_labels]
+
+        _fig_bias = go.Figure()
+        _fig_bias.add_trace(go.Bar(
+            x=_bp_labels, y=_bp_values,
+            marker_color=_colors_bp,
+            name="Bias (seats)",
+        ))
+        _fig_bias.add_hline(y=60, line_dash="dash", line_color="#94a3b8",
+                            annotation_text="Combined mean (+60)", annotation_position="top right",
+                            annotation_font_color="#94a3b8")
+        _fig_bias.update_layout(
+            title="Exit Poll Bias Distribution (actual − predicted)",
+            height=320,
+            paper_bgcolor="#0e1117", plot_bgcolor="#0e1117",
+            font={"color": "#f8fafc"},
+            margin=dict(t=40, b=60, l=10, r=10),
+            yaxis=dict(title="Seats underestimated", gridcolor="#1e1e2e"),
+            xaxis=dict(tickangle=-35, tickfont=dict(size=9)),
+            showlegend=False,
+        )
+        _fig_bias.add_annotation(
+            text="🟢 WB-specific  🟡 Cross-state equivalents",
+            xref="paper", yref="paper", x=0.5, y=-0.22,
+            showarrow=False, font={"size": 10, "color": "#94a3b8"},
+        )
+        st.plotly_chart(_fig_bias, use_container_width=True, key="ep_bias_dist")
+
+    # Summary row
+    _s1, _s2, _s3 = st.columns(3)
+    with _s1:
+        st.metric("TMC — Raw polls", f"{_raw_tmc:.0f} seats", delta=None)
+        st.metric("TMC — Calibrated", f"{_cal_tmc:.0f} seats", delta=f"+{_cal_tmc-_raw_tmc:.0f} bias correction")
+    with _s2:
+        st.metric("BJP — Raw polls", f"{_raw_bjp:.0f} seats", delta=None)
+        st.metric("BJP — Calibrated", f"{_cal_bjp:.0f} seats", delta=f"{_cal_bjp-_raw_bjp:.0f} overestimation corrected")
+    with _s3:
+        st.metric("Model median (TMC)", f"{_model_tmc} seats", delta=f"+{_model_tmc - _cal_tmc:.0f} vs calibrated")
+        st.markdown(
+            "<div style='font-size:0.80em;color:#94a3b8;margin-top:4px'>"
+            "Calibrated EP fed at 15% credibility.<br>"
+            "Structural prior (85%) held the median at 170.<br>"
+            "LS 2024 national: excluded from bias calc<br>"
+            "(BJP overestimated — 400-paar contamination)."
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
     # ── TMC vs BJP trend ──────────────────────────────────────────────────────
     history = _forecast_history()
     st.subheader("TMC vs BJP — Seat Forecast Over Time")
